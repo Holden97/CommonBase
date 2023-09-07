@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 
 namespace CommonBase
 {
-    public class UIManager : MonoSingleton<UIManager>
+    public class UIManager : MonoSingleton <UIManager>
     {
         private Dictionary<UIType, StackPro<BaseUI>> uiDic;
         private Stack<UIShowInfoList> uiInfoStack;
