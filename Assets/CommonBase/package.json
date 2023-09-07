@@ -1,0 +1,18 @@
+{
+    "name": "com.commonbase",
+    "version": "1.0.0",
+    "displayName": "CommonBase",
+    "description": "一个自用的通用基础框架；\n包含UI管理，状态机，单例模式，对象池，事件中心，二进制/xml的序列化/反序列化，以及一些类型的方法拓展。",
+    "unity": "2020.1",
+    "unityRelease": "0b5",
+   "keywords": [
+      "keyword1",
+      "keyword2",
+      "keyword3"
+    ],
+    "author": {
+      "name": "YiBo",
+      "email": "HelloHolden@163.com",
+      "url": "https://github.com/Holden97"
+    }
+  }
