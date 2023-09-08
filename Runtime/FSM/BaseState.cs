@@ -1,13 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using Steamworks.Data;
+using System;
+using System.Collections.Generic;
 
 namespace CommonBase
 {
-    public abstract class BaseState
+    [Serializable]
+    public class BaseState
     {
-        protected int stateID;
+        public static string TRANSITION_REQ = "TRANSITION_REQ";
+        public static string RESET_REQ = "RESET_REQ";
+
+        public int stateID;
+        public string stateName;
         public int StateID { get => stateID; }
-        public Dictionary<int, int> transitionDic;
-        public FiniteStateMachine finiteStateMachine;
 
         /// <summary>
         /// 状态开始
@@ -49,27 +54,19 @@ namespace CommonBase
 
         }
 
-        public void AddTransition(int transition, int stateID)
+        public BaseState(string stateName)
         {
-            if (transitionDic.ContainsKey(transition))
-            {
-                return;
-            }
-            transitionDic.Add(transition, stateID);
+            this.stateName = stateName;
         }
 
-        public void RemoveTransition(int transition)
+        public void Transfer(string transition)
         {
-            if (transitionDic.ContainsKey(transition))
-            {
-                transitionDic.Remove(transition);
-            }
+            this.EventTrigger(TRANSITION_REQ, transition);
         }
 
-        public BaseState(int stateID)
+        public void RequestReset()
         {
-            this.transitionDic = new Dictionary<int, int>();
-            this.stateID = stateID;
+            this.EventTrigger(RESET_REQ);
         }
     }
 
