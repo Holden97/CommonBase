@@ -7,10 +7,11 @@ namespace CommonBase
 {
     public class BinaryUtility
     {
-        public static void SaveWaveConfigData<T>(T data,string waveConfigPath)
+        public static void SaveWaveConfigData<T>(T data, string waveConfigPath)
         {
             BinaryFormatter formatter = new BinaryFormatter();
             FileStream fileStream = File.Create(waveConfigPath);
+            Debug.Log($"已保存波次信息到:{waveConfigPath}");
             formatter.Serialize(fileStream, data);
             fileStream.Close();
         }
@@ -27,7 +28,7 @@ namespace CommonBase
             }
             else
             {
-                Debug.LogWarning("不存在此二进制文件！");
+                Debug.LogWarning($"不存在此二进制文件{path}！");
                 return default(T);
             }
         }
