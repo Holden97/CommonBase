@@ -9,7 +9,7 @@ namespace CommonBase.Editor
 {
     public class ConvertToUTF8
     {
-        [MenuItem("Tools/UTF_8×ª»»")]
+        [MenuItem("Tools/UTF_8è½¬æ¢")]
         public static void ConvertFilesToUTF8()
         {
 
@@ -28,7 +28,7 @@ namespace CommonBase.Editor
             }
 
             AssetDatabase.Refresh();
-            Debug.Log("UTF_8×ª»»");
+            Debug.Log("UTF_8è½¬æ¢");
         }
 
         private static bool IsUTF8Encoded(string input)
@@ -52,7 +52,7 @@ namespace CommonBase.Editor
 
                     if (byte1 == 0xEF && byte2 == 0xBB && byte3 == 0xBF)
                     {
-                        return true; // ÎÄ¼şÒÔ UTF-8 BOM ±êÊ¶·û¿ªÍ·
+                        return true; // æ–‡ä»¶ä»¥ UTF-8 BOM æ ‡è¯†ç¬¦å¼€å¤´
                     }
                     else
                     {
@@ -62,7 +62,7 @@ namespace CommonBase.Editor
             }
             catch (Exception)
             {
-                // ´¦ÀíÒì³£
+                // å¤„ç†å¼‚å¸¸
                 return false;
             }
         }
@@ -73,7 +73,7 @@ namespace CommonBase.Editor
             {
                 using (StreamReader reader = new StreamReader(filePath, Encoding.UTF8, true))
                 {
-                    // ÊÔÍ¼¶ÁÈ¡ÎÄ¼şÄÚÈİ£¬Èç¹û¶ÁÈ¡³É¹¦ÔòËµÃ÷ÊÇ UTF-8 ±àÂë
+                    // è¯•å›¾è¯»å–æ–‡ä»¶å†…å®¹ï¼Œå¦‚æœè¯»å–æˆåŠŸåˆ™è¯´æ˜æ˜¯ UTF-8 ç¼–ç 
                     while (reader.Peek() >= 0)
                     {
                         reader.Read();
@@ -83,7 +83,7 @@ namespace CommonBase.Editor
             }
             catch (Exception)
             {
-                // ´¦ÀíÒì³£
+                // å¤„ç†å¼‚å¸¸
                 return false;
             }
         }
@@ -92,14 +92,14 @@ namespace CommonBase.Editor
         {
             try
             {
-                // ¶ÁÈ¡ GB2312 ±àÂëµÄÎÄ¼ş
+                // è¯»å– GB2312 ç¼–ç çš„æ–‡ä»¶
                 string content;
                 using (StreamReader reader = new StreamReader(sourceFilePath, true))
                 {
                     content = reader.ReadToEnd();
                 }
 
-                // ½«ÄÚÈİĞ´Èë UTF-8 ±àÂëµÄĞÂÎÄ¼ş
+                // å°†å†…å®¹å†™å…¥ UTF-8 ç¼–ç çš„æ–°æ–‡ä»¶
                 File.WriteAllText(sourceFilePath, content, new UTF8Encoding(false));
 
                 Console.WriteLine("Conversion from GB2312 to UTF-8 completed successfully.");
