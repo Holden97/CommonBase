@@ -51,7 +51,7 @@ namespace CommonBase
 
             if (data.Length < existedList.Count)
             {
-                for (int i = existedList.Count - data.Length; i < existedList.Count; i++)
+                for (int i = data.Length; i < existedList.Count; i++)
                 {
                     existedList[i].SetActive(false);
                 }

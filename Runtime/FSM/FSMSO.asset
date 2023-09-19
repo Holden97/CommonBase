@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2efa020f8a176c4e9526da73ee26193, type: 3}
+  m_Name: FSMSO
+  m_EditorClassIdentifier: 
+  assemblyName: LogicLayer
+  states:
+  - stateName: "\u5F85\u673A"
+    stateClass: LogicLayer.PreparingState
+    isDefaultState: 1
+  - stateName: "\u6E38\u620F\u4E2D\u6218\u6597"
+    stateClass: LogicLayer.PlayingBattlingState
+    isDefaultState: 0
+  - stateName: "\u6E38\u620F\u4E2D\u8D2D\u4E70"
+    stateClass: LogicLayer.PlayingShoppingState
+    isDefaultState: 0
+  - stateName: "\u6E38\u620F\u5931\u8D25"
+    stateClass: LogicLayer.GameDefeatedState
+    isDefaultState: 0
+  - stateName: "\u6E38\u620F\u80DC\u5229"
+    stateClass: LogicLayer.GameVictoryState
+    isDefaultState: 0
+  transfers:
+  - startState: "\u5F85\u673A"
+    trransition: "\u6E38\u620F\u5F00\u59CB"
+    endState: "\u6E38\u620F\u4E2D\u6218\u6597"
+  - startState: "\u6E38\u620F\u4E2D\u6218\u6597"
+    trransition: "\u8FDB\u5165\u8D2D\u4E70"
+    endState: "\u6E38\u620F\u4E2D\u8D2D\u4E70"
+  - startState: "\u6E38\u620F\u4E2D\u8D2D\u4E70"
+    trransition: "\u5B8C\u6210\u8D2D\u4E70"
+    endState: "\u6E38\u620F\u4E2D\u6218\u6597"
+  - startState: "\u6E38\u620F\u4E2D\u6218\u6597"
+    trransition: "\u80DC\u5229"
+    endState: "\u6E38\u620F\u80DC\u5229"
+  - startState: "\u6E38\u620F\u4E2D\u6218\u6597"
+    trransition: "\u73A9\u5BB6\u57FA\u5730\u88AB\u6467\u6BC1"
+    endState: "\u6E38\u620F\u5931\u8D25"
+  - startState: "\u6E38\u620F\u5931\u8D25"
+    trransition: "\u786E\u8BA4"
+    endState: "\u5F85\u673A"
+  - startState: "\u6E38\u620F\u80DC\u5229"
+    trransition: "\u786E\u8BA4"
+    endState: "\u5F85\u673A"

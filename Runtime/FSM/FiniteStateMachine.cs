@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using UnityEngine;
 
 namespace CommonBase
 {
-    public class FiniteStateMachine
+    [Serializable]
+    public class FiniteStateMachine : IListener
     {
         /// <summary>
         /// 当前状态
@@ -15,22 +19,75 @@ namespace CommonBase
         /// <summary>
         /// 状态字典
         /// </summary>
-        private Dictionary<int, BaseState> statesDic;
+        public List<BaseState> statesDic;
+        public FSMSO fsmData;
+
+
+        public FSMSO FSMData { get => fsmData; private set { fsmData = value; } }
+
+        public BaseState GetState(string key)
+        {
+            return statesDic.Find(x => x.stateName == key);
+        }
+
+        public FiniteStateMachine(FSMSO fsmData)
+        {
+            statesDic = new List<BaseState>();
+            this.fsmData = fsmData;
+            var assembly = Assembly.Load(fsmData.assemblyName);
+            foreach (var item in fsmData.states)
+            {
+                var type = assembly.GetType(item.stateClass);
+                ConstructorInfo constructor = type.GetConstructor(new[] { typeof(string) });
+
+                if (constructor != null)
+                {
+                    curState = (BaseState)constructor.Invoke(new object[] { item.stateName });
+                    AddState(curState);
+                    if (item.isDefaultState)
+                    {
+                        SetDefaultState(curState);
+                    }
+                }
+
+            }
+        }
 
         public void SetDefaultState(BaseState state)
         {
             defaultState = state;
         }
 
-        public void SetDefaultState(int stateId)
+        public void SetDefaultState(string stateName)
         {
-            defaultState = statesDic[stateId];
+            defaultState = GetState(stateName);
         }
 
         public void Start()
         {
+            this.EventRegister<string>(BaseState.TRANSITION_REQ, OnTransistionReq);
+            this.EventRegister(BaseState.RESET_REQ, OnResetReq);
             curState = defaultState;
             curState.OnStateStart();
+        }
+
+        public void Stop()
+        {
+            this.EventUnregister();
+        }
+
+        private void OnResetReq()
+        {
+            this.Reset();
+        }
+
+        private void OnTransistionReq(string arg0)
+        {
+            this.Transfer(arg0);
+        }
+
+        private void OnStateCheck(string transferName)
+        {
         }
 
         public void Update()
@@ -42,11 +99,7 @@ namespace CommonBase
         public void OnDestroy()
         {
             curState.OnStateEnd();
-        }
-
-        public FiniteStateMachine()
-        {
-            statesDic = new Dictionary<int, BaseState>();
+            this.EventUnregister();
         }
 
         /// <summary>
@@ -56,7 +109,7 @@ namespace CommonBase
         {
             foreach (var item in statesDic)
             {
-                item.Value.OnReset();
+                item.OnReset();
             }
             curState = defaultState;
             curState.OnStateStart();
@@ -64,30 +117,31 @@ namespace CommonBase
 
         public void AddState(BaseState state)
         {
-            if (!statesDic.ContainsKey(state.StateID))
+            if (!statesDic.Exists(x => x.stateName == state.stateName))
             {
-                statesDic.Add(state.StateID, state);
-                state.finiteStateMachine = this;
+                statesDic.Add(state);
+            }
+        }
+
+        public void Transfer(string transition)
+        {
+            foreach (var transfer in this.FSMData.transfers)
+            {
+                if (transfer.trransition == transition && transfer.startState == this.curState.stateName)
+                {
+                    this.curState.OnStateEnd();
+                    this.curState = this.GetState(transfer.endState);
+                    this.curState.OnStateStart();
+                }
             }
         }
 
         public void RemoveState(BaseState state)
         {
-            if (statesDic.ContainsKey(state.StateID))
+            var curState = statesDic.Find(x => x.stateName == state.stateName);
+            if (curState != null)
             {
-                statesDic.Remove(state.StateID);
-            }
-        }
-
-        public void Transform(int transition)
-        {
-            if (curState.transitionDic.ContainsKey(transition))
-            {
-                curState.OnStateEnd();
-
-                var curStateID = curState.transitionDic[transition];
-                curState = statesDic[curStateID];
-                curState.OnStateStart();
+                statesDic.Remove(curState);
             }
         }
     }
