@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 
 namespace CommonBase
 {
-    public partial class UIManager : MonoSingleton<UIManager>
+    public class UIManager : MonoSingleton<UIManager>
     {
         private Dictionary<UIType, StackPro<BaseUI>> uiDic;
         private Stack<UIShowInfoList> uiInfoStack;
@@ -33,7 +33,6 @@ namespace CommonBase
         protected override void Awake()
         {
             base.Awake();
-
             parent = GameObject.FindGameObjectWithTag("UICanvas");
             if (parent != null)
             {
@@ -46,6 +45,7 @@ namespace CommonBase
             UICanvas.transform.SetParent(null);
             //this.EventRegister<string>(EventName.CHANGE_SCENE, OnSceneChange);
             DontDestroyOnLoad(UICanvas);
+            UICanvas.GetComponent<Canvas>().sortingOrder = 1;
             //检查是否创建了EventSystem
             if (GameObject.FindObjectOfType<EventSystem>() == null)
             {
@@ -74,10 +74,15 @@ namespace CommonBase
             return null;
         }
 
-        public T ShowPanel<T>(Action<T> OnShow = null, string path = null) where T : BaseUI, new()
+        public T ShowPanel<T>(Action<T> OnShow = null, string path = null, object data = null) where T : BaseUI, new()
         {
             string realPath = path != null ? path : $"{typeof(T).Name}";
-            return Show<T>(UIType.PANEL, realPath, OnShow);
+            var p = Show(UIType.PANEL, realPath, OnShow);
+            if (data != null)
+            {
+                p.UpdateView(data);
+            }
+            return p;
         }
 
         public T Find<T>() where T : BaseUI, new()
@@ -101,7 +106,19 @@ namespace CommonBase
 
         }
 
-        public T Show<T>(UIType uiType, string path, Action<T> OnShow = null) where T : BaseUI, new()
+        public void UpdatePanel<T>(object data) where T : BaseUI, new()
+        {
+            ShowPanel<T>(data: data).UpdateView(data);
+        }
+
+        public T LoadPanel<T>(string path = null, object data = null) where T : BaseUI, new()
+        {
+            string realPath = path != null ? path : $"{typeof(T).Name}";
+            var p = Get<T>(UIType.PANEL, realPath);
+            return p;
+        }
+
+        public T Get<T>(UIType uiType, string path) where T : BaseUI, new()
         {
             if (!parent)
             {
@@ -123,6 +140,7 @@ namespace CommonBase
             if (uiToShow == null)
             {
                 GameObject uiObject = GameObject.Instantiate(Resources.Load<GameObject>(path), parent.transform);
+                uiObject.SetActive(false);
                 uiToShow = uiObject.GetComponent<BaseUI>();
                 if (uiToShow == null)
                 {
@@ -134,6 +152,7 @@ namespace CommonBase
                 }
                 uiDic[uiType].Push(uiToShow);
             }
+
             //如果需要覆盖其他面板，则覆盖
             if (uiToShow.coverOthersWhenShow)
             {
@@ -148,11 +167,18 @@ namespace CommonBase
                 }
             }
 
-            ShowInside(uiToShow, OnShow);
+            return uiToShow as T;
+
+        }
+
+        public T Show<T>(UIType uiType, string path, Action<T> OnShow = null) where T : BaseUI, new()
+        {
+            var uiToShow = Get<T>(uiType, path);
+            Show(uiToShow, OnShow);
             return uiToShow as T;
         }
 
-        private void ShowInside<T>(BaseUI uiToShow, Action<T> OnShow = null) where T : BaseUI, new()
+        public void Show<T>(BaseUI uiToShow, Action<T> OnShow = null) where T : BaseUI, new()
         {
             var i = uiToShow.transform.parent.childCount - 1;
             BaseUI curUI = default;
