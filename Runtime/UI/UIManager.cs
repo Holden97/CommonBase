@@ -8,6 +8,7 @@ namespace CommonBase
 {
     public class UIManager : MonoSingleton<UIManager>
     {
+        public string PANEL_ROOT;
         private Dictionary<UIType, StackPro<BaseUI>> uiDic;
         private Stack<UIShowInfoList> uiInfoStack;
 
@@ -76,7 +77,7 @@ namespace CommonBase
 
         public T ShowPanel<T>(Action<T> OnShow = null, string path = null, object data = null) where T : BaseUI, new()
         {
-            string realPath = path != null ? path : $"{typeof(T).Name}";
+            string realPath = path != null ? path : $"{PANEL_ROOT + "/" + typeof(T).Name}";
             var p = Show(UIType.PANEL, realPath, OnShow);
             if (data != null)
             {
@@ -173,7 +174,8 @@ namespace CommonBase
 
         public T Show<T>(UIType uiType, string path, Action<T> OnShow = null) where T : BaseUI, new()
         {
-            var uiToShow = Get<T>(uiType, path);
+            string realPath = path != null ? path : $"{typeof(T).Name}";
+            var uiToShow = Get<T>(uiType, realPath);
             Show(uiToShow, OnShow);
             return uiToShow as T;
         }
