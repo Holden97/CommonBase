@@ -1,6 +1,4 @@
-﻿using Steamworks.Data;
-using System;
-using System.Collections.Generic;
+﻿using System;
 
 namespace CommonBase
 {
@@ -54,9 +52,9 @@ namespace CommonBase
 
         }
 
-        public BaseState(string stateName)
+        public BaseState(int stateName)
         {
-            this.stateName = stateName;
+            this.stateName = stateName.ToString();
         }
 
         public void Transfer(string transition)
