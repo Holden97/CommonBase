@@ -1,10 +1,8 @@
 //使用utf-8
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace CommonBase
@@ -29,17 +27,21 @@ namespace CommonBase
             }
         }
 
-        public void Initialize()
+        public void Initialize(string tag = null)
         {
-            toggles = SetToggles();
+            toggles = SetToggles(tag);
             SetActionToAllToggle((t) => Trigger(t));
+        }
 
+        public void Apply()
+        {
             for (int i = 0; i < toggles.Count; i++)
             {
                 IToggle t = toggles[i];
                 if (i == 0)
                 {
                     t.OnSelected();
+                    t.OnClick(t);
                     t.IsToggle = true;
                 }
                 else
@@ -50,19 +52,37 @@ namespace CommonBase
             }
         }
 
-        public virtual List<IToggle> SetToggles()
+        public virtual List<IToggle> SetToggles(string tag = null)
         {
-            return GetComponentsInChildren<IToggle>().ToList();
+            if (tag == null)
+            {
+                return GetComponentsInChildren<IToggle>().ToList();
+            }
+            else
+            {
+                return GetComponentsInChildren<IToggle>().ToList().FindAll(x => x.ToggleTag == tag);
+            }
+        }
+
+        public List<IToggle> GetToggles(List<IToggle> original, string tag)
+        {
+            var result = new List<IToggle>();
+            if (original != null)
+            {
+                return original.FindAll(x => x.ToggleTag == tag);
+            }
+            else
+            {
+                return null;
+            }
+
         }
 
         public void SetActionToAllToggle(Action<IToggle> action)
         {
             foreach (var item in toggles)
             {
-                if (item is MonoBehaviour m && m.TryGetComponent<Button>(out var b))
-                {
-                    b.onClick.AddListener(() => action(item));
-                }
+                item.OnClick += action;
             }
         }
     }

@@ -15,6 +15,8 @@ namespace CommonBase
 
     public interface IToggle
     {
+        public string ToggleTag { get; }
+        Action<IToggle> OnClick { get; set; }
         bool IsToggle { get; set; }
         void OnUnselected();
         void OnSelected();
@@ -24,8 +26,8 @@ namespace CommonBase
     {
         void Trigger(IToggle toggle);
         void SetActionToAllToggle(Action<IToggle> action);
-        void Initialize();
-        List<IToggle> SetToggles();
+        void Initialize(string tag);
+        List<IToggle> SetToggles(string tag);
     }
 }
 

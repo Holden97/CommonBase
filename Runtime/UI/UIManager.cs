@@ -1,8 +1,11 @@
-﻿using System;
+﻿using DG.Tweening;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 namespace CommonBase
 {
@@ -13,6 +16,7 @@ namespace CommonBase
         private Stack<UIShowInfoList> uiInfoStack;
 
         protected GameObject parent;
+        public GameObject tip;
         public GameObject UICanvas { get; protected set; }
 
         private int showingPanelCount;
@@ -34,6 +38,7 @@ namespace CommonBase
         protected override void Awake()
         {
             base.Awake();
+            tip = Resources.Load<GameObject>("Tip");
             parent = GameObject.FindGameObjectWithTag("UICanvas");
             if (parent != null)
             {
@@ -42,6 +47,7 @@ namespace CommonBase
             else
             {
                 UICanvas = GameObject.Instantiate(Resources.Load<GameObject>("UICanvas"));
+                tip.SetActive(false);
             }
             UICanvas.transform.SetParent(null);
             //this.EventRegister<string>(EventName.CHANGE_SCENE, OnSceneChange);
@@ -86,6 +92,25 @@ namespace CommonBase
             return p;
         }
 
+        public void ShowTip(string content)
+        {
+            var go = Instantiate(tip);
+            var cg = go.GetComponentInChildren<CanvasGroup>();
+            go.SetActive(true);
+            go.transform.SetParent(null);
+            go.GetComponentInChildren<Text>().text = content;
+            var startPoint = cg.transform.position.y;
+            cg.transform.DOMoveY(startPoint + 50, 0.5f).OnComplete(() =>
+            {
+                DOTween.To(() => cg.alpha, value => cg.alpha = value, 0, 1)
+                .SetEase(Ease.Linear)
+                .OnComplete(() =>
+                {
+                    Destroy(go);
+                });
+            });
+        }
+
         public T Find<T>() where T : BaseUI, new()
         {
             if (!parent)
@@ -109,7 +134,15 @@ namespace CommonBase
 
         public void UpdatePanel<T>(object data) where T : BaseUI, new()
         {
-            ShowPanel<T>(data: data).UpdateView(data);
+            var ui = Find<T>();
+            if (ui != null)
+            {
+                ui.UpdateView(data);
+            }
+            else
+            {
+                Debug.LogError($"未找到{typeof(T)}类型的UI！");
+            }
         }
 
         public T LoadPanel<T>(string path = null, object data = null) where T : BaseUI, new()
