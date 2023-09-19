@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿using PlasticGui.Configuration.CloudEdition.Welcome;
+using System;
+using Unity.Plastic.Newtonsoft.Json.Serialization;
+using UnityEditor;
+using UnityEngine;
 
 namespace CommonBase
 {
@@ -20,6 +24,15 @@ namespace CommonBase
         public virtual void OnEnter()
         {
             IsShowing = true;
+        }
+
+        /// <summary>
+        /// 更新面板
+        /// </summary>
+        /// <param name="data"></param>
+        public virtual void UpdateView(object data)
+        {
+
         }
 
         /// <summary>
@@ -55,4 +68,11 @@ namespace CommonBase
         }
     }
 
+    public static class UIExtension
+    {
+        public static void Show<T>(this BaseUI ui, Action<T> OnShow) where T : BaseUI, new()
+        {
+            UIManager.Instance.Show(ui, OnShow);
+        }
+    }
 }
