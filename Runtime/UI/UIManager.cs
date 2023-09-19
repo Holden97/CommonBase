@@ -205,6 +205,26 @@ namespace CommonBase
 
         }
 
+        public T Get<T>() where T : BaseUI, new()
+        {
+            BaseUI uiToShow = default;
+            //从缓存字典中查找
+            foreach (var uiType in uiDic)
+            {
+                foreach (var item in uiType.Value)
+                {
+                    if (item.GetType().Name == typeof(T).Name)
+                    {
+                        uiToShow = item;
+                        break;
+                    }
+                }
+            }
+            return uiToShow as T;
+
+        }
+
+
         public T Show<T>(UIType uiType, string path, Action<T> OnShow = null) where T : BaseUI, new()
         {
             string realPath = path != null ? path : $"{typeof(T).Name}";
