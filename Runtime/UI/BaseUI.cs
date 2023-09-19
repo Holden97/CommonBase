@@ -4,6 +4,7 @@ namespace CommonBase
 {
     public abstract class BaseUI : MonoBehaviour, IListener
     {
+        public virtual string Path { get; }
         public bool IsShowing { get; private set; }
         public UIType uiLayer = UIType.PANEL;
         public int orderInLayer = 0;

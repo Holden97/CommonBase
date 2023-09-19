@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 
 namespace CommonBase
 {
-    public class UIManager : MonoSingleton <UIManager>
+    public partial class UIManager : MonoSingleton<UIManager>
     {
         private Dictionary<UIType, StackPro<BaseUI>> uiDic;
         private Stack<UIShowInfoList> uiInfoStack;
@@ -33,6 +33,7 @@ namespace CommonBase
         protected override void Awake()
         {
             base.Awake();
+
             parent = GameObject.FindGameObjectWithTag("UICanvas");
             if (parent != null)
             {

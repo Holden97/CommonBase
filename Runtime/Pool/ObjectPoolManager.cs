@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace CommonBase
@@ -76,21 +78,17 @@ namespace CommonBase
             }
         }
 
-        //public PoolItem<T> Find<T>(Predicate<PoolItem<T>> match)
-        //{
-        //    var allGameobjects = new List<PoolItem<T>>();
-        //    //To convert the Keys to a List of their own:
-        //    //listNumber = dicNumber.Select(kvp => kvp.Key).ToList();
-        //    //Or you can shorten it up and not even bother using select:
-        //    //listNumber = dicNumber.Keys.ToList();
-        //    var values = poolQueue.Values;
-        //    var valueList = values.ToList();
-        //    foreach (var item in valueList)
-        //    {
-        //        allGameobjects.AddRange(item);
-        //    }
-        //    return allGameobjects.Find(match);
-        //}
+        public PoolItem<GameObject> Find(Predicate<PoolItem<GameObject>> match)
+        {
+            var allGameobjects = new List<PoolItem<GameObject>>();
+            var values = poolQueue.Values;
+            var valueList = values.ToList();
+            foreach (var item in valueList)
+            {
+                allGameobjects.AddRange(item);
+            }
+            return allGameobjects.Find(match);
+        }
 
         public void PutBackOthers(string key, List<GameObject> usingObject)
         {
@@ -197,12 +195,12 @@ namespace CommonBase
             }
         }
 
-        public override void DisposeAll()
+        public override void Dispose()
         {
             poolInfo.Clear();
             poolQueue.Clear();
             defaultParent.DestroyChildren();
-            base.DisposeAll();
+            base.Dispose();
         }
 
 
