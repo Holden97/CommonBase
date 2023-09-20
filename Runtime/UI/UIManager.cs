@@ -16,7 +16,7 @@ namespace CommonBase
         private Stack<UIShowInfoList> uiInfoStack;
 
         protected GameObject parent;
-        public GameObject tip;
+        private GameObject tip;
         public GameObject UICanvas { get; protected set; }
 
         private int showingPanelCount;
@@ -83,7 +83,7 @@ namespace CommonBase
 
         public T ShowPanel<T>(Action<T> OnShow = null, string path = null, object data = null) where T : BaseUI, new()
         {
-            string realPath = path != null ? path : $"{PANEL_ROOT + "/" + typeof(T).Name}";
+            string realPath = path != null ? path : $"{PANEL_ROOT + typeof(T).Name}";
             var p = Show(UIType.PANEL, realPath, OnShow);
             if (data != null)
             {
@@ -240,7 +240,7 @@ namespace CommonBase
             for (; i >= 0; i--)
             {
                 curUI = uiToShow.transform.parent.GetChild(i).GetComponent<BaseUI>();
-                if (curUI==null)
+                if (curUI == null)
                 {
                     Debug.LogError($"{uiToShow.transform.parent.GetChild(i).name}上未挂载BaseUI组件，请检查！");
                 }
