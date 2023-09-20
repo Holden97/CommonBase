@@ -65,12 +65,4 @@ namespace CommonBase
             this.EventUnregister();
         }
     }
-
-    public static class UIExtension
-    {
-        public static void Show<T>(this BaseUI ui, Action<T> OnShow) where T : BaseUI, new()
-        {
-            UIManager.Instance.Show(ui, OnShow);
-        }
-    }
 }

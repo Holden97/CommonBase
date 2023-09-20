@@ -229,11 +229,11 @@ namespace CommonBase
         {
             string realPath = path != null ? path : $"{typeof(T).Name}";
             var uiToShow = Get<T>(uiType, realPath);
-            Show(uiToShow, OnShow);
+            ShowInside(uiToShow, OnShow);
             return uiToShow as T;
         }
 
-        public void Show<T>(BaseUI uiToShow, Action<T> OnShow = null) where T : BaseUI, new()
+        private void ShowInside<T>(BaseUI uiToShow, Action<T> OnShow = null) where T : BaseUI, new()
         {
             var i = uiToShow.transform.parent.childCount - 1;
             BaseUI curUI = default;
@@ -437,6 +437,10 @@ namespace CommonBase
         /// 画布
         /// </summary>
         CANVAS,
+        /// <summary>
+        /// 弹出式菜单
+        /// </summary>
+        POP_MENU,
         /// <summary>
         /// 面板，一种面板只允许出现一个，但同一时间可以出现多种面板
         /// </summary>
