@@ -78,7 +78,7 @@ namespace CommonBase
             return (soundVolume * 100f - 80f);
         }
 
-        public void PlaySound(string soundName, float pitch)
+        public void PlaySound(string soundName, float pitch = 0.5f)
         {
             if (soundDictionary.TryGetValue(soundName, out SoundItem soundItem) && soundPrefab != null)
             {
