@@ -1,11 +1,11 @@
-//使用utf-8
+﻿//使用utf-8
 using UnityEditor;
 using UnityEngine;
 
 namespace CommonBase.Editor
 {
 
-    [CustomEditor(typeof(CommonList))]
+    [CustomEditor(typeof(CommonList<>))]
     public class CommonListInspector : UnityEditor.Editor
     {
         private SerializedProperty itemPrefab;
@@ -20,7 +20,6 @@ namespace CommonBase.Editor
 
         public override void OnInspectorGUI()
         {
-            CommonList list = (CommonList)target;
             EditorGUILayout.PropertyField(useExisted, new GUIContent("只使用列表中已存在的预设"));
             if (!useExisted.boolValue)
             {

@@ -1,4 +1,4 @@
-//使用utf-8
+﻿//使用utf-8
 using CommonBase;
 using JetBrains.Annotations;
 using System.Collections;
@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace CommonBase
 {
-    public class CommonList : MonoBehaviour, IUIList
+    public class CommonList<T> : MonoBehaviour, IUIList<T>
     {
         public GameObject ItemPrefab => itemPrefab;
         public GameObject itemPrefab;
@@ -28,9 +28,9 @@ namespace CommonBase
             }
         }
 
-        public void BindData<T>(T[] data)
+        public void BindData(T[] data)
         {
-            if(data==null || data.Length == 0) { return; }
+            if (data == null || data.Length == 0) { return; }
             for (int i = 0; i < data.Length; i++)
             {
                 if (existedList.Count > i)
