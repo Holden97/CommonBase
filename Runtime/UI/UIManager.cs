@@ -242,7 +242,7 @@ namespace CommonBase
                 curUI = uiToShow.transform.parent.GetChild(i).GetComponent<BaseUI>();
                 if (curUI == null)
                 {
-                    Debug.LogError($"{uiToShow.transform.parent.GetChild(i).name}上未挂载BaseUI组件，请检查！");
+                    continue;
                 }
                 if (curUI.orderInLayer <= uiToShow.orderInLayer && curUI != uiToShow)
                 {
