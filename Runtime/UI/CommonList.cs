@@ -30,7 +30,7 @@ namespace CommonBase
 
         public void BindData<T>(T[] data)
         {
-            if(data==null || data.Length == 0) { return; }
+            if (data == null) { return; }
             for (int i = 0; i < data.Length; i++)
             {
                 if (existedList.Count > i)
