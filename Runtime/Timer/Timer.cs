@@ -16,7 +16,6 @@ namespace CommonBase
         public Action OnComplete;
         public Action<float> OnUpdate;
         public Action OnStart;
-        public ETimerType timerType;
         public string timerName;
         public bool isLoop;
         /// <summary>
@@ -52,7 +51,6 @@ namespace CommonBase
             this._endTime = _startTime + period;
 
             isDone = false;
-            this.timerType = timerType;
             if (timerName != null)
             {
                 this.timerName = timerName;
@@ -82,7 +80,7 @@ namespace CommonBase
         /// <param name="ownerId"></param>
         /// <param name="isLoop"></param>
         /// <param name="triggerOnStart"></param>
-        public Timer(float period, float startTime, string timerName = null, Action OnStart = null, Action onComplete = null, Action<float> onUpdate = null, ETimerType timerType = ETimerType.trigger, int ownerId = -1, bool isLoop = false, bool triggerOnStart = false)
+        public Timer(float period, float startTime, string timerName = null, Action OnStart = null, Action onComplete = null, Action<float> onUpdate = null, int ownerId = -1, bool isLoop = false, bool triggerOnStart = false)
         {
             this.id = seed++;
             this.owner = ownerId;
@@ -95,7 +93,6 @@ namespace CommonBase
             this._endTime = _startTime + period;
 
             isDone = false;
-            this.timerType = timerType;
             if (timerName != null)
             {
                 this.timerName = timerName;
