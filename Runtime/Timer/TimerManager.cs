@@ -139,31 +139,5 @@ namespace CommonBase
                 }
             }
         }
-
-        public void UnregisterTimer(string timerName)
-        {
-            foreach (var owenrList in timerDic.Values)
-            {
-                var curTimer = owenrList.Find(t => t.timerName == timerName);
-                if (curTimer != null)
-                {
-                    owenrList.Remove(curTimer);
-                }
-            }
-        }
-
-        public void UnregisterTimer(int instanceID, ETimerType timerType)
-        {
-            if (timerDic.TryGetValue(instanceID, out var timers))
-            {
-                foreach (var item in timers)
-                {
-                    if (item.timerType == timerType)
-                    {
-                        timers.Remove(item);
-                    }
-                }
-            }
-        }
     }
 }

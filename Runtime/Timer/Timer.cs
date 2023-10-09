@@ -16,7 +16,6 @@ namespace CommonBase
         public Action OnComplete;
         public Action<float> OnUpdate;
         public Action OnStart;
-        public ETimerType timerType;
         public string timerName;
         public bool isLoop;
         /// <summary>
@@ -49,10 +48,9 @@ namespace CommonBase
 
             _startTime = GetWorldTime();
             _lastUpdateTime = GetWorldTime();
-            this._endTime = _startTime + period;
+            this._endTime = GetDoneTime();
 
             isDone = false;
-            this.timerType = timerType;
             if (timerName != null)
             {
                 this.timerName = timerName;
@@ -69,47 +67,10 @@ namespace CommonBase
             }
         }
 
-        /// <summary>
-        /// 非主线程构造
-        /// </summary>
-        /// <param name="period"></param>
-        /// <param name="startTime"></param>
-        /// <param name="timerName"></param>
-        /// <param name="OnStart"></param>
-        /// <param name="onComplete"></param>
-        /// <param name="onUpdate"></param>
-        /// <param name="timerType"></param>
-        /// <param name="ownerId"></param>
-        /// <param name="isLoop"></param>
-        /// <param name="triggerOnStart"></param>
-        public Timer(float period, float startTime, string timerName = null, Action OnStart = null, Action onComplete = null, Action<float> onUpdate = null, ETimerType timerType = ETimerType.trigger, int ownerId = -1, bool isLoop = false, bool triggerOnStart = false)
-        {
-            this.id = seed++;
-            this.owner = ownerId;
-            this.period = period;
-            OnComplete = onComplete;
-            OnUpdate = onUpdate;
-            this.OnStart = OnStart;
-
-            _startTime = startTime;
-            this._endTime = _startTime + period;
-
-            isDone = false;
-            this.timerType = timerType;
-            if (timerName != null)
-            {
-                this.timerName = timerName;
-            }
-            else
-            {
-                this.timerName = this.id.ToString();
-            }
-            this.isLoop = isLoop;
-        }
-
         public void SetDuration(float duration)
         {
             this.period = duration;
+            this._endTime = GetDoneTime();
         }
 
         public void Dispose()
@@ -117,13 +78,13 @@ namespace CommonBase
 
         }
 
-        public void OnDone()
+        internal void OnDone()
         {
             OnComplete?.Invoke();
             if (isLoop)
             {
                 _startTime = GetWorldTime();
-                this._endTime = _startTime + period;
+                this._endTime = GetDoneTime();
             }
             else
             {
@@ -131,11 +92,22 @@ namespace CommonBase
             }
         }
 
-        public void Tick()
+        public void Pause()
         {
+            _isPause = true;
+        }
+
+        public void Resume()
+        {
+            _isPause = false;
+        }
+
+        internal void Tick()
+        {
+            if (_isPause) { return; }
             OnUpdate?.Invoke(GetWorldTime() - _lastUpdateTime);
             _lastUpdateTime = GetWorldTime();
-            if (_lastUpdateTime > GetDoneTime())
+            if (_lastUpdateTime > _endTime)
             {
                 OnDone();
             }
