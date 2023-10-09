@@ -135,7 +135,7 @@ namespace CommonBase
                 var curTimer = timers.Find(t => t.timerName == timerName);
                 if (curTimer != null)
                 {
-                    timers.Remove(curTimer);
+                    removeTimerList.Add(curTimer);
                 }
             }
         }

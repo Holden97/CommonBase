@@ -1,4 +1,5 @@
 ﻿using CommonBase;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,6 +9,7 @@ namespace CommonBase
 {
     public class AudioManager : MonoSingleton<AudioManager>
     {
+        public Dictionary<int, AnimalSoundState> animalSoundDic;
         [SerializeField]
         GameObject soundPrefab;
 
@@ -28,6 +30,20 @@ namespace CommonBase
         [SerializeField]
         private SO_SoundList so_soundList = null;
 
+
+        public void RegisterAnimal(int animalId)
+        {
+            animalSoundDic.Add(animalId, new AnimalSoundState(animalId, false));
+        }
+
+        public void UnregisterAnimal(int animalId)
+        {
+            if (animalSoundDic.ContainsKey(animalId))
+            {
+                animalSoundDic.Remove(animalId);
+            }
+        }
+
         public override void Initialize()
         {
             base.Initialize();
@@ -37,6 +53,7 @@ namespace CommonBase
             {
                 soundDictionary.Add(soundItem.soundName, soundItem);
             }
+            this.animalSoundDic = new Dictionary<int, AnimalSoundState>();
 
             ObjectPoolManager.Instance.CreatePool(10, soundPrefab, "sound");
 
@@ -78,7 +95,7 @@ namespace CommonBase
             return (soundVolume * 100f - 80f);
         }
 
-        public void PlaySound(string soundName, float pitch = 0.5f)
+        public void PlaySound(string soundName, float pitch = 1f, Action OnDone = null)
         {
             if (soundDictionary.TryGetValue(soundName, out SoundItem soundItem) && soundPrefab != null)
             {
@@ -87,7 +104,7 @@ namespace CommonBase
                 sound.SetSound(soundItem, pitch);
                 soundGameObject.SetActive(true);
                 sound.Play();
-                StartCoroutine(DisableSound(soundGameObject, soundItem.soundClip.length));
+                StartCoroutine(DisableSound(soundGameObject, soundItem.soundClip.length, OnDone));
             }
         }
 
@@ -101,10 +118,44 @@ namespace CommonBase
             }
         }
 
-        private IEnumerator DisableSound(GameObject soundGameObject, float length)
+        private IEnumerator DisableSound(GameObject soundGameObject, float length, Action onDone = null)
         {
             yield return new WaitForSeconds(length);
             ObjectPoolManager.Instance.Putback("sound", soundGameObject);
+            onDone?.Invoke();
+        }
+
+        public void PlayAnimalSound(int animalId, string soundName, float pitch = 1f, bool forcePlay = false)
+        {
+            if (animalSoundDic.TryGetValue(animalId, out AnimalSoundState state))
+            {
+                if (!state.isMakingSound || forcePlay)
+                {
+                    state.isMakingSound = true;
+                    PlaySound(soundName, pitch, () => state.isMakingSound = false);
+                }
+            }
+            else
+            {
+                animalSoundDic.Add(animalId, new AnimalSoundState(animalId, false));
+                animalSoundDic[animalId].isMakingSound = true;
+                PlaySound(soundName, pitch, () => state.isMakingSound = false);
+            }
+        }
+    }
+
+
+
+    public class AnimalSoundState
+    {
+        public int ownerId;
+        public bool isMakingSound;
+        public GameObject curSound;
+
+        public AnimalSoundState(int ownerId, bool isMakingSound)
+        {
+            this.ownerId = ownerId;
+            this.isMakingSound = isMakingSound;
         }
     }
 
