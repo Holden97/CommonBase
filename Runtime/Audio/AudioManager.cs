@@ -95,7 +95,7 @@ namespace CommonBase
             return (soundVolume * 100f - 80f);
         }
 
-        public void PlaySound(string soundName, float pitch = 1f, Action OnDone = null)
+        public Sound PlaySound(string soundName, float pitch = 1f, Action OnDone = null, bool loop = false)
         {
             if (soundDictionary.TryGetValue(soundName, out SoundItem soundItem) && soundPrefab != null)
             {
@@ -103,9 +103,23 @@ namespace CommonBase
                 Sound sound = soundGameObject.GetOrAddComponent<Sound>();
                 sound.SetSound(soundItem, pitch);
                 soundGameObject.SetActive(true);
+                if (loop)
+                {
+                    sound.Loop = true;
+                }
+                else
+                {
+                    StartCoroutine(DisableSound(sound, soundItem.soundClip.length, OnDone));
+                }
                 sound.Play();
-                StartCoroutine(DisableSound(soundGameObject, soundItem.soundClip.length, OnDone));
+                return sound;
             }
+            return null;
+        }
+
+        public void Stop(Sound item)
+        {
+            ObjectPoolManager.Instance.Putback("sound", item.gameObject);
         }
 
         public void PlayBgm(string bgmName)
@@ -118,10 +132,10 @@ namespace CommonBase
             }
         }
 
-        private IEnumerator DisableSound(GameObject soundGameObject, float length, Action onDone = null)
+        private IEnumerator DisableSound(Sound sound, float length, Action onDone = null)
         {
             yield return new WaitForSeconds(length);
-            ObjectPoolManager.Instance.Putback("sound", soundGameObject);
+            Stop(sound);
             onDone?.Invoke();
         }
 

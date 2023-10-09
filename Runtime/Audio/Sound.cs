@@ -5,6 +5,17 @@ namespace CommonBase
     [RequireComponent(typeof(AudioSource))]
     public class Sound : MonoBehaviour
     {
+        public bool Loop
+        {
+            get
+            {
+                return audioSource.loop;
+            }
+            set
+            {
+                audioSource.loop = value;
+            }
+        }
         private AudioSource audioSource;
 
         private void Awake()
@@ -27,7 +38,7 @@ namespace CommonBase
             }
         }
 
-        public void Stop() { audioSource.Stop(); }
+        internal void StopAudio() { audioSource.Stop(); }
     }
 }
 
