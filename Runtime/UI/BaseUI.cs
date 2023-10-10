@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CommonBase
 {
-    public abstract class BaseUI : MonoBehaviour, IListener
+    public abstract class BaseUI : MonoBehaviour, IListener, IView
     {
         public virtual string Path { get; }
         public bool IsShowing { get; private set; }
@@ -22,15 +22,6 @@ namespace CommonBase
         public virtual void OnEnter()
         {
             IsShowing = true;
-        }
-
-        /// <summary>
-        /// 更新面板
-        /// </summary>
-        /// <param name="data"></param>
-        public virtual void UpdateView(object data)
-        {
-
         }
 
         /// <summary>
@@ -64,5 +55,16 @@ namespace CommonBase
         {
             this.EventUnregister();
         }
+
+        /// <summary>
+        /// 更新面板
+        /// </summary>
+        /// <param name="o"></param>
+        public virtual void UpdateView(object o) { }
+    }
+
+    internal interface IView
+    {
+        void UpdateView(object o);
     }
 }
