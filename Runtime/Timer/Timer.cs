@@ -18,6 +18,7 @@ namespace CommonBase
         public Action OnStart;
         public string timerName;
         public bool isLoop;
+        public float Progress => (_lastUpdateTime - _startTime) / (_endTime - _startTime);
         /// <summary>
         /// 若为true,同时只能注册一个相同名称的计时器
         /// </summary>
@@ -42,7 +43,7 @@ namespace CommonBase
             this.owner = ownerId;
             this.period = period;
             OnComplete = onComplete;
-            OnUpdate = onUpdate;
+            AddUpdate(onUpdate);
             this.OnStart = OnStart;
             this.triggerOnStart = triggerOnStart;
 
@@ -65,6 +66,11 @@ namespace CommonBase
             {
                 Debug.LogError("你指定了一个单例计时器，但未指定它的名称，确定吗？");
             }
+        }
+
+        public void AddUpdate(Action<float> onUpdate)
+        {
+            OnUpdate = onUpdate;
         }
 
         public void SetDuration(float duration)
