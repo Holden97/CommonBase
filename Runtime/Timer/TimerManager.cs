@@ -132,9 +132,10 @@ namespace CommonBase
         {
             if (timerDic.TryGetValue(instanceID, out var timers))
             {
-                var curTimer = timers.Find(t => t.timerName == timerName);
+                Timer curTimer = timers.Find(t => t.timerName == timerName);
                 if (curTimer != null)
                 {
+                    curTimer.Pause();
                     removeTimerList.Add(curTimer);
                 }
             }
