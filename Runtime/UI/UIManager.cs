@@ -11,7 +11,6 @@ namespace CommonBase
 {
     public class UIManager : MonoSingleton<UIManager>
     {
-        public string PANEL_ROOT;
         private Dictionary<UIType, StackPro<BaseUI>> uiDic;
         private Stack<UIShowInfoList> uiInfoStack;
         public SO_UIPath uiPath;
@@ -224,6 +223,7 @@ namespace CommonBase
             if (realPath == null)
             {
                 Debug.LogError($"{typeof(T).Name} 在UI_PATH配置中未找到");
+                return null;
             }
             var uiToShow = Get<T>(realPath.uiType, realPath.uiPrefab);
             ShowInside(uiToShow, OnShow);
@@ -439,10 +439,6 @@ namespace CommonBase
         /// 画布
         /// </summary>
         CANVAS,
-        /// <summary>
-        /// 弹出式菜单
-        /// </summary>
-        POP_MENU,
         /// <summary>
         /// 面板，一种面板只允许出现一个，但同一时间可以出现多种面板
         /// </summary>

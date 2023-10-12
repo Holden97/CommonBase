@@ -11,7 +11,7 @@ namespace CommonBase.Editor
         [MenuItem("Tools/更新UI信息")]
         public static void CreateScriptableObject()
         {
-            SO_UIPath uiPath = Resources.Load<SO_UIPath>("SO/UIPath.asset");
+            SO_UIPath uiPath = Resources.Load<SO_UIPath>("SO/UIPath");
             if (uiPath == null)
             {
                 uiPath = CreateNew();
