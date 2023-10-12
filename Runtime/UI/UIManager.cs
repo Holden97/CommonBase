@@ -14,6 +14,7 @@ namespace CommonBase
         public string PANEL_ROOT;
         private Dictionary<UIType, StackPro<BaseUI>> uiDic;
         private Stack<UIShowInfoList> uiInfoStack;
+        public SO_UIPath uiPath;
 
         protected GameObject parent;
         private GameObject tip;
@@ -81,10 +82,9 @@ namespace CommonBase
             return null;
         }
 
-        public T ShowPanel<T>(Action<T> OnShow = null, string path = null, object data = null) where T : BaseUI, new()
+        public T ShowPanel<T>(Action<T> OnShow = null, object data = null) where T : BaseUI, new()
         {
-            string realPath = path != null ? path : $"{PANEL_ROOT + typeof(T).Name}";
-            var p = Show(UIType.PANEL, realPath, OnShow);
+            var p = Show(OnShow);
             if (data != null)
             {
                 p.UpdateView(data);
@@ -145,14 +145,7 @@ namespace CommonBase
             }
         }
 
-        public T LoadPanel<T>(string path = null, object data = null) where T : BaseUI, new()
-        {
-            string realPath = path != null ? path : $"{typeof(T).Name}";
-            var p = Get<T>(UIType.PANEL, realPath);
-            return p;
-        }
-
-        public T Get<T>(UIType uiType, string path) where T : BaseUI, new()
+        private T Get<T>(UIType uiType, GameObject go) where T : BaseUI, new()
         {
             if (!parent)
             {
@@ -173,7 +166,7 @@ namespace CommonBase
             //如果没有，则创建
             if (uiToShow == null)
             {
-                GameObject uiObject = GameObject.Instantiate(Resources.Load<GameObject>(path), parent.transform);
+                GameObject uiObject = GameObject.Instantiate(go, parent.transform);
                 uiObject.SetActive(false);
                 uiToShow = uiObject.GetComponent<BaseUI>();
                 if (uiToShow == null)
@@ -225,10 +218,14 @@ namespace CommonBase
         }
 
 
-        public T Show<T>(UIType uiType, string path, Action<T> OnShow = null) where T : BaseUI, new()
+        public T Show<T>(Action<T> OnShow = null) where T : BaseUI, new()
         {
-            string realPath = path != null ? path : $"{typeof(T).Name}";
-            var uiToShow = Get<T>(uiType, realPath);
+            UIInfo realPath = uiPath.uIInfos.Find(x => x.name == $"{typeof(T).Name}");
+            if (realPath == null)
+            {
+                Debug.LogError($"{typeof(T).Name} 在UI_PATH配置中未找到");
+            }
+            var uiToShow = Get<T>(realPath.uiType, realPath.uiPrefab);
             ShowInside(uiToShow, OnShow);
             return uiToShow as T;
         }
@@ -335,9 +332,11 @@ namespace CommonBase
             }
         }
 
-        public void HideInside<T>(UIType uiType, bool destroyIt = false, bool recover = false) where T : BaseUI
+        public void HideInside<T>(bool destroyIt = false, bool recover = false) where T : BaseUI
         {
             BaseUI item = default(BaseUI);
+            var curUIInfo = uiPath.uIInfos.Find(x => x.name == typeof(T).Name);
+            var uiType = curUIInfo.uiType;
             for (int i = 0; i < uiDic[uiType].Count; i++)
             {
                 item = uiDic[uiType][i];
@@ -403,21 +402,24 @@ namespace CommonBase
             }
         }
 
-        public void Switch<T>(UIType uiType, string path, Action<T> OnShow = null, bool recover = false) where T : BaseUI, new()
+        public void Switch<T>(Action<T> OnShow = null, bool recover = false) where T : BaseUI, new()
         {
-            if (IsShowing<T>(uiType))
+
+            if (IsShowing<T>())
             {
-                HideInside<T>(uiType, recover: recover);
+                HideInside<T>(recover: recover);
             }
             else
             {
-                Show<T>(uiType, path, OnShow);
+                Show(OnShow);
             }
         }
 
-        private bool IsShowing<T>(UIType uiType) where T : BaseUI
+        private bool IsShowing<T>() where T : BaseUI
         {
-            foreach (var item in uiDic[uiType])
+            UIInfo realPath = uiPath.uIInfos.Find(x => x.name == $"{typeof(T).Name}");
+
+            foreach (var item in uiDic[realPath.uiType])
             {
                 if (item is T)
                 {
