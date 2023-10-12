@@ -177,6 +177,7 @@ namespace CommonBase
                     uiObject.name = uiToShow.UiName;
                 }
                 uiDic[uiType].Push(uiToShow);
+                uiToShow.Initialize();
             }
 
             //如果需要覆盖其他面板，则覆盖
@@ -290,7 +291,6 @@ namespace CommonBase
         {
             this.GetType().GetMethod("HideInside").MakeGenericMethod(type).Invoke(this, new object[]
             {
-            uiType,
             destroyIt,
             false
             });

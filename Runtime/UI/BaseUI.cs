@@ -41,7 +41,7 @@ namespace CommonBase
             IsShowing = false;
         }
 
-        public void Initialize()
+        public virtual void Initialize()
         {
         }
 
