@@ -260,7 +260,32 @@ namespace CommonBase
             {
                 uiToShow.transform.SetAsFirstSibling();
             }
-            uiToShow.gameObject.SetActive(true);
+            switch (uiToShow.fadeType)
+            {
+                case PanelFadeType.None:
+                    uiToShow.gameObject.SetActive(true);
+                    break;
+                case PanelFadeType.FOLD:
+                    var cg = uiToShow.gameObject.GetOrAddComponent<CanvasGroup>();
+                    cg.alpha = 0f;
+                    DOTween.To(() => cg.alpha, value => cg.alpha = value, 1, 0.3f);
+                    uiToShow.gameObject.SetActive(true);
+                    uiToShow.transform.DOKill();
+                    uiToShow.transform.DOScale(0.8f, 0).OnComplete(() =>
+                    {
+                        uiToShow.transform.DOScale(1.2f, 0.2f).OnComplete(() =>
+                        {
+                            uiToShow.transform.DOScale(1f, 0.1f);
+                        });
+                    });
+                    break;
+                case PanelFadeType.DONW_RIGHT:
+                    uiToShow.gameObject.SetActive(true);
+                    break;
+                default:
+                    uiToShow.gameObject.SetActive(true);
+                    break;
+            }
             uiToShow.OnEnter();
             OnShow?.Invoke(uiToShow as T);
             SetManagerProperty(uiToShow.uiLayer);
@@ -355,14 +380,48 @@ namespace CommonBase
 
         private void HideInside(BaseUI item, bool destroyIt = false)
         {
-            //var lastChildIndex = item.transform.parent.childCount - 1;
-            //var parent = item.transform.parent;
             item.OnExit();
+            switch (item.fadeType)
+            {
+                case PanelFadeType.None:
+                    item.gameObject.SetActive(false);
+                    break;
+                case PanelFadeType.FOLD:
+                    var cg = item.gameObject.GetOrAddComponent<CanvasGroup>();
+                    item.transform.DOKill();
+                    item.transform.DOScale(1.2f, 0.1f).OnComplete(() =>
+                    {
+                        DOTween.To(() => cg.alpha, value => cg.alpha = value, 0, 0.2f);
+                        item.transform.DOScale(0.8f, 0.2f).OnComplete(() =>
+                        {
+                            item.gameObject.SetActive(false);
+
+                            if (destroyIt)
+                            {
+                                uiDic[item.uiLayer].Remove(item);
+                                Destroy(item.gameObject);
+                            }
+                            else
+                            {
+                                item.gameObject.SetActive(false);
+                            }
+                            SetManagerProperty(item.uiLayer);
+                            return;
+                        });
+                    });
+                    return;
+                case PanelFadeType.DONW_RIGHT:
+                    item.gameObject.SetActive(false);
+                    break;
+                default:
+                    item.gameObject.SetActive(false);
+                    break;
+            }
+
             if (destroyIt)
             {
                 uiDic[item.uiLayer].Remove(item);
                 Destroy(item.gameObject);
-                //lastChildIndex--;
             }
             else
             {
