@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace CommonBase
 {
+    [RequireComponent(typeof(CanvasGroup))]
     public abstract class BaseUI : MonoBehaviour, IListener, IView
     {
         public bool IsShowing { get; private set; }
@@ -12,6 +13,7 @@ namespace CommonBase
         /// 打开时隐藏其余底层级/同层级
         /// </summary>
         public bool coverOthersWhenShow = false;
+        public PanelFadeType fadeType;
         public string UiName => GetType().Name;
 
 

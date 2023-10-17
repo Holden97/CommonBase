@@ -15,14 +15,9 @@ namespace CommonBase
 
         [Header("Audio Source")]
         [SerializeField] private AudioSource bgmAudioSource = null;
-        [SerializeField] private AudioSource gameMusicAudioSource = null;
 
         [Header("Audio Mixers")]
         [SerializeField] private AudioMixer gameAudioMixer = null;
-
-        [Header("Audio Snapshots")]
-        [SerializeField] private AudioMixerSnapshot gameMusicSnapshot = null;
-        [SerializeField] private AudioMixerSnapshot gameAmbientSnapshot = null;
 
 
         private Dictionary<string, SoundItem> soundDictionary;
@@ -44,6 +39,12 @@ namespace CommonBase
             }
         }
 
+        protected override void Awake()
+        {
+            base.Awake();
+            Initialize();
+        }
+
         public override void Initialize()
         {
             base.Initialize();
@@ -60,61 +61,50 @@ namespace CommonBase
             this.PlayBgm("Bgm2");
         }
 
-        private void PlayMusicSoundClip(SoundItem musicSoundItem, float musicTransitionSecs)
-        {
-            gameAudioMixer.SetFloat("MusicVolume", ConvertSoundVolumeDecimalFractionToDecibels(musicSoundItem.soundVolume));
-
-            gameMusicAudioSource.clip = musicSoundItem.soundClip;
-            gameMusicAudioSource.Play();
-
-            gameMusicSnapshot.TransitionTo(musicTransitionSecs);
-        }
-
-        private void PlayBgmSoundClip(SoundItem musicSoundItem, float musicTransitionSecs)
-        {
-            gameAudioMixer.SetFloat("MusicVolume", ConvertSoundVolumeDecimalFractionToDecibels(musicSoundItem.soundVolume));
-
-            gameMusicAudioSource.clip = musicSoundItem.soundClip;
-            gameMusicAudioSource.Play();
-
-            gameMusicSnapshot.TransitionTo(musicTransitionSecs);
-        }
-
-        private void PlayAmbientSoundClip(SoundItem ambientSoundItem, float transitionTimeSeconds)
-        {
-            gameAudioMixer.SetFloat("AmbientVolume", ConvertSoundVolumeDecimalFractionToDecibels(ambientSoundItem.soundVolume));
-
-            bgmAudioSource.clip = ambientSoundItem.soundClip;
-            bgmAudioSource.Play();
-
-            gameAmbientSnapshot.TransitionTo(transitionTimeSeconds);
-        }
-
-        private float ConvertSoundVolumeDecimalFractionToDecibels(float soundVolume)
-        {
-            return (soundVolume * 100f - 80f);
-        }
-
         public Sound PlaySound(string soundName, float pitch = 1f, Action OnDone = null, bool loop = false)
         {
             if (soundDictionary.TryGetValue(soundName, out SoundItem soundItem) && soundPrefab != null)
             {
-                GameObject soundGameObject = ObjectPoolManager.Instance.GetNextObject("sound");
-                Sound sound = soundGameObject.GetOrAddComponent<Sound>();
-                sound.SetSound(soundItem, pitch);
-                soundGameObject.SetActive(true);
-                if (loop)
-                {
-                    sound.Loop = true;
-                }
-                else
-                {
-                    StartCoroutine(DisableSound(sound, soundItem.soundClip.length, OnDone));
-                }
-                sound.Play();
-                return sound;
+                return SetSound(pitch, OnDone, loop, soundItem);
             }
             return null;
+        }
+
+        public Sound PlaySound(AudioClip clip, float pitch = 1f, Action OnDone = null, bool loop = false)
+        {
+            if (clip == null) return null;
+            GameObject soundGameObject = ObjectPoolManager.Instance.GetNextObject("sound");
+            Sound sound = soundGameObject.GetOrAddComponent<Sound>();
+            sound.SetSound(clip, pitch);
+            soundGameObject.SetActive(true);
+            if (loop)
+            {
+                sound.Loop = true;
+            }
+            else
+            {
+                StartCoroutine(DisableSound(sound, clip.length, OnDone));
+            }
+            sound.Play();
+            return sound;
+        }
+
+        private Sound SetSound(float pitch, Action OnDone, bool loop, SoundItem soundItem)
+        {
+            GameObject soundGameObject = ObjectPoolManager.Instance.GetNextObject("sound");
+            Sound sound = soundGameObject.GetOrAddComponent<Sound>();
+            sound.SetSound(soundItem, pitch);
+            soundGameObject.SetActive(true);
+            if (loop)
+            {
+                sound.Loop = true;
+            }
+            else
+            {
+                StartCoroutine(DisableSound(sound, soundItem.soundClip.length, OnDone));
+            }
+            sound.Play();
+            return sound;
         }
 
         public void Stop(Sound item)

@@ -21,6 +21,7 @@ namespace CommonBase
         public string resPath;
         public GameObject uiPrefab;
         public UIType uiType;
+        public PanelFadeType fadeType;
 
         public UIInfo(string name, string resPath, GameObject uiPrefab)
         {
@@ -28,6 +29,7 @@ namespace CommonBase
             this.resPath = resPath;
             this.uiPrefab = uiPrefab;
             this.uiType = uiPrefab.GetComponent<BaseUI>().uiLayer;
+            this.fadeType = uiPrefab.GetComponent<BaseUI>().fadeType;
         }
     }
 }
