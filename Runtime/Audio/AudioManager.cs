@@ -131,6 +131,7 @@ namespace CommonBase
 
         public void PlayAnimalSound(int animalId, string soundName, float pitch = 1f, bool forcePlay = false)
         {
+            if (soundName == null) return;
             if (animalSoundDic.TryGetValue(animalId, out AnimalSoundState state))
             {
                 if (!state.isMakingSound || forcePlay)
