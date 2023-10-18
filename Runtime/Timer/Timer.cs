@@ -110,11 +110,13 @@ namespace CommonBase
 
         internal void Tick()
         {
-            if (_isPause) { return; }
+            if (_isPause || isDone) { return; }
             OnUpdate?.Invoke(GetWorldTime() - _lastUpdateTime);
             _lastUpdateTime = GetWorldTime();
             if (_lastUpdateTime > _endTime)
             {
+                //最后以完成执行一次update，为UI等元素争取一帧的时间
+                OnUpdate?.Invoke(GetWorldTime() - _lastUpdateTime);
                 OnDone();
             }
         }

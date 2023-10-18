@@ -235,6 +235,7 @@ namespace CommonBase
 
         private void ShowInside<T>(BaseUI uiToShow, Action<T> OnShow = null) where T : BaseUI, new()
         {
+            uiToShow.transform.DOKill();
             var i = uiToShow.transform.parent.childCount - 1;
             BaseUI curUI = default;
             for (; i >= 0; i--)
@@ -270,15 +271,14 @@ namespace CommonBase
                 case PanelFadeType.FOLD:
                     var cg = uiToShow.gameObject.GetOrAddComponent<CanvasGroup>();
                     cg.alpha = 0f;
-                    DOTween.To(() => cg.alpha, value => cg.alpha = value, 1, 0.3f);
+                    DOTween.To(() => cg.alpha, value => cg.alpha = value, 1, 0.3f).SetUpdate(true);
                     uiToShow.gameObject.SetActive(true);
-                    uiToShow.transform.DOKill();
-                    uiToShow.transform.DOScale(0.8f, 0).OnComplete(() =>
+                    uiToShow.transform.DOScale(0.8f, 0).SetUpdate(true).OnComplete(() =>
                     {
-                        uiToShow.transform.DOScale(1.2f, 0.2f).OnComplete(() =>
-                        {
-                            uiToShow.transform.DOScale(1f, 0.1f);
-                        });
+                        uiToShow.transform.DOScale(1.2f, 0.2f).SetUpdate(true).OnComplete(() =>
+                       {
+                           uiToShow.transform.DOScale(1f, 0.1f).SetUpdate(true);
+                       });
                     });
                     break;
                 case PanelFadeType.DONW_RIGHT:
@@ -391,10 +391,10 @@ namespace CommonBase
                 case PanelFadeType.FOLD:
                     var cg = item.gameObject.GetOrAddComponent<CanvasGroup>();
                     item.transform.DOKill();
-                    item.transform.DOScale(1.2f, 0.1f).OnComplete(() =>
+                    item.transform.DOScale(1.2f, 0.1f).SetUpdate(true).OnComplete(() =>
                     {
-                        DOTween.To(() => cg.alpha, value => cg.alpha = value, 0, 0.2f);
-                        item.transform.DOScale(0.8f, 0.2f).OnComplete(() =>
+                        DOTween.To(() => cg.alpha, value => cg.alpha = value, 0, 0.2f).SetUpdate(true);
+                        item.transform.DOScale(0.8f, 0.2f).SetUpdate(true).OnComplete(() =>
                         {
                             item.gameObject.SetActive(false);
 
