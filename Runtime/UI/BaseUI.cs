@@ -9,6 +9,7 @@ namespace CommonBase
         public bool IsShowing { get; private set; }
         public UIType uiLayer = UIType.PANEL;
         public int orderInLayer = 0;
+        public bool removable = true;
         /// <summary>
         /// 打开时隐藏其余底层级/同层级
         /// </summary>

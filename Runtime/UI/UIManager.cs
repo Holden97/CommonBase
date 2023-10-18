@@ -1,4 +1,6 @@
-﻿using DG.Tweening;
+﻿using Codice.Client.GameUI.Update;
+using Codice.CM.WorkspaceServer.Tree.GameUI.Checkin.Updater;
+using DG.Tweening;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -486,6 +488,20 @@ namespace CommonBase
                 }
             }
             return false;
+        }
+
+        public bool CloseCurrent(UIType uIType = UIType.PANEL, bool destoryIt = false)
+        {
+            var curUI = uiDic[uIType].Pop();
+            if (curUI != null)
+            {
+                HideInside(curUI, destoryIt);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private void OnGUI()
