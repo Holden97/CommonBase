@@ -9,10 +9,10 @@ using UnityEngine.UI;
 
 namespace CommonBase
 {
-    public class Toggle : MonoBehaviour, IToggle, IPointerClickHandler
+    public class Toggle : Button, IToggle
     {
-        public UnityEvent OnSelect;
-        public UnityEvent OnUnselect;
+        public UnityEvent OnToggleSelect;
+        public UnityEvent OnToggleUnselect;
         public Action<IToggle> OnClickToggle;
 
         public string toggleTag;
@@ -25,19 +25,20 @@ namespace CommonBase
 
         public Action<IToggle> OnClick { get => OnClickToggle; set => OnClickToggle = value; }
 
-        public void OnPointerClick(PointerEventData eventData)
+        public override void OnPointerClick(PointerEventData eventData)
         {
+            base.OnPointerClick(eventData);
             OnClick(this);
         }
 
         public void OnSelected()
         {
-            OnSelect?.Invoke();
+            OnToggleSelect?.Invoke();
         }
 
         public void OnUnselected()
         {
-            OnUnselect?.Invoke();
+            OnToggleUnselect?.Invoke();
         }
     }
 }
