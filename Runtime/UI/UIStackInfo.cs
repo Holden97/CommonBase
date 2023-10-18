@@ -2,11 +2,14 @@ using System.Collections.Generic;
 
 namespace CommonBase
 {
+    /// <summary>
+    /// 用于遮挡型UI隐藏后恢复现场
+    /// </summary>
     public struct UIShowInfoList
     {
         public List<UIShowInfo> uiInfo;
 
-        public UIShowInfoList(StackPro<BaseUI> uiList)
+        public UIShowInfoList(UIStack uiList)
         {
             this.uiInfo = new List<UIShowInfo>();
             foreach (var ui in uiList)

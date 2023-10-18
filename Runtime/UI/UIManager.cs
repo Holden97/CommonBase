@@ -13,7 +13,7 @@ namespace CommonBase
 {
     public class UIManager : MonoSingleton<UIManager>
     {
-        private Dictionary<UIType, StackPro<BaseUI>> uiDic;
+        private Dictionary<UIType, UIStack> uiDic;
         private Stack<UIShowInfoList> uiInfoStack;
         public SO_UIPath uiPath;
 
@@ -30,11 +30,11 @@ namespace CommonBase
         public UIManager()
         {
 
-            uiDic = new Dictionary<UIType, StackPro<BaseUI>>();
+            uiDic = new Dictionary<UIType, UIStack>();
             uiInfoStack = new Stack<UIShowInfoList>();
 
-            uiDic.Add(UIType.CANVAS, new StackPro<BaseUI>());
-            uiDic.Add(UIType.PANEL, new StackPro<BaseUI>());
+            uiDic.Add(UIType.CANVAS, new UIStack());
+            uiDic.Add(UIType.PANEL, new UIStack());
         }
 
         protected override void Awake()
@@ -490,12 +490,13 @@ namespace CommonBase
             return false;
         }
 
-        public bool CloseCurrent(UIType uIType = UIType.PANEL, bool destoryIt = false)
+        public bool CloseCurrent(UIType uIType = UIType.PANEL)
         {
-            var curUI = uiDic[uIType].Pop();
+
+            var curUI = uiDic[uIType].PopFirstActive();
             if (curUI != null)
             {
-                HideInside(curUI, destoryIt);
+                HideInside(curUI, true);
                 return true;
             }
             else

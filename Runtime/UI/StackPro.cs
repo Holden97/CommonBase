@@ -7,7 +7,7 @@ namespace CommonBase
     public class StackPro<T> : IEnumerable<T>
     {
         public int Count => items.Count;
-        private List<T> items = new List<T>();
+        protected List<T> items = new List<T>();
 
         public void Push(T baseUI)
         {
@@ -64,7 +64,7 @@ namespace CommonBase
 
             public void Dispose()
             {
-                //ºóĞø²¹³ä£¿
+                //åç»­è¡¥å……ï¼Ÿ
             }
 
             public bool MoveNext()
