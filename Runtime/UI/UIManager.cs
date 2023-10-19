@@ -1,12 +1,9 @@
-﻿using Codice.Client.GameUI.Update;
-using Codice.CM.WorkspaceServer.Tree.GameUI.Checkin.Updater;
-using DG.Tweening;
+﻿using DG.Tweening;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 namespace CommonBase
