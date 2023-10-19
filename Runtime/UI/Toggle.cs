@@ -1,7 +1,5 @@
 //使用utf-8
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -11,34 +9,49 @@ namespace CommonBase
 {
     public class Toggle : Button, IToggle
     {
-        public UnityEvent OnToggleSelect;
-        public UnityEvent OnToggleUnselect;
-        public Action<IToggle> OnClickToggle;
+        [SerializeField]
+        private UnityEvent unselectEvent;
+        [SerializeField]
+        private UnityEvent selectEvent;
+        public Action<IToggle> onClickToggle;
 
         public string toggleTag;
+        public string id;
 
         public bool isToggled;
 
         public bool IsToggle { get { return isToggled; } set { isToggled = value; } }
+        public string ID => id;
 
         public string ToggleTag => toggleTag;
 
-        public Action<IToggle> OnClick { get => OnClickToggle; set => OnClickToggle = value; }
+        Action<IToggle> IToggle.OnClickToggle { get => onClickToggle; set => onClickToggle = value; }
+
+        public void AddSelectedAction(UnityAction<IToggle> action)
+        {
+            selectEvent.AddListener(() => action(this));
+        }
+
+
+        public void AddUnselectedAction(UnityAction<IToggle> action)
+        {
+            unselectEvent.AddListener(() => action(this));
+        }
+
+        public void OnToggleSelect()
+        {
+            selectEvent?.Invoke();
+        }
+
+        public void OnToggleUnselect()
+        {
+            unselectEvent?.Invoke();
+        }
 
         public override void OnPointerClick(PointerEventData eventData)
         {
             base.OnPointerClick(eventData);
-            OnClick(this);
-        }
-
-        public void OnSelected()
-        {
-            OnToggleSelect?.Invoke();
-        }
-
-        public void OnUnselected()
-        {
-            OnToggleUnselect?.Invoke();
+            this.onClickToggle(this);
         }
     }
 }

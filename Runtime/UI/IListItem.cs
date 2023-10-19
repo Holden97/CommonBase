@@ -1,8 +1,6 @@
 //使用utf-8
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.Events;
 
 namespace CommonBase
@@ -16,17 +14,24 @@ namespace CommonBase
     public interface IToggle
     {
         public string ToggleTag { get; }
-        Action<IToggle> OnClick { get; set; }
+        public string ID { get; }
         bool IsToggle { get; set; }
-        void OnUnselected();
-        void OnSelected();
+
+        public Action<IToggle> OnClickToggle { get; set; }
+        void OnToggleUnselect();
+        void OnToggleSelect();
+
+        public void AddSelectedAction(UnityAction<IToggle> action);
+        public void AddUnselectedAction(UnityAction<IToggle> action);
     }
 
     public interface IToggleGroup
     {
-        void Trigger(IToggle toggle);
-        void SetActionToAllToggle(Action<IToggle> action);
-        void Initialize(string tag);
+        void SelectToggle(IToggle toggle);
+        public void SetOnSelectedToAll(UnityAction<IToggle> action);
+        public void SetOnUnselectedToAll(UnityAction<IToggle> action);
+
+        void Initialize();
         List<IToggle> SetToggles(string tag);
     }
 }

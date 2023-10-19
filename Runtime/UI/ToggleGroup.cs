@@ -3,51 +3,75 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace CommonBase
 {
     public class ToggleGroup : MonoBehaviour, IToggleGroup
     {
         public List<IToggle> toggles;
-        public void Trigger(IToggle toggle)
+
+        public Sprite toggleSelected;
+        public Sprite toggleUnselected;
+        public string groupTag;
+
+        public IToggle First
         {
-            if (!toggle.IsToggle)
+            get
             {
-                toggle.IsToggle = true;
-                toggle.OnSelected();
-                foreach (var t in toggles)
+                if (toggles != null && toggles.Count > 0)
                 {
-                    if (t != toggle)
+                    return toggles[0];
+                }
+                return null;
+            }
+        }
+
+        public void SelectToggle(IToggle toggle)
+        {
+            var img = (toggle as Button).transform.GetComponent<Image>();
+
+            toggle.IsToggle = true;
+            if (img != null && toggleSelected != null)
+            {
+                img.sprite = toggleSelected;
+            }
+            toggle.OnToggleSelect();
+            foreach (IToggle t in toggles)
+            {
+                if (t != toggle)
+                {
+                    var otherImg = (t as Button).transform.GetComponent<Image>();
+                    if (otherImg != null && toggleUnselected != null)
                     {
-                        t.OnUnselected();
-                        t.IsToggle = false;
+                        otherImg.sprite = toggleUnselected;
+                        t.OnToggleUnselect();
                     }
+                    t.IsToggle = false;
                 }
             }
         }
 
-        public void Initialize(string tag = null)
+        /// <summary>
+        /// 初始化
+        /// 初始化顺序:toggles数据确定=>为toggles绑定回调
+        /// </summary>
+        public void Initialize()
         {
-            toggles = SetToggles(tag);
-            SetActionToAllToggle((t) => Trigger(t));
+            toggles = SetToggles(groupTag);
+            foreach (var t in toggles)
+            {
+                t.OnClickToggle = SelectToggle;
+            }
+            SelectFirst();
         }
 
-        public void Apply()
+        public void SelectFirst()
         {
-            for (int i = 0; i < toggles.Count; i++)
+            if (toggles.Count > 0)
             {
-                IToggle t = toggles[i];
-                if (i == 0)
-                {
-                    t.OnSelected();
-                    t.OnClick(t);
-                    t.IsToggle = true;
-                }
-                else
-                {
-                    t.OnUnselected();
-                    t.IsToggle = false;
-                }
+                toggles[0].OnClickToggle(toggles[0]);
             }
         }
 
@@ -77,11 +101,19 @@ namespace CommonBase
 
         }
 
-        public void SetActionToAllToggle(Action<IToggle> action)
+        public void SetOnSelectedToAll(UnityAction<IToggle> action)
+        {
+            foreach (var t in toggles)
+            {
+                t.AddSelectedAction(action);
+            }
+        }
+
+        public void SetOnUnselectedToAll(UnityAction<IToggle> action)
         {
             foreach (var item in toggles)
             {
-                item.OnClick += action;
+                item.AddUnselectedAction(action);
             }
         }
     }
