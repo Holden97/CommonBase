@@ -32,11 +32,11 @@ namespace CommonBase
         {
             var img = (toggle as Button).transform.GetComponent<Image>();
 
-            toggle.IsToggle = true;
             if (img != null && toggleSelected != null)
             {
                 img.sprite = toggleSelected;
             }
+            toggle.IsToggle = true;
             toggle.OnToggleSelect();
             foreach (IToggle t in toggles)
             {
@@ -46,8 +46,8 @@ namespace CommonBase
                     if (otherImg != null && toggleUnselected != null)
                     {
                         otherImg.sprite = toggleUnselected;
-                        t.OnToggleUnselect();
                     }
+                    t.OnToggleUnselect();
                     t.IsToggle = false;
                 }
             }
