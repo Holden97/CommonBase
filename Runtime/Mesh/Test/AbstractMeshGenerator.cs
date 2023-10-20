@@ -44,7 +44,6 @@ namespace CommonBase
             CreateMesh();
         }
 
-        protected abstract void SetMeshNums();
 
         private bool ValidateMesh()
         {
@@ -111,13 +110,14 @@ namespace CommonBase
             }
         }
 
-        protected abstract void SetVertices();
-        protected abstract void SetTriangles();
-        protected abstract void SetNormals();
-        protected abstract void SetTangents();
-        protected abstract void SetUVs();
-        protected abstract void SetVertexColours();
+        protected virtual void SetVertices() { }
+        protected virtual void SetTriangles() { }
+        protected virtual void SetNormals() { }
+        protected virtual void SetTangents() { }
+        protected virtual void SetUVs() { }
+        protected virtual void SetVertexColours() { }
 
+        protected virtual void SetMeshNums() { }
 
     }
 }
