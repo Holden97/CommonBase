@@ -10,6 +10,7 @@ namespace CommonBase
         public string soundName;
         public AudioClip soundClip;
         public string soundDescription;
+        public bool randomPitch = false;
         [Range(0.1f, 1.5f)]
         public float soundPitchRandomVariationMin = 0.8f;
         [Range(0.1f, 1.5f)]

@@ -31,8 +31,15 @@ namespace CommonBase
         public void SetSound(SoundItem soundItem, float pitch)
         {
             audioSource.pitch = pitch;
-            audioSource.volume = soundItem.soundVolume;
+            audioSource.volume = 1;
             audioSource.clip = soundItem.soundClip;
+            SetGroup();
+        }
+
+        private void SetGroup()
+        {
+            var groups = AudioManager.Instance.AM.FindMatchingGroups("Master/Game");
+            audioSource.outputAudioMixerGroup = groups[0];
         }
 
         /// <summary>
@@ -45,6 +52,7 @@ namespace CommonBase
             audioSource.pitch = pitch;
             audioSource.volume = 1;
             audioSource.clip = clip;
+            SetGroup();
         }
 
         public void Play()

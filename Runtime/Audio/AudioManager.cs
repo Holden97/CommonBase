@@ -9,6 +9,7 @@ namespace CommonBase
 {
     public class AudioManager : MonoSingleton<AudioManager>
     {
+        public SoundSetting soundSetting;
         public Dictionary<int, AnimalSoundState> animalSoundDic;
         [SerializeField]
         GameObject soundPrefab;
@@ -25,6 +26,8 @@ namespace CommonBase
         [SerializeField]
         private SO_SoundList so_soundList = null;
 
+        public AudioMixer AM => this.gameAudioMixer;
+
 
         public void RegisterAnimal(int animalId)
         {
@@ -37,6 +40,49 @@ namespace CommonBase
             {
                 animalSoundDic.Remove(animalId);
             }
+        }
+
+        /// <summary>
+        /// 设置音量，不要在Awake中调用
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="v"></param>
+        public void SetVolume(AudioChannelType channel, float v)
+        {
+            float volume = GetVolume(v);
+            switch (channel)
+            {
+                case AudioChannelType.Overall:
+                    this.soundSetting.overallVolume = v;
+                    this.gameAudioMixer.SetFloat("Master", volume);
+                    break;
+                case AudioChannelType.BgmVolume:
+                    this.soundSetting.bgmVolume = v;
+                    this.gameAudioMixer.SetFloat("Bgm", volume);
+                    break;
+                case AudioChannelType.efxVolume:
+                    this.soundSetting.efxVolume = v;
+                    this.gameAudioMixer.SetFloat("Game", volume);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 获取音量对应分贝
+        /// </summary>
+        /// <param name="v">音量，0-1</param>
+        /// <returns></returns>
+        private static float GetVolume(float v)
+        {
+            var volume = -80f;
+            if (v > 0)
+            {
+                volume = v * 30 - 20;
+            }
+
+            return volume;
         }
 
         protected override void Awake()
@@ -58,7 +104,18 @@ namespace CommonBase
 
             ObjectPoolManager.Instance.CreatePool(10, soundPrefab, "sound");
 
+            soundSetting = new SoundSetting(.6f, .6f, .5f);
+
             this.PlayBgm("Bgm2");
+
+
+        }
+
+        private void Start()
+        {
+            SetVolume(AudioChannelType.Overall, soundSetting.overallVolume);
+            SetVolume(AudioChannelType.BgmVolume, soundSetting.bgmVolume);
+            SetVolume(AudioChannelType.efxVolume, soundSetting.efxVolume);
         }
 
         public Sound PlaySound(string soundName, float pitch = 1f, Action OnDone = null, bool loop = false)
@@ -162,6 +219,28 @@ namespace CommonBase
             this.ownerId = ownerId;
             this.isMakingSound = isMakingSound;
         }
+    }
+
+    [Serializable]
+    public class SoundSetting
+    {
+        public float overallVolume;
+        public float bgmVolume;
+        public float efxVolume;
+
+        public SoundSetting(float overallVolume, float bgmVolume, float efxVolume)
+        {
+            this.overallVolume = overallVolume;
+            this.bgmVolume = bgmVolume;
+            this.efxVolume = efxVolume;
+        }
+    }
+
+    public enum AudioChannelType
+    {
+        Overall,
+        BgmVolume,
+        efxVolume,
     }
 
 }
