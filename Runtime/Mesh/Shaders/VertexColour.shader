@@ -1,0 +1,6 @@
+﻿Shader "Custom/VertexColour"
+{
+	SubShader{
+
+	}
+}
