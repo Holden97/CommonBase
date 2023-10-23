@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -24,7 +24,7 @@ namespace CommonBase.Editor
                         var uiComponent = ui.uiPrefab.GetComponent<BaseUI>();
                         uiComponent.uiLayer = ui.uiType;
                         uiComponent.fadeType = ui.fadeType;
-                        uiComponent.ecsRemovable = ui.removable;
+                        uiComponent.ecsRemovable = ui.ecsRemovable;
                         EditorUtility.SetDirty(ui.uiPrefab);
                     }
                 }

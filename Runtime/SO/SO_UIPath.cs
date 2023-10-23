@@ -22,7 +22,7 @@ namespace CommonBase
         public GameObject uiPrefab;
         public UIType uiType;
         public PanelFadeType fadeType;
-        public bool removable;
+        public bool ecsRemovable;
 
         public UIInfo(string name, string resPath, GameObject uiPrefab)
         {
@@ -31,7 +31,7 @@ namespace CommonBase
             this.uiPrefab = uiPrefab;
             this.uiType = uiPrefab.GetComponent<BaseUI>().uiLayer;
             this.fadeType = uiPrefab.GetComponent<BaseUI>().fadeType;
-            this.removable = uiPrefab.GetComponent<BaseUI>().ecsRemovable;
+            this.ecsRemovable = uiPrefab.GetComponent<BaseUI>().ecsRemovable;
         }
     }
 }

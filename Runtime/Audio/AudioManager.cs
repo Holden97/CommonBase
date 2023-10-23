@@ -53,12 +53,19 @@ namespace CommonBase
             switch (channel)
             {
                 case AudioChannelType.Overall:
+                    this.soundSetting.overallVolume = v;
                     this.gameAudioMixer.SetFloat("Master", volume);
                     break;
                 case AudioChannelType.BgmVolume:
+                    this.soundSetting.bgmVolume = v;
                     this.gameAudioMixer.SetFloat("Bgm", volume);
                     break;
                 case AudioChannelType.efxVolume:
+                    this.soundSetting.efxVolume = v;
+                    this.gameAudioMixer.SetFloat("Effect", volume);
+                    break;
+                case AudioChannelType.gameVolume:
+                    this.soundSetting.gameVolume = v;
                     this.gameAudioMixer.SetFloat("Game", volume);
                     break;
                 default:
@@ -101,11 +108,26 @@ namespace CommonBase
 
             ObjectPoolManager.Instance.CreatePool(10, soundPrefab, "sound");
 
-            soundSetting = new SoundSetting(.6f, .6f, .5f);
+            ;
+
+            soundSetting = new SoundSetting(
+                PlayerPrefs.GetFloat("MasterVolume", 0.6f),
+                PlayerPrefs.GetFloat("GameVolume", 0.6f),
+                PlayerPrefs.GetFloat("BgmVolume", 0.5f),
+                PlayerPrefs.GetFloat("EffectVolume", 0.6f)
+                );
 
             this.PlayBgm("Bgm2");
+        }
 
+        public void OnDestroyManager()
+        {
+            PlayerPrefs.SetFloat("MasterVolume", this.soundSetting.overallVolume);
+            PlayerPrefs.SetFloat("GameVolume", this.soundSetting.gameVolume);
+            PlayerPrefs.SetFloat("BgmVolume", this.soundSetting.bgmVolume);
+            PlayerPrefs.SetFloat("EffectVolume", this.soundSetting.efxVolume);
 
+            PlayerPrefs.Save();
         }
 
         private void Start()
@@ -113,6 +135,7 @@ namespace CommonBase
             SetVolume(AudioChannelType.Overall, soundSetting.overallVolume);
             SetVolume(AudioChannelType.BgmVolume, soundSetting.bgmVolume);
             SetVolume(AudioChannelType.efxVolume, soundSetting.efxVolume);
+            SetVolume(AudioChannelType.gameVolume, soundSetting.gameVolume);
         }
 
         public Sound PlaySound(string soundName, float pitch = 1f, Action OnDone = null, bool loop = false)
@@ -222,12 +245,14 @@ namespace CommonBase
     public class SoundSetting
     {
         public float overallVolume;
+        public float gameVolume;
         public float bgmVolume;
         public float efxVolume;
 
-        public SoundSetting(float overallVolume, float bgmVolume, float efxVolume)
+        public SoundSetting(float overallVolume, float gameVolume, float bgmVolume, float efxVolume)
         {
             this.overallVolume = overallVolume;
+            this.gameVolume = gameVolume;
             this.bgmVolume = bgmVolume;
             this.efxVolume = efxVolume;
         }
@@ -238,6 +263,7 @@ namespace CommonBase
         Overall,
         BgmVolume,
         efxVolume,
+        gameVolume,
     }
 
 }
