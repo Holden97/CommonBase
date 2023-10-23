@@ -53,15 +53,12 @@ namespace CommonBase
             switch (channel)
             {
                 case AudioChannelType.Overall:
-                    this.soundSetting.overallVolume = v;
                     this.gameAudioMixer.SetFloat("Master", volume);
                     break;
                 case AudioChannelType.BgmVolume:
-                    this.soundSetting.bgmVolume = v;
                     this.gameAudioMixer.SetFloat("Bgm", volume);
                     break;
                 case AudioChannelType.efxVolume:
-                    this.soundSetting.efxVolume = v;
                     this.gameAudioMixer.SetFloat("Game", volume);
                     break;
                 default:
