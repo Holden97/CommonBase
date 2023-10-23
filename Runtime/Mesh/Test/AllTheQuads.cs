@@ -8,6 +8,8 @@ namespace CommonBase
     {
         [SerializeField]
         private Vector3[] vs = new Vector3[4];
+        [SerializeField]
+        private Vector2[] flexibleUVs = new Vector2[4];
         protected override void SetMeshNums()
         {
             numVertices = 4;
@@ -35,6 +37,7 @@ namespace CommonBase
 
         protected override void SetUVs()
         {
+            uvs.AddRange(flexibleUVs);
         }
 
         protected override void SetVertexColours()
