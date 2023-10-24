@@ -1,4 +1,4 @@
-//使用utf-8
+﻿//使用utf-8
 using System;
 using UnityEngine;
 using UnityEngine.Events;
@@ -16,12 +16,12 @@ namespace CommonBase
         public Action<IToggle> onClickToggle;
 
         public string toggleTag;
-        public string id;
+        private string id;
 
         public bool isToggled;
 
         public bool IsToggle { get { return isToggled; } set { isToggled = value; } }
-        public string ID => id;
+        public string ID { get => id; set { id = value; } }
 
         public string ToggleTag => toggleTag;
 

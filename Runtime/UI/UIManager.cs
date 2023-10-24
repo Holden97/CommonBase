@@ -80,6 +80,18 @@ namespace CommonBase
             return null;
         }
 
+        public void SwitchPanel<T>(Action<T> OnShow = null, object data = null, bool recover = false) where T : BaseUI, new()
+        {
+            if (IsShowing<T>())
+            {
+                HideInside<T>(recover: recover);
+            }
+            else
+            {
+                ShowPanel(OnShow, data);
+            }
+        }
+
         public T ShowPanel<T>(Action<T> OnShow = null, object data = null) where T : BaseUI, new()
         {
             var p = Show(OnShow);
