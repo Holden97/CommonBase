@@ -109,7 +109,7 @@ namespace CommonBase
             return RectTransformUtility.RectangleContainsScreenPoint(rect, screenPoint);
         }
 
-        public static Rect GetWorldRect(Vector3 startWorldPos, Vector3 endWorldPos)
+        public static Rect GetWorldRectXY(Vector3 startWorldPos, Vector3 endWorldPos)
         {
             Rect worldRect = new Rect();
 
