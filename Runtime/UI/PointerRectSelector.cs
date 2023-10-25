@@ -1,8 +1,5 @@
 //使用utf-8
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.UI;
 
 namespace CommonBase
@@ -27,6 +24,7 @@ namespace CommonBase
         private Vector2 upperRight;
 
         private RectTransform selectedArea;
+        [HideInInspector]
         public RectTransform SelectedArea
         {
             get
@@ -40,14 +38,14 @@ namespace CommonBase
             }
         }
 
-        public void OnSelect()
+        public void OnDown()
         {
             onClickLeftStartPosition = InputUtils.GetMousePosition();
             onClickLeftStartPositionWorldPosition = Camera.main.ScreenToWorldPoint(onClickLeftStartPosition);
             SelectedArea.GetComponent<Image>().enabled = true;
         }
 
-        public void OnUnselect()
+        public void OnUp()
         {
             onClickLeftEndPosition = InputUtils.GetMousePosition();
             onClickLeftEndPositionWorldPosition = Camera.main.ScreenToWorldPoint(onClickLeftEndPosition);
@@ -67,7 +65,6 @@ namespace CommonBase
             var sX = originalVec2.x / Screen.width * selectCanvas.GetComponent<RectTransform>().rect.size.x;
             var sY = originalVec2.y / Screen.height * selectCanvas.GetComponent<RectTransform>().rect.size.y;
             SelectedArea.sizeDelta = new Vector2(sX, sY);
-            //Debug.Log($"Screen Info:{Screen.width},{Screen.height}");
         }
 
         public void OnHolding()
