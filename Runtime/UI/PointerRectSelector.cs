@@ -1,5 +1,6 @@
-//使用utf-8
+﻿//使用utf-8
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace CommonBase
@@ -27,6 +28,8 @@ namespace CommonBase
         private Vector2 lowerLeft;
         private Vector2 upperRight;
 
+        public Rect SelectionRect => screenRealSelection;
+
         private RectTransform selectedArea;
         [HideInInspector]
         public RectTransform SelectedArea
@@ -45,7 +48,7 @@ namespace CommonBase
         public void OnDown()
         {
             startScreenPosition = InputUtils.GetMousePosition();
-            startWorldPosition = GetWorldPoint(rectDetetionType);
+            startWorldPosition = GetWorldPoint(rectDetetionType, startScreenPosition);
             SelectedArea.GetComponent<Image>().enabled = true;
         }
 
@@ -69,11 +72,11 @@ namespace CommonBase
         public void OnUp()
         {
             endScreenPosition = InputUtils.GetMousePosition();
-            endWorldPosition = GetWorldPoint(rectDetetionType);
+            endWorldPosition = GetWorldPoint(rectDetetionType, endScreenPosition);
             SelectedArea.GetComponent<Image>().enabled = false;
         }
 
-        private Vector3 GetWorldPoint(RectDetetionType rectDetetionType)
+        private Vector3 GetWorldPoint(RectDetetionType rectDetetionType, Vector3 screenPos)
         {
             Vector3 resutl = Vector3.zero;
             switch (rectDetetionType)
@@ -85,7 +88,7 @@ namespace CommonBase
                     }
                     break;
                 case RectDetetionType.SCREEN_TO_WORLD:
-                    resutl = Camera.main.ScreenToWorldPoint(startScreenPosition);
+                    resutl = Camera.main.ScreenToWorldPoint(screenPos);
                     break;
                 default:
                     break;
@@ -111,7 +114,7 @@ namespace CommonBase
         public void OnHolding()
         {
             endScreenPosition = InputUtils.GetMousePosition();
-            endWorldPosition = GetWorldPoint(rectDetetionType);
+            endWorldPosition = GetWorldPoint(rectDetetionType, endScreenPosition);
             lowerLeft = new Vector2(Mathf.Min(startScreenPosition.x, endScreenPosition.x), Mathf.Min(startScreenPosition.y, endScreenPosition.y));
             upperRight = new Vector2(Mathf.Max(startScreenPosition.x, endScreenPosition.x), Mathf.Max(startScreenPosition.y, endScreenPosition.y));
             screenRealSelection.position = lowerLeft;
