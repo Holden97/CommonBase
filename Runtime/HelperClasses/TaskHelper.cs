@@ -13,7 +13,7 @@ namespace CommonBase
         /// </summary>
         /// <param name="func">条件函数</param>
         /// <returns></returns>
-        public static async Task<bool> Wait(Func<bool> func)
+        public static async Task<bool> Wait(Func<bool> func, int interval = 100)
         {
             try
             {
@@ -21,7 +21,7 @@ namespace CommonBase
                 while (!func.Invoke())
                 {
                     //Debug.Log("条件未达成!");
-                    await Task.Delay(1000);
+                    await Task.Delay(interval);
                 }
                 //Debug.Log("条件达成!");
                 return true;

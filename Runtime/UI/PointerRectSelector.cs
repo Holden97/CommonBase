@@ -9,16 +9,20 @@ namespace CommonBase
     /// </summary>
     public class PointerRectSelector : MonoSingleton<PointerRectSelector>
     {
-        private Vector3 onClickLeftStartPosition;
-        private Vector3 onClickLeftEndPosition;
+        public RectDetetionType rectDetetionType;
+        public string colliderTag;
 
-        private Vector3 onClickLeftStartPositionWorldPosition;
-        private Vector3 onClickLeftEndPositionWorldPosition;
+        private Vector3 startScreenPosition;
+        private Vector3 endScreenPosition;
 
-        public Rect screenRealSelection = new Rect();
-        public Vector3 CurrentPointerPos => onClickLeftEndPositionWorldPosition;
+        private Vector3 startWorldPosition;
+        private Vector3 endWorldPosition;
 
-        public Rect WorldRectXY => InputUtils.GetWorldRectXY(onClickLeftStartPositionWorldPosition, onClickLeftEndPositionWorldPosition);
+        private Rect screenRealSelection = new Rect();
+        public Vector3 CurrentPointerPos => endWorldPosition;
+
+        public Rect WorldRectXY => InputUtils.GetWorldRectXY(startWorldPosition, endWorldPosition);
+        public Rect WorldRectXZ => InputUtils.GetWorldRectXZ(startWorldPosition, endWorldPosition);
 
         private Vector2 lowerLeft;
         private Vector2 upperRight;
@@ -40,16 +44,53 @@ namespace CommonBase
 
         public void OnDown()
         {
-            onClickLeftStartPosition = InputUtils.GetMousePosition();
-            onClickLeftStartPositionWorldPosition = Camera.main.ScreenToWorldPoint(onClickLeftStartPosition);
+            startScreenPosition = InputUtils.GetMousePosition();
+            startWorldPosition = GetWorldPoint(rectDetetionType);
             SelectedArea.GetComponent<Image>().enabled = true;
+        }
+
+        public static bool CheckGroundPosition(Camera camera, string colliderTag, out RaycastHit hit)
+        {
+            RaycastHit[] hits = new RaycastHit[10];
+            Physics.RaycastNonAlloc(camera.ScreenPointToRay(InputUtils.GetMousePosition()), hits);
+            hit = default;
+
+            foreach (var h in hits)
+            {
+                if (h.collider != null && h.collider.tag == colliderTag)
+                {
+                    hit = h;
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void OnUp()
         {
-            onClickLeftEndPosition = InputUtils.GetMousePosition();
-            onClickLeftEndPositionWorldPosition = Camera.main.ScreenToWorldPoint(onClickLeftEndPosition);
+            endScreenPosition = InputUtils.GetMousePosition();
+            endWorldPosition = GetWorldPoint(rectDetetionType);
             SelectedArea.GetComponent<Image>().enabled = false;
+        }
+
+        private Vector3 GetWorldPoint(RectDetetionType rectDetetionType)
+        {
+            Vector3 resutl = Vector3.zero;
+            switch (rectDetetionType)
+            {
+                case RectDetetionType.SCREEN_TO_RAY:
+                    if (CheckGroundPosition(Camera.main, colliderTag, out var raycastHit))
+                    {
+                        resutl = raycastHit.point;
+                    }
+                    break;
+                case RectDetetionType.SCREEN_TO_WORLD:
+                    resutl = Camera.main.ScreenToWorldPoint(startScreenPosition);
+                    break;
+                default:
+                    break;
+            }
+            return resutl;
         }
 
         public void Render()
@@ -69,12 +110,24 @@ namespace CommonBase
 
         public void OnHolding()
         {
-            onClickLeftEndPosition = InputUtils.GetMousePosition();
-            onClickLeftEndPositionWorldPosition = Camera.main.ScreenToWorldPoint(onClickLeftEndPosition);
-            lowerLeft = new Vector2(Mathf.Min(onClickLeftStartPosition.x, onClickLeftEndPosition.x), Mathf.Min(onClickLeftStartPosition.y, onClickLeftEndPosition.y));
-            upperRight = new Vector2(Mathf.Max(onClickLeftStartPosition.x, onClickLeftEndPosition.x), Mathf.Max(onClickLeftStartPosition.y, onClickLeftEndPosition.y));
+            endScreenPosition = InputUtils.GetMousePosition();
+            endWorldPosition = GetWorldPoint(rectDetetionType);
+            lowerLeft = new Vector2(Mathf.Min(startScreenPosition.x, endScreenPosition.x), Mathf.Min(startScreenPosition.y, endScreenPosition.y));
+            upperRight = new Vector2(Mathf.Max(startScreenPosition.x, endScreenPosition.x), Mathf.Max(startScreenPosition.y, endScreenPosition.y));
             screenRealSelection.position = lowerLeft;
             screenRealSelection.size = upperRight - lowerLeft;
+        }
+
+        public enum RectDetetionType
+        {
+            /// <summary>
+            /// 从屏幕发射射线与指定tag的Collider相交，形成世界空间中的判定矩形
+            /// </summary>
+            SCREEN_TO_RAY,
+            /// <summary>
+            /// 将屏幕坐标直接转换为空间坐标，形成世界空间中的判定矩形
+            /// </summary>
+            SCREEN_TO_WORLD,
         }
     }
 }
