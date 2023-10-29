@@ -34,6 +34,14 @@ namespace CommonBase
 
         protected override void SetUVs()
         {
+            for (int i = 0; i < numSides; i++)
+            {
+                float uvX = vertices[i].x * 2;
+                float uvY = vertices[i].y * 2;
+                Vector2 uv = new Vector2(uvX, uvY);
+
+                uvs.Add(uv);
+            }
         }
 
         protected override void SetVertexColours()

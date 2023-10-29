@@ -72,7 +72,7 @@ namespace CommonBase
 
         public void RegisterTimer(Timer timer)
         {
-            addTimerList.Add(timer);
+             addTimerList.Add(timer);
         }
 
         /// <summary>
