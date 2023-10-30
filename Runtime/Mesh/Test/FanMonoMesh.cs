@@ -7,7 +7,7 @@ namespace CommonBase
     /// <summary>
     /// 扇形生成器
     /// </summary>
-    public class FanMesh : AbstractMesh
+    public class FanMonoMesh : AbstractMonoMeshGenerator
     {
         [Range(0, 360)] public float centerLineDegree;
         /// <summary>
@@ -15,16 +15,11 @@ namespace CommonBase
         /// </summary>
         [Range(0, 360)] public float arcDegree;
         [Range(0.1f, 10)] public float radius = 1;
-
         private float beginAngle;
         private float endAngle;
+        public Vector3 centerPoint;
 
-        public FanMesh(float centerLineDegree, float arcDegree, float radius, Vector3 position, Quaternion quaternion, Vector3 scale, Material material) : base(position, quaternion, scale, material)
-        {
-            this.centerLineDegree = centerLineDegree;
-            this.arcDegree = arcDegree;
-            this.radius = radius;
-        }
+        public FanFoldCenter fanFoldType;
 
         protected override void SetVertices()
         {

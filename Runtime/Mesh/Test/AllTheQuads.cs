@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace CommonBase
 {
-    public class AllTheQuads : AbstractMeshGenerator
+    public class AllTheQuads : AbstractMonoMeshGenerator
     {
         [SerializeField]
         private Vector3[] vs = new Vector3[4];

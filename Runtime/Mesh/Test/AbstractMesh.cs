@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.Experimental.Rendering;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace CommonBase
@@ -9,17 +7,17 @@ namespace CommonBase
     [RequireComponent(typeof(MeshRenderer))]
     [RequireComponent(typeof(MeshCollider))]
     [ExecuteInEditMode]
-    public abstract class AbstractMeshGenerator : MonoBehaviour
+    public abstract class AbstractMesh
     {
-        [SerializeField]
         protected Material material;
+
+        public Vector3 position = Vector3.zero;
+        public Quaternion quaternion;
+        public Vector3 scale = Vector3.one;
 
         protected List<Vector3> vertices;
         protected List<int> triangles;
 
-        protected MeshFilter meshFilter;
-        protected MeshRenderer meshRenderer;
-        protected MeshCollider meshCollider;
         protected Mesh mesh;
 
         protected int numVertices;
@@ -30,18 +28,28 @@ namespace CommonBase
         protected List<Vector2> uvs;
         protected List<Color32> vertexColours;
 
-        private void Update()
+        //public List
+
+        protected AbstractMesh(Vector3 position, Quaternion quaternion, Vector3 scale, Material material)
         {
-            meshFilter = GetComponent<MeshFilter>();
-            meshRenderer = GetComponent<MeshRenderer>();
-            meshCollider = GetComponent<MeshCollider>();
+            this.position = position;
+            this.quaternion = quaternion;
+            this.scale = scale;
+            this.material = material;
+        }
 
-            meshRenderer.material = material;
+        public void SetPostion(Vector3 position)
+        {
+            this.position = position;
+        }
 
+        public void Update()
+        {
+            Matrix4x4 matrix = Matrix4x4.TRS(position, quaternion, Vector3.one);
             InitMesh();
             SetMeshNums();
-
             CreateMesh();
+            Graphics.DrawMesh(mesh, matrix, material, LayerMask.NameToLayer("Default"));
         }
 
 
@@ -105,8 +113,8 @@ namespace CommonBase
                 mesh.SetColors(vertexColours);
 
 
-                meshFilter.mesh = mesh;
-                meshCollider.sharedMesh = mesh;
+                //meshFilter.mesh = mesh;
+                //meshCollider.sharedMesh = mesh;
             }
         }
 

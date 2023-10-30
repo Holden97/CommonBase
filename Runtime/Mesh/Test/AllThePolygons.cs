@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace CommonBase
 {
-    public class AllThePolygons : AbstractMeshGenerator
+    public class AllThePolygons : AbstractMonoMeshGenerator
     {
         [SerializeField, Range(3, 20)] private int numSides = 3;
         [SerializeField] private float radius;
