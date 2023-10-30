@@ -1,5 +1,7 @@
 ﻿using CommonBase;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace CommonBase
@@ -103,9 +105,22 @@ namespace CommonBase
             return mesh;
         }
 
-        public static bool InFan(this Vector3 point ,Fan fan )
+        public static bool InFan(this Vector3 point, Fan fan)
         {
             return fan.PointInRange(point);
+        }
+
+        public static void DrawFanMeshLine(this GameObject gameObject, Mesh mesh, float duration = 5)
+        {
+            var lineRenderer = gameObject.AddComponent<LineRenderer>();
+            for (int i = 0; i < mesh.vertices.Length; i++)
+            {
+                lineRenderer.SetPosition(i, mesh.vertices[i]);
+            }
+            new Timer(duration, onComplete: () =>
+            {
+                GameObject.Destroy(lineRenderer);
+            });
         }
     }
 }

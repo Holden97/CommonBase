@@ -14,6 +14,8 @@ namespace CommonBase
         [SerializeField]
         protected Material material;
 
+        public Mesh Mesh => mesh;
+
         protected List<Vector3> vertices;
         protected List<int> triangles;
 
@@ -30,7 +32,7 @@ namespace CommonBase
         protected List<Vector2> uvs;
         protected List<Color32> vertexColours;
 
-        private void Update()
+        protected virtual void Update()
         {
             meshFilter = GetComponent<MeshFilter>();
             meshRenderer = GetComponent<MeshRenderer>();

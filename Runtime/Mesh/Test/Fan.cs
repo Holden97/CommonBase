@@ -1,6 +1,7 @@
-//使用utf-8
+﻿//使用utf-8
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace CommonBase
@@ -12,6 +13,14 @@ namespace CommonBase
         public float arcDegree;
         public float centerlineDegree;
 
+        public Fan(Vector3 center, float radius, float arcDegree, float centerlineDegree)
+        {
+            this.center = center;
+            this.radius = radius;
+            this.arcDegree = arcDegree;
+            this.centerlineDegree = centerlineDegree;
+        }
+
         /// <summary>
         /// 点是否在扇形内
         /// 1.点据终点距离小于半径
@@ -21,6 +30,7 @@ namespace CommonBase
         /// <returns></returns>
         public bool PointInRange(Vector3 target)
         {
+            if (target == center) return true;
             var shorter = Vector3.Distance(target, center) < radius;
             var dot = Vector3.Dot((target - center).normalized, new Vector3(Mathf.Cos(Mathf.Deg2Rad * arcDegree), Mathf.Sin(Mathf.Deg2Rad * arcDegree)));
             var lessThanHalfRadius = Mathf.Acos(dot) < radius / 2;

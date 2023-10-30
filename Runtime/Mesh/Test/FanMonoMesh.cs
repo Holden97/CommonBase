@@ -19,6 +19,9 @@ namespace CommonBase
         private float endAngle;
         public Vector3 centerPoint;
 
+        public bool isFoldingIn = false;
+        public float anglePerTick = 0;
+
         public FanFoldCenter fanFoldType;
 
         protected override void SetVertices()
@@ -34,6 +37,42 @@ namespace CommonBase
             }
 
             vertices.Add(GetVertice(endAngle) + centerPoint);
+        }
+
+        protected override void Update()
+        {
+            if (isFoldingIn)
+            {
+                arcDegree -= anglePerTick;
+            }
+            base.Update();
+        }
+
+        public void FoldIn(float originalAgree, float duration)
+        {
+            StartCoroutine(FoldInInside(originalAgree, duration));
+        }
+
+        public IEnumerator FoldInInside(float originalAgree, float duration)
+        {
+            this.arcDegree = originalAgree;
+            isFoldingIn = true;
+            anglePerTick = arcDegree / duration;
+            yield return new WaitForSeconds(duration);
+            isFoldingIn = false;
+        }
+
+        public void FoldIn(float duration)
+        {
+            StartCoroutine(FoldInInside(duration));
+        }
+
+        public IEnumerator FoldInInside(float duration)
+        {
+            isFoldingIn = true;
+            anglePerTick = arcDegree / duration;
+            yield return new WaitForSeconds(duration);
+            isFoldingIn = false;
         }
 
         protected override void SetMeshNums()
@@ -63,6 +102,16 @@ namespace CommonBase
                 triangles.Add(i);
                 triangles.Add(i - 1);
             }
+        }
+
+        public void DrawOutLine()
+        {
+            MeshUtil.DrawFanMeshLine(this.gameObject, mesh);
+        }
+
+        public void DrawPredictionLine(float originalAgree)
+        {
+            this.arcDegree = originalAgree;
         }
 
         public enum FanFoldCenter
