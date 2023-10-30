@@ -23,17 +23,17 @@ namespace CommonBase
 
         protected override void SetVertices()
         {
-            vertices.Add(Vector3.zero);
+            vertices.Add(centerPoint);
 
-            vertices.Add(GetVertice(beginAngle));
+            vertices.Add(GetVertice(beginAngle) + centerPoint);
 
             float i = beginAngle;
             for (i = beginAngle + 1; i < endAngle; i++)
             {
-                vertices.Add(GetVertice(i));
+                vertices.Add(GetVertice(i) + centerPoint);
             }
 
-            vertices.Add(GetVertice(endAngle));
+            vertices.Add(GetVertice(endAngle) + centerPoint);
         }
 
         protected override void SetMeshNums()
