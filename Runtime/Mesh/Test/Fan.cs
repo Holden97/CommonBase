@@ -10,7 +10,13 @@ namespace CommonBase
     {
         public Vector3 center;
         public float radius;
+        /// <summary>
+        ///扇形弧度（角度制）
+        /// </summary>
         public float arcDegree;
+        /// <summary>
+        /// 扇形中线角度（角度制）
+        /// </summary>
         public float centerlineDegree;
 
         public Fan(Vector3 center, float radius, float arcDegree, float centerlineDegree)
@@ -32,7 +38,7 @@ namespace CommonBase
         {
             if (target == center) return true;
             var shorter = Vector3.Distance(target, center) < radius;
-            var dot = Vector3.Dot((target - center).normalized, new Vector3(Mathf.Cos(Mathf.Deg2Rad * arcDegree), Mathf.Sin(Mathf.Deg2Rad * arcDegree)));
+            var dot = Vector3.Dot((target - center).normalized, new Vector3(Mathf.Cos(Mathf.Deg2Rad * centerlineDegree), Mathf.Sin(Mathf.Deg2Rad * centerlineDegree)));
             var lessThanHalfRadius = Mathf.Acos(dot) < radius / 2;
             return shorter && lessThanHalfRadius;
         }
