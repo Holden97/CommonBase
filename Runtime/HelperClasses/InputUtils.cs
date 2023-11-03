@@ -13,7 +13,7 @@ namespace CommonBase
 #if ENABLE_INPUT_SYSTEM
             Vector2 mousePosition = Mouse.current.position.ReadValue();
 #else
-            Vector2 mousePosition=Input.mousePosition;
+            Vector2 mousePosition = Input.mousePosition;
 #endif
             var result = Camera.main.ScreenToWorldPoint(mousePosition);
             Debug.Log($"GetMouseWorldPosition:{result}");
@@ -25,7 +25,7 @@ namespace CommonBase
 #if ENABLE_INPUT_SYSTEM
             Vector2 mousePosition = Mouse.current.position.ReadValue();
 #else
-            Vector2 mousePosition=Input.mousePosition;
+            Vector2 mousePosition = Input.mousePosition;
 #endif
             var result = Camera.main.ScreenToWorldPoint(mousePosition);
             Debug.Log($"GetMouseWorldPosition:{result}");
@@ -37,7 +37,7 @@ namespace CommonBase
 #if ENABLE_INPUT_SYSTEM
             Vector2 mousePosition = Mouse.current.position.ReadValue();
 #else
-            Vector2 mousePosition=Input.mousePosition;
+            Vector2 mousePosition = Input.mousePosition;
 #endif
             //Debug.Log($"dirmousePosition:{mousePosition}");
             return mousePosition;
@@ -75,7 +75,7 @@ namespace CommonBase
 #if ENABLE_INPUT_SYSTEM
             Vector2 mousePosition = Mouse.current.position.ReadValue();
 #else
-            Vector2 mousePosition=Input.mousePosition;
+            Vector2 mousePosition = Input.mousePosition;
 #endif
             var result = Camera.main.ScreenToWorldPoint(mousePosition);
             Debug.Log($"GetMouseWorldPosition:{result}");
@@ -87,7 +87,7 @@ namespace CommonBase
 #if ENABLE_INPUT_SYSTEM
             Vector2 mousePosition = Mouse.current.position.ReadValue();
 #else
-            Vector2 mousePosition=Input.mousePosition;
+            Vector2 mousePosition = Input.mousePosition;
 #endif
             var result = Camera.main.ScreenToWorldPoint(mousePosition);
             Debug.Log($"GetMouseWorldPosition:{result}");
@@ -124,15 +124,9 @@ namespace CommonBase
 
         public static Rect GetWorldRectXZ(Vector3 startWorldPos, Vector3 endWorldPos)
         {
-            Rect worldRect = new Rect();
-
             var lowerLeft = new Vector2(Mathf.Min(startWorldPos.x, endWorldPos.x), Mathf.Min(startWorldPos.z, endWorldPos.z));
             var upperRight = new Vector2(Mathf.Max(startWorldPos.x, endWorldPos.x), Mathf.Max(startWorldPos.z, endWorldPos.z));
-
-            worldRect.position = lowerLeft;
-            worldRect.size = upperRight - lowerLeft;
-
-            return worldRect;
+            return new Rect(lowerLeft, upperRight - lowerLeft);
         }
     }
 }
