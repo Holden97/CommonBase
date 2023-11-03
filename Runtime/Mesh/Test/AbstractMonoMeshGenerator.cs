@@ -9,10 +9,12 @@ namespace CommonBase
     [RequireComponent(typeof(MeshRenderer))]
     [RequireComponent(typeof(MeshCollider))]
     [ExecuteInEditMode]
-    public abstract class AbstractMeshGenerator : MonoBehaviour
+    public abstract class AbstractMonoMeshGenerator : MonoBehaviour
     {
         [SerializeField]
         protected Material material;
+
+        public Mesh Mesh => mesh;
 
         protected List<Vector3> vertices;
         protected List<int> triangles;
@@ -30,7 +32,7 @@ namespace CommonBase
         protected List<Vector2> uvs;
         protected List<Color32> vertexColours;
 
-        private void Update()
+        protected virtual void Update()
         {
             meshFilter = GetComponent<MeshFilter>();
             meshRenderer = GetComponent<MeshRenderer>();

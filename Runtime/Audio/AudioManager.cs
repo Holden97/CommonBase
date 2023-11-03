@@ -224,6 +224,16 @@ namespace CommonBase
                 PlaySound(soundName, pitch, () => state.isMakingSound = false);
             }
         }
+
+        public void Pause()
+        {
+
+        }
+
+        public void Resume()
+        {
+
+        }
     }
 
 
@@ -265,5 +275,4 @@ namespace CommonBase
         efxVolume,
         gameVolume,
     }
-
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace CommonBase
 {
-    public class AllTheCubes : AbstractMeshGenerator
+    public class AllTheCubes : AbstractMonoMeshGenerator
     {
         [SerializeField] private Vector3[] vs = new Vector3[8];
         protected override void SetMeshNums()

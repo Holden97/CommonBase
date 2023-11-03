@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace CommonBase
 {
-    public class AllThePrisms : AbstractMeshGenerator
+    public class AllThePrisms : AbstractMonoMeshGenerator
     {
         [SerializeField, Range(3, 20)] private int numSides = 3;
         [SerializeField] private float frontRadius;

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace CommonBase
 {
-    public class AllTheUniqueSharedVertTetrahedrons : AbstractMeshGenerator
+    public class AllTheUniqueSharedVertTetrahedrons : AbstractMonoMeshGenerator
     {
         [SerializeField] private Vector3[] vs = new Vector3[4];
         protected override void SetMeshNums()
