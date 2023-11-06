@@ -46,7 +46,7 @@ namespace CommonBase
                 {
                     item.Tick();
                 }
-                timerList.Value.RemoveAll(t => t.isDone && !t.isLoop);
+                timerList.Value.RemoveAll(t => t.isDone && !(t.isLoop || (t.assertion != null && t.assertion.Invoke())));
             }
             //删除旧的计时器
             for (int i = 0; i < removeTimerList.Count; i++)
@@ -72,7 +72,7 @@ namespace CommonBase
 
         public void RegisterTimer(Timer timer)
         {
-             addTimerList.Add(timer);
+            addTimerList.Add(timer);
         }
 
         /// <summary>

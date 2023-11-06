@@ -18,6 +18,7 @@ namespace CommonBase
         public Action OnStart;
         public string timerName;
         public bool isLoop;
+        public Func<bool> assertion;
         public float Progress => (_lastUpdateTime - _startTime) / (_endTime - _startTime);
         /// <summary>
         /// 若为true,同时只能注册一个相同名称的计时器
@@ -31,13 +32,20 @@ namespace CommonBase
         private bool _isPause;
 
         /// <summary>
-        /// 主线程构造
+        /// 构造
         /// </summary>
-        /// <param name="period">持续时间，单位:s</param>
+        /// <param name="period">持续时间，单位/s</param>
+        /// <param name="timerName"></param>
+        /// <param name="OnStart"></param>
         /// <param name="onComplete"></param>
         /// <param name="onUpdate"></param>
+        /// <param name="timerType"></param>
         /// <param name="ownerId"></param>
-        public Timer(float period, string timerName = null, Action OnStart = null, Action onComplete = null, Action<float> onUpdate = null, ETimerType timerType = ETimerType.trigger, int ownerId = -1, bool isLoop = false, bool triggerOnStart = false, bool singleton = false)
+        /// <param name="isLoop"></param>
+        /// <param name="triggerOnStart"></param>
+        /// <param name="singleton"></param>
+        /// <param name="assertion">断言，为真时持续执行</param>
+        public Timer(float period, string timerName = null, Action OnStart = null, Action onComplete = null, Action<float> onUpdate = null, ETimerType timerType = ETimerType.trigger, int ownerId = -1, bool isLoop = false, bool triggerOnStart = false, bool singleton = false, Func<bool> assertion = null)
         {
             this.id = seed++;
             this.owner = ownerId;
@@ -62,6 +70,7 @@ namespace CommonBase
             }
             this.isLoop = isLoop;
             this.singleton = singleton;
+            this.assertion = assertion;
             if (singleton && timerName == null)
             {
                 Debug.LogError("你指定了一个单例计时器，但未指定它的名称，确定吗？");
@@ -87,7 +96,7 @@ namespace CommonBase
         internal void OnDone()
         {
             OnComplete?.Invoke();
-            if (isLoop)
+            if (isLoop || (assertion != null && assertion.Invoke()))
             {
                 _startTime = GetWorldTime();
                 this._endTime = GetDoneTime();
