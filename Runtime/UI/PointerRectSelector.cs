@@ -1,6 +1,8 @@
 ﻿//使用utf-8
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
+#endif
 using UnityEngine.UI;
 
 namespace CommonBase
