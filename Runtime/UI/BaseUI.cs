@@ -5,7 +5,9 @@ using UnityEngine;
 namespace CommonBase
 {
     [RequireComponent(typeof(CanvasGroup))]
+#if UNITY_EDITOR
     [CanEditMultipleObjects]
+#endif
     public abstract class BaseUI : MonoBehaviour, IListener, IView
     {
         public bool IsShowing { get; private set; }

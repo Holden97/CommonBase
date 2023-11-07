@@ -25,6 +25,7 @@ namespace CommonBase
 
         public static void DrawCircle(Vector3 center, float radius, Color color)
         {
+#if UNITY_EDITOR
             int segments = 36; // 圆形的线段数
             Handles.color = color;  // 设置圆形的颜色
             for (int i = 0; i < segments; i++)
@@ -36,6 +37,7 @@ namespace CommonBase
 
                 Handles.DrawLine(point1, point2);
             }
+#endif
         }
     }
 }

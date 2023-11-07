@@ -24,7 +24,7 @@ namespace CommonBase
         {
         }
 
-        public void CreatePool(int poolSize, GameObject poolPrefab, string poolName, Transform parent = null)
+        public void CreatePool(int poolSize, GameObject poolPrefab, string poolName, Transform parent = null, bool dontDestroyOnLoad = false)
         {
             if (poolInfo == null)
             {
@@ -41,7 +41,7 @@ namespace CommonBase
             }
             else
             {
-                Pool pool = new Pool(poolSize, poolPrefab);
+                Pool pool = new Pool(poolPrefab.GetInstanceID(), poolPrefab.name, poolSize, poolPrefab, dontDestroyOnLoad);
                 if (poolName != null)
                 {
                     poolInfo.Add(poolName, pool);
@@ -197,10 +197,19 @@ namespace CommonBase
 
         public override void Dispose()
         {
-            poolInfo.Clear();
-            poolQueue.Clear();
-            defaultParent.DestroyChildren();
-            base.Dispose();
+            //poolInfo.Clear();
+            foreach (var item in poolInfo)
+            {
+                if (!item.Value.dontDestroyOnload)
+                {
+                    poolQueue.Remove(item.Value.prefabId);
+                    defaultParent.DestroyChildren(item.Value.prefabName);
+                }
+            }
+            //poolQueue.Clear();
+            //base.Dispose();
+            //instance = null;
+            //this.EventUnregister();
         }
 
 
