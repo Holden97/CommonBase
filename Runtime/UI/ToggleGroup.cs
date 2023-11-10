@@ -53,6 +53,11 @@ namespace CommonBase
             }
         }
 
+        public void SelectToggle(int index)
+        {
+            SelectToggle(toggles[index]);
+        }
+
         /// <summary>
         /// 初始化
         /// 初始化顺序:toggles数据确定=>为toggles绑定回调

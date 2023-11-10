@@ -13,7 +13,7 @@ namespace CommonBase
         private UnityEvent unselectEvent;
         [SerializeField]
         private UnityEvent selectEvent;
-        public Action<IToggle> onClickToggle;
+        private Action<IToggle> onClickToggle;
 
         public string toggleTag;
         private string id;
