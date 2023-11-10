@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.Experimental.Rendering;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace CommonBase
