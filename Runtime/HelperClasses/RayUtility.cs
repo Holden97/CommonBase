@@ -17,6 +17,11 @@ namespace CommonBase
             intersection = Vector3.zero;
             return false;
         }
+
+        public static Ray GetCameraRay(Camera camera)
+        {
+            return camera.ScreenPointToRay(Input.mousePosition);
+        }
     }
 }
 
