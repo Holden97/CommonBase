@@ -14,6 +14,8 @@ namespace CommonBase
         public float speed = 1;
         private bool openZoom;
 
+        public Vector3Int maxRotationLimitation;
+
         public void SetTarget(Vector3 target)
         {
             this.target = target;
@@ -36,6 +38,7 @@ namespace CommonBase
                 RotateAround(target, Vector3.up, mouse_x * 5);
                 RotateAround(target, transform.right, mouse_y * 5);
             }
+            ApplyLimitation();
         }
         private void camerazoom() //摄像机滚轮缩放
         {
@@ -55,6 +58,15 @@ namespace CommonBase
             {
                 camerazoom();
             }
+
+        }
+
+        private void ApplyLimitation()
+        {
+            //var minX = MathF.Min(maxRotationLimitation.x, transform.rotation.x);
+            //var minY = MathF.Min(maxRotationLimitation.y, transform.rotation.y);
+            //var minZ = MathF.Min(maxRotationLimitation.z, transform.rotation.z);
+            //transform.eulerAngles = new Vector3(minX, minY, minZ);
         }
 
         void RotateAround(Vector3 center, Vector3 axis, float angle)

@@ -1,11 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
-using UnityEngine;
 
 namespace CommonBase.Editor
 {
-    [CustomEditor(typeof(CommonBase.Toggle))]
+    [CustomEditor(typeof(Toggle), true)]
     public class ToggleEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()

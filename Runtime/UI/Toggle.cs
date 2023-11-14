@@ -9,6 +9,8 @@ namespace CommonBase
 {
     public class Toggle : Button, IToggle
     {
+        protected Action OnSelected;
+        protected Action OnUnselected;
         [SerializeField]
         private UnityEvent unselectEvent;
         [SerializeField]
@@ -40,11 +42,13 @@ namespace CommonBase
 
         public void OnToggleSelect()
         {
+            OnSelected?.Invoke();
             selectEvent?.Invoke();
         }
 
         public void OnToggleUnselect()
         {
+            OnUnselected?.Invoke();
             unselectEvent?.Invoke();
         }
 
