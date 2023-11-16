@@ -13,11 +13,14 @@ namespace CommonBase
         public int owner;
         public float period;
         public bool isDone;
-        public Action OnComplete;
+
         public Action<float> OnUpdate;
         public Action OnStart;
         public string timerName;
         public bool isLoop;
+        /// <summary>
+        /// 断言式，为真时表示当前计时器满足继续的条件。
+        /// </summary>
         public Func<bool> assertion;
         public float Progress => (_lastUpdateTime - _startTime) / (_endTime - _startTime);
         /// <summary>
@@ -30,6 +33,14 @@ namespace CommonBase
         private float _lastUpdateTime;
         private float _endTime;
         private bool _isPause;
+        /// <summary>
+        /// 计时器单次计时结束
+        /// </summary>
+        public Action OnComplete;
+        /// <summary>
+        /// 计时器最终完成
+        /// </summary>
+        private Action OnFinish;
 
         /// <summary>
         /// 构造
@@ -45,7 +56,7 @@ namespace CommonBase
         /// <param name="triggerOnStart"></param>
         /// <param name="singleton"></param>
         /// <param name="assertion">断言，为真时持续执行</param>
-        public Timer(float period, string timerName = null, Action OnStart = null, Action onComplete = null, Action<float> onUpdate = null, ETimerType timerType = ETimerType.trigger, int ownerId = -1, bool isLoop = false, bool triggerOnStart = false, bool singleton = false, Func<bool> assertion = null)
+        public Timer(float period, string timerName = null, Action OnStart = null, Action onComplete = null, Action<float> onUpdate = null, ETimerType timerType = ETimerType.trigger, int ownerId = -1, bool isLoop = false, bool triggerOnStart = false, bool singleton = false, Func<bool> assertion = null, Action OnFinish = null)
         {
             this.id = seed++;
             this.owner = ownerId;
@@ -75,6 +86,7 @@ namespace CommonBase
             {
                 Debug.LogError("你指定了一个单例计时器，但未指定它的名称，确定吗？");
             }
+            this.OnFinish = OnFinish;
         }
 
         public void AddUpdate(Action<float> onUpdate)
@@ -96,7 +108,7 @@ namespace CommonBase
         internal void OnDone()
         {
             OnComplete?.Invoke();
-            if (isLoop || (assertion != null && assertion.Invoke()))
+            if (isLoop)
             {
                 _startTime = GetWorldTime();
                 this._endTime = GetDoneTime();
@@ -104,6 +116,7 @@ namespace CommonBase
             else
             {
                 isDone = true;
+                OnFinish?.Invoke();
             }
         }
 
@@ -119,6 +132,11 @@ namespace CommonBase
 
         internal void Tick()
         {
+            if (assertion != null && !assertion.Invoke())
+            {
+                isDone = true;
+                OnFinish?.Invoke();
+            }
             if (_isPause || isDone) { return; }
             OnUpdate?.Invoke(GetWorldTime() - _lastUpdateTime);
             _lastUpdateTime = GetWorldTime();
