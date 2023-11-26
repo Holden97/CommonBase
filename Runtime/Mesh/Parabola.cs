@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace CommonBase
@@ -68,41 +68,15 @@ namespace CommonBase
 
         public static Vector3[] DrawGravityParabola(Vector3 p1, Vector3 p2, float t, float expectationSplitLength)
         {
-            //var g = 9.8f;
-            //Vector3 v0 = new Vector3((p2.x - p1.x) / t, (float)(p2.y - p1.y + .5 * g * t * t) / t, (p2.z - p1.z) / t);
-            //var p = MathF.Sqrt(v0.x * v0.x + v0.z * v0.z);
-            //var c = -MathF.Pow(p, 3) / g;
-            //var arcLength = GetGravityParabolaArcLength(c, 0, Vector3.Distance(p2, p1));
-            //var resolution = (int)(arcLength / expectationSplitLength);
-            //Debug.Log("采样点 线段垂直长度:" + Vector3.Distance(p1, p2));
-            //Debug.Log("采样点 线段长度:" + arcLength);
-            //Debug.Log("采样点 v0:" + v0);
-            //Debug.Log("采样点 t:" + t);
-            //Debug.Log("采样点 固定距离:" + expectationSplitLength);
-            //Debug.Log("采样点:" + resolution + "个");
-            //var ct = 0f;
-
-            //Vector3[] vertices = new Vector3[resolution + 1];
-            //var deltaTime = t / resolution;
-            ////setVertices
-            //vertices[0] = p1;
-            //vertices[resolution] = p2;
-            //for (int i = 1; i < resolution; i++)
-            //{
-            //    ct += deltaTime;
-            //    vertices[i] = new Vector3(p1.x + v0.x * ct, p1.y + v0.y * ct - .5f * g * ct * ct, p1.z + v0.z * ct);
-            //}
-
-            //return vertices;
-
             var g = 9.8f;
             Vector3 v0 = new Vector3((p2.x - p1.x) / t, (float)(p2.y - p1.y + .5 * g * t * t) / t, (p2.z - p1.z) / t);
             var p = MathF.Sqrt(v0.x * v0.x + v0.z * v0.z);
-            var c = -MathF.Pow(p, 3) / g;
-            //var arcLength = GetGravityParabolaArcLength(c, 0, Vector3.Distance(p2, p1));
-            var resolution = (int)(t / Time.fixedDeltaTime * Vector3.Distance(p1, p2) / 1000);
+            var c = -MathF.Pow(p, 2) / g;
+            var arcLength = GetGravityParabolaArcLength(c, v0.y / p,
+                v0.y / p - (g / (p * p) * (Vector3.Distance(new Vector3(p1.x, 0, p1.z), new Vector3(p2.x, 0, p2.z)))));
+            var resolution = (int)(arcLength / expectationSplitLength);
             Debug.Log("采样点 线段垂直长度:" + Vector3.Distance(p1, p2));
-            //Debug.Log("采样点 线段长度:" + t/Time.deltaTime);
+            Debug.Log("采样点 线段长度:" + arcLength);
             Debug.Log("采样点 v0:" + v0);
             Debug.Log("采样点 t:" + t);
             Debug.Log("采样点 固定距离:" + expectationSplitLength);
@@ -121,6 +95,33 @@ namespace CommonBase
             }
 
             return vertices;
+
+            //var g = 9.8f;
+            //Vector3 v0 = new Vector3((p2.x - p1.x) / t, (float)(p2.y - p1.y + .5 * g * t * t) / t, (p2.z - p1.z) / t);
+            //var p = MathF.Sqrt(v0.x * v0.x + v0.z * v0.z);
+            //var c = -MathF.Pow(p, 3) / g;
+            ////var arcLength = GetGravityParabolaArcLength(c, 0, Vector3.Distance(p2, p1));
+            //var resolution = (int)(t / Time.fixedDeltaTime * Vector3.Distance(p1, p2) / 1000);
+            //Debug.Log("采样点 线段垂直长度:" + Vector3.Distance(p1, p2));
+            ////Debug.Log("采样点 线段长度:" + t/Time.deltaTime);
+            //Debug.Log("采样点 v0:" + v0);
+            //Debug.Log("采样点 t:" + t);
+            //Debug.Log("采样点 固定距离:" + expectationSplitLength);
+            //Debug.Log("采样点:" + resolution + "个");
+            //var ct = 0f;
+
+            //Vector3[] vertices = new Vector3[resolution + 1];
+            //var deltaTime = t / resolution;
+            ////setVertices
+            //vertices[0] = p1;
+            //vertices[resolution] = p2;
+            //for (int i = 1; i < resolution; i++)
+            //{
+            //    ct += deltaTime;
+            //    vertices[i] = new Vector3(p1.x + v0.x * ct, p1.y + v0.y * ct - .5f * g * ct * ct, p1.z + v0.z * ct);
+            //}
+
+            //return vertices;
         }
 
         public static float GetGravityParabolaArcLength(float p, float start, float end)
