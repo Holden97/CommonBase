@@ -68,6 +68,8 @@ namespace CommonBase
 
         public static Vector3[] DrawGravityParabola(Vector3 p1, Vector3 p2, float t, float expectationSplitLength)
         {
+            if (p1 == p2) return null;
+
             var g = 9.8f;
             Vector3 v0 = new Vector3((p2.x - p1.x) / t, (float)(p2.y - p1.y + .5 * g * t * t) / t, (p2.z - p1.z) / t);
             var p = MathF.Sqrt(v0.x * v0.x + v0.z * v0.z);

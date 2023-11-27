@@ -1,18 +1,16 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.Remoting.Messaging;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace CommonBase
 {
     [RequireComponent(typeof(LineRenderer))]
     public class ParabolaRenderer : MonoBehaviour
     {
+        protected bool isInited = false;
         public bool needLineRendereer;
-        [Range(3, 10)] public float duration;
-        [Range(0.5f, 10)] public float expectationSplitLength;
+        [Range(3, 10)] public float duration = 3;
+        [Range(0.5f, 10)] public float expectationSplitLength = .5f;
 
-        public Transform start;
+        public Vector3 start;
         private Vector3 end;
 
         public GameObject head;
@@ -23,7 +21,7 @@ namespace CommonBase
         private RaycastHit[] hits;
         private LineRenderer line;
 
-        private void Awake()
+        protected virtual void Awake()
         {
             ObjectPoolManager.Instance.CreatePool(50, body, "ParabolaRenderer");
             headGo = Instantiate(head);
@@ -32,29 +30,39 @@ namespace CommonBase
             line = GetComponent<LineRenderer>();
         }
 
+        public void Init(Vector3 start)
+        {
+            isInited = true;
+            this.start = start;
+        }
+
         private void Update()
         {
-            line.enabled = needLineRendereer;
-            ObjectPoolManager.Instance.PutbackAll("ParabolaRenderer");
-            Physics.RaycastNonAlloc(mainCam.ScreenPointToRay(Input.mousePosition), hits, float.MaxValue);
-            foreach (var hit in hits)
+            if (!isInited) { return; }
+            if (line)
             {
-                if (hit.transform != null && hit.transform.tag == "Ground")
-                {
-                    end = hit.point;
-                    break;
-                }
+                line.enabled = needLineRendereer;
             }
+            ObjectPoolManager.Instance.PutbackAll("ParabolaRenderer");
+            GetEndPoint(out end);
             if (end == null)
             {
                 return;
             }
-            var vertices = Parabola.DrawGravityParabola(start.position, end, duration, expectationSplitLength);
 
-            line.positionCount = vertices.Length;
-            for (int i = 0; i < vertices.Length; i++)
+            var vertices = Parabola.DrawGravityParabola(start, end, duration, expectationSplitLength);
+            if (vertices.IsNullOrEmpty())
             {
-                line.SetPosition(i, vertices[i]);
+                return;
+            }
+
+            if (line)
+            {
+                line.positionCount = vertices.Length;
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    line.SetPosition(i, vertices[i]);
+                }
             }
 
             if (vertices.IsNullOrEmpty() || vertices.Length < 2)
@@ -72,6 +80,21 @@ namespace CommonBase
 
             headGo.transform.position = vertices[vertices.Length - 1];
             headGo.transform.rotation = Quaternion.LookRotation(vertices[vertices.Length - 1] - vertices[vertices.Length - 2]);
+        }
+
+        protected virtual bool GetEndPoint(out Vector3 end)
+        {
+            Physics.RaycastNonAlloc(mainCam.ScreenPointToRay(Input.mousePosition), hits, float.MaxValue);
+            foreach (var hit in hits)
+            {
+                if (hit.transform != null && hit.transform.tag == "Ground")
+                {
+                    end = hit.point;
+                    return true;
+                }
+            }
+            end = default;
+            return false;
         }
     }
 }
