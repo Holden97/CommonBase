@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
-public class BoidAgent
+public class BoidAgent : MonoBehaviour
 {
     private float visualRange = 40;
     protected float protectedRange = 8;
@@ -23,7 +21,7 @@ public class BoidAgent
 
     //遮挡剔除
     //能否合并多个计时器到一个计时器中
-    public void Update(BoidAgent[] others, float dt)
+    public void Tick(List<BoidAgent> all, float dt)
     {
         //separation
         float close_dx = 0;
@@ -32,8 +30,9 @@ public class BoidAgent
 
 
 
-        foreach (var other in others)
+        foreach (var other in all)
         {
+            if (other == this) continue;
             if (Vector2.Distance(other.position, this.position) < protectedRange)
             {
                 close_dx += (this.position - other.position).x;
@@ -50,8 +49,9 @@ public class BoidAgent
         float yv_avg = 0;
         int neighboring_boids = 0;
 
-        foreach (var other in others)
+        foreach (var other in all)
         {
+            if (other == this) continue;
             if (Vector2.Distance(other.position, this.position) < visualRange)
             {
                 xv_avg += other.velocity.x;
@@ -71,8 +71,9 @@ public class BoidAgent
         float ypos_avg = 0;
         int neighboring_boids2 = 0;
 
-        foreach (var other in others)
+        foreach (var other in all)
         {
+            if (other == this) continue;
             if (Vector2.Distance(other.position, this.position) < visualRange)
             {
                 xpos_avg += other.position.x;
