@@ -50,8 +50,7 @@ namespace CommonBase
                 Debug.LogError("Main Camera is null!");
                 return Vector3.zero;
             }
-            Vector2 worldPoint = Camera.main.ScreenToWorldPoint(screenPos);
-            return worldPoint;
+            return Camera.main.ScreenToWorldPoint(screenPos);
         }
 
         public static Vector3 GetWorldPosition(this Vector3Int screenPos)
