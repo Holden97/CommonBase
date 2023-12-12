@@ -1,7 +1,4 @@
 using UnityEngine;
-using System.Collections;
-using UnityEngine.UI;
-using System;
 
 //https://github.com/BhavyamGoyal/CameraRotateAroundObject-Unity
 //https://blog.51cto.com/u_15273495/2914640
@@ -63,10 +60,7 @@ namespace CommonBase
 
         private void ApplyLimitation()
         {
-            //var minX = MathF.Min(maxRotationLimitation.x, transform.rotation.x);
-            //var minY = MathF.Min(maxRotationLimitation.y, transform.rotation.y);
-            //var minZ = MathF.Min(maxRotationLimitation.z, transform.rotation.z);
-            //transform.eulerAngles = new Vector3(minX, minY, minZ);
+
         }
 
         void RotateAround(Vector3 center, Vector3 axis, float angle)
