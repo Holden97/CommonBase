@@ -77,12 +77,12 @@ namespace CommonBase
             var arcLength = GetGravityParabolaArcLength(c, v0.y / p,
                 v0.y / p - (g / (p * p) * (Vector3.Distance(new Vector3(p1.x, 0, p1.z), new Vector3(p2.x, 0, p2.z)))));
             var resolution = (int)(arcLength / expectationSplitLength);
-            Debug.Log("采样点 线段垂直长度:" + Vector3.Distance(p1, p2));
-            Debug.Log("采样点 线段长度:" + arcLength);
-            Debug.Log("采样点 v0:" + v0);
-            Debug.Log("采样点 t:" + t);
-            Debug.Log("采样点 固定距离:" + expectationSplitLength);
-            Debug.Log("采样点:" + resolution + "个");
+            //Debug.Log("采样点 线段垂直长度:" + Vector3.Distance(p1, p2));
+            //Debug.Log("采样点 线段长度:" + arcLength);
+            //Debug.Log("采样点 v0:" + v0);
+            //Debug.Log("采样点 t:" + t);
+            //Debug.Log("采样点 固定距离:" + expectationSplitLength);
+            //Debug.Log("采样点:" + resolution + "个");
             var ct = 0f;
 
             Vector3[] vertices = new Vector3[resolution + 1];

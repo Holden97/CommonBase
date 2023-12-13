@@ -45,8 +45,9 @@ namespace CommonBase
             }
             ObjectPoolManager.Instance.PutbackAll("ParabolaRenderer");
             GetEndPoint(out end);
-            if (end == null)
+            if (end == null || Vector3.Distance(end, start) < 10f)
             {
+                ObjectPoolManager.Instance.PutbackAll("ParabolaRenderer");
                 return;
             }
 

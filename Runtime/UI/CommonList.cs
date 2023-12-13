@@ -1,7 +1,4 @@
 //使用utf-8
-using CommonBase;
-using JetBrains.Annotations;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,40 +16,46 @@ namespace CommonBase
 
         private List<GameObject> existedList;
 
+        private void Reset()
+        {
+            this.itemParent = this.transform;
+        }
+
         private void Awake()
         {
             existedList = new List<GameObject>();
+            if (itemParent == null) return;
             for (int i = 0; i < itemParent.transform.childCount; i++)
             {
                 existedList.Add(itemParent.transform.GetChild(i).gameObject);
             }
         }
 
-        public void BindData<T>(T[] data)
+        public void BindData<T>(IList<T> data)
         {
             if (data == null) { return; }
-            for (int i = 0; i < data.Length; i++)
+            for (int i = 0; i < data.Count; i++)
             {
                 if (existedList.Count > i)
                 {
                     existedList[i].SetActive(true);
-                    existedList[i].GetComponent<IListItem<T>>().BindData(data[i]);
+                    existedList[i].GetComponent<IListItem>().BindData(data[i]);
                 }
                 else if (!onlyUseExisted)
                 {
-                    var curGo = GameObject.Instantiate(itemPrefab, itemParent);
+                    var curGo = Instantiate(itemPrefab, itemParent);
                     if (curGo != null)
                     {
                         curGo.SetActive(true);
-                        curGo.GetComponent<IListItem<T>>().BindData(data[i]);
+                        curGo.GetComponent<IListItem>().BindData(data[i]);
                         existedList.Add(curGo);
                     }
                 }
             }
 
-            if (data.Length < existedList.Count)
+            if (data.Count < existedList.Count)
             {
-                for (int i = data.Length; i < existedList.Count; i++)
+                for (int i = data.Count; i < existedList.Count; i++)
                 {
                     existedList[i].SetActive(false);
                 }

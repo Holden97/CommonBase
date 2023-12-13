@@ -5,10 +5,9 @@ using UnityEngine.Events;
 
 namespace CommonBase
 {
-    public interface IListItem<T>
+    public interface IListItem
     {
-        public T ItemInfo { get; }
-        void BindData(T data);
+        void BindData(object data);
     }
 
     public interface IToggle
