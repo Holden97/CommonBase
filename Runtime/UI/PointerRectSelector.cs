@@ -13,6 +13,9 @@ namespace CommonBase
     public class PointerRectSelector : MonoSingleton<PointerRectSelector>
     {
         public RectDetetionType rectDetetionType;
+        /// <summary>
+        /// 使用HitCollider方式时使用
+        /// </summary>
         public string colliderTag;
 
         private Vector3 startScreenPosition;
@@ -54,7 +57,7 @@ namespace CommonBase
             SelectedArea.GetComponent<Image>().enabled = true;
         }
 
-        public static bool CheckGroundPosition(Camera camera, string colliderTag, out RaycastHit hit)
+        private static bool CheckGroundPosition(Camera camera, string colliderTag, out RaycastHit hit)
         {
             RaycastHit[] hits = new RaycastHit[10];
             Physics.RaycastNonAlloc(camera.ScreenPointToRay(InputUtils.GetMousePosition()), hits);
@@ -83,7 +86,7 @@ namespace CommonBase
             Vector3 resutl = Vector3.zero;
             switch (rectDetetionType)
             {
-                case RectDetetionType.SCREEN_TO_RAY:
+                case RectDetetionType.HIT_COLLIDER:
                     if (CheckGroundPosition(Camera.main, colliderTag, out var raycastHit))
                     {
                         resutl = raycastHit.point;
@@ -98,6 +101,9 @@ namespace CommonBase
             return resutl;
         }
 
+        /// <summary>
+        /// 绘制效果
+        /// </summary>
         public void Render()
         {
             RenderSelectionArea(lowerLeft, upperRight, selectedArea);
@@ -113,6 +119,9 @@ namespace CommonBase
             SelectedArea.sizeDelta = new Vector2(sX, sY);
         }
 
+        /// <summary>
+        /// 更新信息
+        /// </summary>
         public void OnHolding()
         {
             endScreenPosition = InputUtils.GetMousePosition();
@@ -128,7 +137,7 @@ namespace CommonBase
             /// <summary>
             /// 从屏幕发射射线与指定tag的Collider相交，形成世界空间中的判定矩形
             /// </summary>
-            SCREEN_TO_RAY,
+            HIT_COLLIDER,
             /// <summary>
             /// 将屏幕坐标直接转换为空间坐标，形成世界空间中的判定矩形
             /// </summary>
