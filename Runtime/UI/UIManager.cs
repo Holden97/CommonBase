@@ -14,7 +14,7 @@ namespace CommonBase
         private Stack<UIShowInfoList> uiInfoStack;
         public SO_UIPath uiPath;
 
-        protected GameObject parent;
+        public GameObject parent;
         private GameObject tip;
         public GameObject UICanvas { get; protected set; }
 
@@ -38,7 +38,6 @@ namespace CommonBase
         {
             base.Awake();
             tip = Resources.Load<GameObject>("Tip");
-            parent = GameObject.FindGameObjectWithTag("UICanvas");
             if (parent != null)
             {
                 UICanvas = parent;
