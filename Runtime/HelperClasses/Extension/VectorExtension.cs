@@ -124,6 +124,25 @@ namespace CommonBase
             }
             return max;
         }
+
+        public static Vector2 Rotate(this Vector2 originalVector, float angle)
+        {
+            // 将角度转换为弧度
+            float rotationAngleRadians = angle * Mathf.Deg2Rad;
+
+            // 计算旋转后的向量分量
+            float rotatedX = originalVector.x * Mathf.Cos(rotationAngleRadians) - originalVector.y * Mathf.Sin(rotationAngleRadians);
+            float rotatedY = originalVector.x * Mathf.Sin(rotationAngleRadians) + originalVector.y * Mathf.Cos(rotationAngleRadians);
+
+            // 创建旋转后的向量
+            return new Vector2(rotatedX, rotatedY);
+        }
+
+        public static Vector2 RotateByQuaternion(this Vector2 originalVector, float rotationAngleDegrees)
+        {
+            Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, rotationAngleDegrees);
+            return rotation * originalVector;
+        }
     }
 }
 
