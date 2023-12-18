@@ -52,9 +52,9 @@ namespace CommonBase
 
         }
 
-        public BaseState(int stateName)
+        public BaseState(string stateName)
         {
-            this.stateName = stateName.ToString();
+            this.stateName = stateName;
         }
 
         public void Transfer(string transition)

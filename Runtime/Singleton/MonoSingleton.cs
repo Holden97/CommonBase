@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 
@@ -28,6 +29,7 @@ namespace CommonBase
                         {
                             MonoSingletons.Add(instance.name, instance);
                             IsDirty = false;
+                            DontDestroyOnLoad(instance);
                         }
                     }
                 }

@@ -14,7 +14,9 @@ namespace CommonBase
         private Stack<UIShowInfoList> uiInfoStack;
         public SO_UIPath uiPath;
 
-        protected GameObject parent;
+        public EventSystem uiEventSystem;
+
+        public GameObject parent;
         private GameObject tip;
         public GameObject UICanvas { get; protected set; }
 
@@ -38,7 +40,6 @@ namespace CommonBase
         {
             base.Awake();
             tip = Resources.Load<GameObject>("Tip");
-            parent = GameObject.FindGameObjectWithTag("UICanvas");
             if (parent != null)
             {
                 UICanvas = parent;
@@ -51,6 +52,7 @@ namespace CommonBase
             UICanvas.transform.SetParent(null);
             //this.EventRegister<string>(EventName.CHANGE_SCENE, OnSceneChange);
             DontDestroyOnLoad(UICanvas);
+            DontDestroyOnLoad(uiEventSystem);
             UICanvas.GetComponent<Canvas>().sortingOrder = 1;
             //检查是否创建了EventSystem
             if (GameObject.FindObjectOfType<EventSystem>() == null)

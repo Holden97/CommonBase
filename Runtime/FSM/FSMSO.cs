@@ -1,11 +1,11 @@
-//使用utf-8
+﻿//使用utf-8
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace CommonBase
 {
-    [CreateAssetMenu(fileName = "FSMSO", menuName = "ScriptableObjects/FSMSO", order = 1)]
+    [CreateAssetMenu(fileName = "FSMSO", menuName = "SO/FSMSO", order = 1)]
     [Serializable]
     public class FSMSO : ScriptableObject
     {
