@@ -1,5 +1,6 @@
-//使用utf-8
+﻿//使用utf-8
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace CommonBase
@@ -14,32 +15,34 @@ namespace CommonBase
         /// </summary>
         public bool onlyUseExisted;
 
-        private List<GameObject> existedList;
+        private List<IListItem> existedList;
 
         private void Reset()
         {
             this.itemParent = this.transform;
         }
 
-        private void Awake()
-        {
-            existedList = new List<GameObject>();
-            if (itemParent == null) return;
-            for (int i = 0; i < itemParent.transform.childCount; i++)
-            {
-                existedList.Add(itemParent.transform.GetChild(i).gameObject);
-            }
-        }
-
         public void BindData<T>(IList<T> data)
         {
             if (data == null) { return; }
+            if (itemParent == null)
+            {
+                Debug.LogWarning("You haven't set items' parent.");
+                return;
+            }
+            if (existedList == null)
+            {
+                existedList = itemParent.GetComponentsInChildren<IListItem>().ToList();
+            }
             for (int i = 0; i < data.Count; i++)
             {
                 if (existedList.Count > i)
                 {
-                    existedList[i].SetActive(true);
-                    existedList[i].GetComponent<IListItem>().BindData(data[i]);
+                    existedList[i].BindData(data[i]);
+                    if (existedList[i] is MonoBehaviour m)
+                    {
+                        m.gameObject.SetActive(true);
+                    }
                 }
                 else if (!onlyUseExisted)
                 {
@@ -47,8 +50,9 @@ namespace CommonBase
                     if (curGo != null)
                     {
                         curGo.SetActive(true);
-                        curGo.GetComponent<IListItem>().BindData(data[i]);
-                        existedList.Add(curGo);
+                        var curItem = curGo.GetComponent<IListItem>();
+                        curItem.BindData(data[i]);
+                        existedList.Add(curItem);
                     }
                 }
             }
@@ -57,7 +61,10 @@ namespace CommonBase
             {
                 for (int i = data.Count; i < existedList.Count; i++)
                 {
-                    existedList[i].SetActive(false);
+                    if (existedList[i] is MonoBehaviour m)
+                    {
+                        m.gameObject.SetActive(false);
+                    }
                 }
             }
         }
