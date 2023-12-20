@@ -26,6 +26,7 @@ namespace CommonBase
 
         public bool Contains(string poolName)
         {
+            if (poolInfo == null) { return false; }
             return poolInfo.ContainsKey(poolName);
         }
 
