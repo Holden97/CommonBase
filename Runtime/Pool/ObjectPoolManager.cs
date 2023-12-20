@@ -24,6 +24,11 @@ namespace CommonBase
         {
         }
 
+        public bool Contains(string poolName)
+        {
+            return poolInfo.ContainsKey(poolName);
+        }
+
         public void CreatePool(int poolSize, GameObject poolPrefab, string poolName, Transform parent = null, bool dontDestroyOnLoad = false)
         {
             if (poolInfo == null)
