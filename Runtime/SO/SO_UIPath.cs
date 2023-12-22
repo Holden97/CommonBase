@@ -31,7 +31,7 @@ namespace CommonBase
             this.uiPrefab = uiPrefab;
             this.uiType = uiPrefab.GetComponent<BaseUI>().uiLayer;
             this.fadeType = uiPrefab.GetComponent<BaseUI>().fadeType;
-            this.ecsRemovable = uiPrefab.GetComponent<BaseUI>().ecsRemovable;
+            this.ecsRemovable = uiPrefab.GetComponent<BaseUI>().escRemovable;
         }
     }
 }

@@ -1,4 +1,4 @@
-using CommonBase;
+﻿using CommonBase;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,7 +15,7 @@ public class UIStack : StackPro<BaseUI>
             for (int i = items.Count - 1; i >= 0; i--)
             {
                 BaseUI item = items[i];
-                if (!item.ecsRemovable || !item.IsShowing)
+                if (!item.escRemovable || !item.IsShowing)
                 {
                     continue;
                 }

@@ -24,7 +24,7 @@ namespace CommonBase.Editor
                         var uiComponent = ui.uiPrefab.GetComponent<BaseUI>();
                         uiComponent.uiLayer = ui.uiType;
                         uiComponent.fadeType = ui.fadeType;
-                        uiComponent.ecsRemovable = ui.ecsRemovable;
+                        uiComponent.escRemovable = ui.ecsRemovable;
                         EditorUtility.SetDirty(ui.uiPrefab);
                     }
                 }
