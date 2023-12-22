@@ -22,5 +22,18 @@ namespace CommonBase
                 }
             }
         }
+
+        public static T GetComponentInSibling<T>(this Component c) where T : Component
+        {
+            for (int i = 0; i < c.transform.parent.childCount; i++)
+            {
+                var curComponent = c.transform.parent.GetChild(i).GetComponent<T>();
+                if (curComponent != null)
+                {
+                    return curComponent;
+                }
+            }
+            return null;
+        }
     }
 }
