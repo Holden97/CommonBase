@@ -16,7 +16,8 @@ namespace CommonBase
             Vector2 mousePosition = Input.mousePosition;
 #endif
             var result = Camera.main.ScreenToWorldPoint(mousePosition);
-            Debug.Log($"GetMouseWorldPosition:{result}");
+            if (UIManager.Instance.inDebugMode)
+                Debug.Log($"GetMouseWorldPosition:{result}");
             return result;
         }
 

@@ -10,6 +10,7 @@ namespace CommonBase
 {
     public class UIManager : MonoSingleton<UIManager>
     {
+        public bool inDebugMode = false;
         private Dictionary<UIType, UIStack> uiDic;
         private Stack<UIShowInfoList> uiInfoStack;
         public SO_UIPath uiPath;
