@@ -167,14 +167,22 @@ namespace CommonBase
                     if (curPoolItem == null)
                     {
                         GameObject.Destroy(curObject);
-                        Debug.LogWarning("未创建名称为" + key + "的对象池，已销毁对象，请检查");
+                        Debug.LogWarning("对象并不是从名为" + key + "的对象池中取出，已销毁对象，请检查");
                     }
-                    curPoolItem.hasBeenUsed = false;
+                    else
+                    {
+                        curPoolItem.hasBeenUsed = false;
+                    }
                 }
                 else
                 {
                     GameObject.Destroy(curObject);
                 }
+            }
+            else
+            {
+                GameObject.Destroy(curObject);
+                Debug.LogWarning("未创建名称为" + key + "的对象池，已销毁对象，请检查");
             }
 
         }
