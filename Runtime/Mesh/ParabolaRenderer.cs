@@ -23,7 +23,7 @@ namespace CommonBase
 
         protected virtual void Awake()
         {
-            ObjectPoolManager.Instance.CreatePool(50, body, "ParabolaRenderer");
+            ObjectPoolManager.Instance.CreatePool("ParabolaRenderer", body, 50);
             headGo = Instantiate(head);
             mainCam = Camera.main;
             hits = new RaycastHit[10];

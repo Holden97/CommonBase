@@ -106,7 +106,7 @@ namespace CommonBase
             }
             this.animalSoundDic = new Dictionary<int, AnimalSoundState>();
 
-            ObjectPoolManager.Instance.CreatePool(10, soundPrefab, "sound", dontDestroyOnLoad: true);
+            ObjectPoolManager.Instance.CreatePool("sound", soundPrefab, 10, dontDestroyOnLoad: true);
 
             ;
 

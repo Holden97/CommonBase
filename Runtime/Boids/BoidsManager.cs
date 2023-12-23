@@ -12,7 +12,7 @@ namespace CommonBase
 
         private void Awake()
         {
-            ObjectPoolManager.Instance.CreatePool(200, boidAgent, "boidAgent");
+            ObjectPoolManager.Instance.CreatePool("boidAgent", boidAgent, 200);
 
             for (int i = 0; i < totalAgentsCount; i++)
             {

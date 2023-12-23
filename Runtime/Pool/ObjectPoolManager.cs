@@ -22,6 +22,8 @@ namespace CommonBase
 
         private ObjectPoolManager()
         {
+            poolInfo = new Dictionary<string, Pool>();
+            poolQueue = new Dictionary<int, List<PoolItem<GameObject>>>();
         }
 
         public bool Contains(string poolName)
@@ -30,17 +32,8 @@ namespace CommonBase
             return poolInfo.ContainsKey(poolName);
         }
 
-        public void CreatePool(int poolSize, GameObject poolPrefab, string poolName, Transform parent = null, bool dontDestroyOnLoad = false)
+        public void CreatePool(string poolName, GameObject poolPrefab, int poolSize, Transform parent = null, bool dontDestroyOnLoad = false)
         {
-            if (poolInfo == null)
-            {
-                poolInfo = new Dictionary<string, Pool>();
-            }
-            if (poolQueue == null)
-            {
-                poolQueue = new Dictionary<int, List<PoolItem<GameObject>>>();
-            }
-
             if (poolInfo.ContainsKey(poolName))
             {
                 return;
@@ -171,6 +164,11 @@ namespace CommonBase
                         Find(x =>
                         x.poolInstance.GetInstanceID()
                         == curObject.GetInstanceID());
+                    if (curPoolItem == null)
+                    {
+                        GameObject.Destroy(curObject);
+                        Debug.LogWarning("未创建名称为" + key + "的对象池，已销毁对象，请检查");
+                    }
                     curPoolItem.hasBeenUsed = false;
                 }
                 else
