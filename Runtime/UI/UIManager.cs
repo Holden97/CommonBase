@@ -17,7 +17,8 @@ namespace CommonBase
 
         public EventSystem uiEventSystem;
 
-        public GameObject parent;
+        public GameObject panelParent;
+        public GameObject floatWindowParent;
         private GameObject tip;
         public GameObject UICanvas { get; protected set; }
 
@@ -35,15 +36,16 @@ namespace CommonBase
 
             uiDic.Add(UIType.CANVAS, new UIStack());
             uiDic.Add(UIType.PANEL, new UIStack());
+            uiDic.Add(UIType.FLOAT_WINDOW, new UIStack());
         }
 
         protected override void Awake()
         {
             base.Awake();
             tip = Resources.Load<GameObject>("Tip");
-            if (parent != null)
+            if (panelParent != null)
             {
-                UICanvas = parent;
+                UICanvas = panelParent;
             }
             else
             {
@@ -105,6 +107,17 @@ namespace CommonBase
             return p;
         }
 
+        public T ShowFloatWindow<T>(Vector3 pos, Action<T> OnShow = null, object data = null) where T : BaseUI, new()
+        {
+            var p = Show(OnShow);
+            p.transform.position = pos;
+            if (data != null)
+            {
+                p.UpdateView(data);
+            }
+            return p;
+        }
+
         public void ShowTip(string content)
         {
             var go = Instantiate(tip);
@@ -126,7 +139,7 @@ namespace CommonBase
 
         public T Find<T>() where T : BaseUI, new()
         {
-            if (!parent)
+            if (!panelParent)
             {
                 Debug.LogError("Canvas is null!");
                 return null;
@@ -160,7 +173,7 @@ namespace CommonBase
 
         private T Get<T>(UIType uiType, GameObject go) where T : BaseUI, new()
         {
-            if (!parent)
+            if (!panelParent)
             {
                 Debug.LogError("Canvas is null!");
                 return null;
@@ -179,7 +192,7 @@ namespace CommonBase
             //如果没有，则创建
             if (uiToShow == null)
             {
-                GameObject uiObject = GameObject.Instantiate(go, parent.transform);
+                GameObject uiObject = GameObject.Instantiate(go, panelParent.transform);
                 uiObject.SetActive(false);
                 uiToShow = uiObject.GetComponent<BaseUI>();
                 if (uiToShow == null)
@@ -232,7 +245,7 @@ namespace CommonBase
         }
 
 
-        public T Show<T>(Action<T> OnShow = null) where T : BaseUI, new()
+        private T Show<T>(Action<T> OnShow) where T : BaseUI, new()
         {
             UIInfo realPath = uiPath.uIInfos.Find(x => x.name == $"{typeof(T).Name}");
             if (realPath == null)
@@ -532,9 +545,10 @@ namespace CommonBase
         /// </summary>
         PANEL,
         /// <summary>
-        /// 面板中的组件
+        /// 浮窗
         /// </summary>
-        WIDGET,
+        FLOAT_WINDOW,
+
     }
 
     public enum RectTransformAnchor
