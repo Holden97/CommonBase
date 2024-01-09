@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 //使用utf-8
 using UnityEditor;
 using UnityEngine;
@@ -33,3 +34,4 @@ namespace CommonBase.Editor
     }
 }
 
+#endif

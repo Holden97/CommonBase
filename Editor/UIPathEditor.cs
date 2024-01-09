@@ -1,3 +1,5 @@
+#if UNITY_EDITOR
+
 //使用utf-8
 using System;
 using System.Collections.Generic;
@@ -73,3 +75,5 @@ namespace CommonBase.Editor
         }
     }
 }
+
+#endif

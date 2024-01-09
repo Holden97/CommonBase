@@ -1,4 +1,6 @@
-﻿namespace CommonBase.Editor
+﻿#if UNITY_EDITOR
+
+namespace CommonBase.Editor
 {
     using UnityEngine;
     using UnityEditor;
@@ -118,3 +120,4 @@
         }
     }
 }
+#endif
