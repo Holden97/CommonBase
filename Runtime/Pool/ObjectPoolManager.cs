@@ -207,6 +207,47 @@ namespace CommonBase
             }
         }
 
+        public IEnumerable<GameObject> GetAllActiveObjects(string key)
+        {
+            if (poolInfo.ContainsKey(key))
+            {
+                var curPool = poolInfo[key];
+                if (poolQueue.ContainsKey(curPool.prefabId))
+                {
+                    foreach (PoolItem<GameObject> item in poolQueue[curPool.prefabId])
+                    {
+
+                        if (item.hasBeenUsed)
+                        {
+                            yield return item.poolInstance.gameObject;
+                        }
+                    }
+                }
+            }
+        }
+
+        public int GetAllActiveObjectsCount(string key)
+        {
+            var result = 0;
+            if (poolInfo.ContainsKey(key))
+            {
+                var curPool = poolInfo[key];
+                if (poolQueue.ContainsKey(curPool.prefabId))
+                {
+                    foreach (PoolItem<GameObject> item in poolQueue[curPool.prefabId])
+                    {
+
+                        if (item.hasBeenUsed)
+                        {
+                            result++;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+
         public override void Dispose()
         {
             //poolInfo.Clear();
