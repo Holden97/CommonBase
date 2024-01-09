@@ -134,7 +134,7 @@ namespace CommonBase
                 {
                     Destroy(go);
                 });
-            });
+            }).SetUpdate(true);
         }
 
         public T Find<T>() where T : BaseUI, new()
