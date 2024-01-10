@@ -57,6 +57,7 @@ namespace CommonBase
             this.stateName = stateName;
         }
 
+        //TODO:不够直白，能不能直接转换成指定的状态？
         public void Transfer(string transition)
         {
             this.EventTrigger(TRANSITION_REQ, transition);
