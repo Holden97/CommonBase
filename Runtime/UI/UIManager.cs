@@ -133,7 +133,7 @@ namespace CommonBase
                 .OnComplete(() =>
                 {
                     Destroy(go);
-                });
+                }).SetUpdate(true);
             }).SetUpdate(true);
         }
 
