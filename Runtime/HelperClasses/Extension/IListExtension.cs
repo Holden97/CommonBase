@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace CommonBase
@@ -38,5 +39,6 @@ namespace CommonBase
             var random = UnityEngine.Random.Range(0, list.Count);
             return list[random];
         }
+
     }
 }
