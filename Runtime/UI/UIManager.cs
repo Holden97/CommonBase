@@ -107,10 +107,11 @@ namespace CommonBase
             return p;
         }
 
-        public T ShowFloatWindow<T>(Vector3 pos, Action<T> OnShow = null, object data = null) where T : BaseUI, new()
+        public T ShowFloatWindow<T>(Vector3 pos, Action<T> OnShow = null, object data = null) where T : BaseUI, IFloatWindow, new()
         {
             var p = Show(OnShow);
-            p.transform.position = pos;
+            var floatWindow = p as IFloatWindow;
+            floatWindow.FloatWindowTransform.position = pos;
             if (data != null)
             {
                 p.UpdateView(data);
