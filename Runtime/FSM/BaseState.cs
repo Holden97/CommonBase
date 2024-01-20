@@ -52,6 +52,11 @@ namespace CommonBase
 
         }
 
+        public virtual void OnDispose()
+        {
+
+        }
+
         public BaseState(string stateName)
         {
             this.stateName = stateName;
