@@ -98,7 +98,6 @@ namespace CommonBase
 
         public void OnDestroy()
         {
-            curState.OnStateEnd();
             this.EventUnregister();
         }
 
