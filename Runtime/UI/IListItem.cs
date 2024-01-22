@@ -24,6 +24,7 @@ namespace CommonBase
 
     public interface IToggleGroup
     {
+        public IToggle CurSelectedToggle { get; set; }
         void SelectToggle(IToggle toggle);
         void Initialize();
         List<IToggle> SetToggles(string tag);
