@@ -70,7 +70,7 @@ namespace CommonBase
                     }
                     else
                     {
-                        poolQueue.Add(poolPrefab.GetInstanceID(), new List<PoolItem<GameObject>>());
+                        poolQueue.Add(poolPrefab.GetInstanceID(), new List<PoolItem<GameObject>>() { new PoolItem<GameObject>(go) });
                     }
 
                 }
