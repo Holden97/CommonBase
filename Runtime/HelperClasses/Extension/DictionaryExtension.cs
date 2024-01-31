@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace CommonBase
@@ -31,6 +32,51 @@ namespace CommonBase
             }
             // 或者根据具体情况返回合适的默认值
             return default;
+        }
+
+        /// <summary>
+        /// Works like List.RemoveAll.
+        /// </summary>
+        /// <typeparam name="TKey">Key type</typeparam>
+        /// <typeparam name="TValue">Value type</typeparam>
+        /// <param name="dictionary">Dictionary to remove entries from</param>
+        /// <param name="match">Delegate to match keys</param>
+        /// <returns>Number of entries removed</returns>
+        public static int RemoveAllByKey<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, Predicate<TKey> match)
+        {
+            if (dictionary == null || match == null) return 0;
+            var keysToRemove = dictionary.Keys.Where(k => match(k)).ToList();
+            if (keysToRemove.Count > 0)
+            {
+                foreach (var key in keysToRemove)
+                {
+                    dictionary.Remove(key);
+                }
+            }
+            return keysToRemove.Count;
+        }
+
+        /// <summary>
+        /// Works like List.RemoveAll.
+        /// </summary>
+        /// <typeparam name="TKey">Key type</typeparam>
+        /// <typeparam name="TValue">Value type</typeparam>
+        /// <param name="dictionary">Dictionary to remove entries from</param>
+        /// <param name="match">Delegate to match keys</param>
+        /// <returns>Number of entries removed</returns>
+        public static void RemoveAllByValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, Predicate<TValue> match)
+        {
+            if (dictionary == null || match == null)
+                return;
+            var keys = dictionary.Keys.ToList();
+
+            for (var i = 0; i < keys.Count; i++)
+            {
+                if (match(dictionary[keys[i]]))
+                {
+                    dictionary.Remove(keys[i]);
+                }
+            }
         }
     }
 }

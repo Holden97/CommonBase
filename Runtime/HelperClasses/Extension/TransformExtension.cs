@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace CommonBase
 {
@@ -31,6 +32,55 @@ namespace CommonBase
                 if (curComponent != null)
                 {
                     return curComponent;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Finds children by name, breadth first
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="transformName"></param>
+        /// <returns></returns>
+        public static Transform FindDeepChildBreadthFirst(this Transform parent, string transformName)
+        {
+            Queue<Transform> queue = new Queue<Transform>();
+            queue.Enqueue(parent);
+            while (queue.Count > 0)
+            {
+                Transform child = queue.Dequeue();
+                if (child.name == transformName)
+                {
+                    return child;
+                }
+                foreach (Transform t in child)
+                {
+                    queue.Enqueue(t);
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Finds children by name, depth first
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="transformName"></param>
+        /// <returns></returns>
+        public static Transform FindDeepChildDepthFirst(this Transform parent, string transformName)
+        {
+            foreach (Transform child in parent)
+            {
+                if (child.name == transformName)
+                {
+                    return child;
+                }
+
+                Transform result = child.FindDeepChildDepthFirst(transformName);
+                if (result != null)
+                {
+                    return result;
                 }
             }
             return null;
