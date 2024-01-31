@@ -4,6 +4,17 @@ namespace CommonBase
 {
     public static class VectorExtension
     {
+        private static readonly Vector3 flipOneVectorX = new Vector3(-1f, 1f, 1f);
+        /// <summary>
+        /// Shorthand for writing Vector3(-1, 1, 1).
+        /// </summary>
+        public static Vector3 flipOneX => flipOneVectorX;
+
+        private static readonly Vector3 flipOneVectorY = new Vector3(1f, -1f, 1f);
+        /// <summary>
+        /// Shorthand for writing Vector3(-1, 1, 1).
+        /// </summary>
+        public static Vector3 flipOneY => flipOneVectorY;
         public static Vector2Int undefinedV2Int = new Vector2Int(-1, -1);
         public static Vector3Int ToCell(this Vector3 vector)
         {

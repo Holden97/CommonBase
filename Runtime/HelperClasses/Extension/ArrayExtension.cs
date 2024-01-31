@@ -79,5 +79,17 @@ namespace CommonBase
             }
             return true;
         }
+
+        public static int FirstEmpty<T>(this T[] array) where T : class
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (array[i] == null)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
     }
 }
