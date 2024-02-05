@@ -62,7 +62,7 @@ namespace CommonBase
             AddEventInDic(action, caller);
         }
 
-        private void AddEventInDic(UnityAction<T1, T2> action, object caller)
+        public void AddEventInDic(UnityAction<T1, T2> action, object caller)
         {
             this.actions += action;
             if (objectEventDic.TryGetValue(caller, out var actions))
@@ -124,7 +124,7 @@ namespace CommonBase
         {
             if (eventDic.ContainsKey(name))
             {
-                (eventDic[name] as EventInfo<T1, T2>).actions += action;
+                (eventDic[name] as EventInfo<T1, T2>).AddEventInDic(action, caller);
             }
             else
             {
@@ -148,7 +148,7 @@ namespace CommonBase
         {
             if (eventDic.ContainsKey(name))
             {
-                (eventDic[name] as EventInfo).actions += action;
+                (eventDic[name] as EventInfo).AddEventInDic(action, caller);
             }
             else
             {
