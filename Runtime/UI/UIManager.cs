@@ -460,32 +460,59 @@ namespace CommonBase
             SetManagerProperty(item.uiLayer);
         }
 
-        public void HideAll(UIType uiType, bool destroyIt = false)
+        public void HideAll(UIType uiType, bool destroyIt , int Layer = -100)
         {
             for (int i = uiDic[uiType].Count - 1; i >= 0; i--)
             {
                 BaseUI item = uiDic[uiType][i];
-                item.OnExit();
-                if (destroyIt)
+                if (Layer == -100)
                 {
-                    uiDic[uiType].Remove(item);
-                    item.EventUnregister();
-                    Destroy(item.gameObject);
+                    HideSingle(uiType, destroyIt, item);
                 }
                 else
                 {
-                    item.gameObject.SetActive(false);
+                    if (Layer < item.orderInLayer)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        HideSingle(uiType, destroyIt, item);
+                    }
                 }
-                SetManagerProperty(uiType);
+
             }
         }
 
+        private void HideSingle(UIType uiType, bool destroyIt, BaseUI item)
+        {
+            item.OnExit();
+            if (destroyIt)
+            {
+                uiDic[uiType].Remove(item);
+                item.EventUnregister();
+                Destroy(item.gameObject);
+            }
+            else
+            {
+                item.gameObject.SetActive(false);
+            }
+            SetManagerProperty(uiType);
+        }
 
         public void HideAll(bool destroyIt = false)
         {
             foreach (var item in uiDic)
             {
                 HideAll(item.Key, destroyIt);
+            }
+        }
+
+        public void HideAllLayerBelow(int layer, bool destroyIt = false)
+        {
+            foreach (var item in uiDic)
+            {
+                HideAll(item.Key, destroyIt, layer);
             }
         }
 
@@ -534,6 +561,8 @@ namespace CommonBase
         private void OnGUI()
         {
         }
+
+
     }
     public enum UIType
     {
