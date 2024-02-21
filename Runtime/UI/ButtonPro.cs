@@ -1,4 +1,5 @@
-﻿using CommonBase;
+﻿#if ENABLE_DOTWEEN
+using CommonBase;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -69,3 +70,4 @@ public class ButtonPro : Button
 
     }
 }
+#endif
