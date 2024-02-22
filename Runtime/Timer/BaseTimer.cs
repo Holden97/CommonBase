@@ -5,8 +5,12 @@ namespace CommonBase
 {
     /// <summary>
     /// 计时器类，不支持间隔为0的循环计时器
+    /// 1.单次计时器 延迟x秒后，触发一个事件
+    /// 2.循环计时器 每隔x秒，触发一次事件
+    /// 3.断言计时器，当断言条件为真时，计时器始终每隔X秒，触发一次事件
+    /// 4.有限时长计时器，在有限时间Y内，计时器始终每隔X秒，触发一次事件
     /// </summary>
-    public class Timer
+    public class BaseTimer : ITimer
     {
         public static int seed = 0;
         public int id;
@@ -23,6 +27,13 @@ namespace CommonBase
         /// </summary>
         public Func<bool> assertion;
         public float Progress => (_lastUpdateTime - _startTime) / (_endTime - _startTime);
+
+        public string Name { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public bool IsDone { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public int Owner { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public float TotalTime { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public float pastTime { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
         /// <summary>
         /// 若为true,同时只能注册一个相同名称的计时器
         /// </summary>
@@ -34,13 +45,13 @@ namespace CommonBase
         private float _endTime;
         private bool _isPause;
         /// <summary>
-        /// 计时器单次计时结束
+        /// 计时器触发
         /// </summary>
-        public Action OnComplete;
+        public Action OnTrigger;
         /// <summary>
         /// 计时器最终完成
         /// </summary>
-        private Action OnFinish;
+        private Action OnComplete;
 
         /// <summary>
         /// 构造
@@ -56,12 +67,12 @@ namespace CommonBase
         /// <param name="triggerOnStart"></param>
         /// <param name="singleton"></param>
         /// <param name="assertion">断言，为真时持续执行</param>
-        public Timer(float period, string timerName = null, Action OnStart = null, Action onComplete = null, Action<float> onUpdate = null, ETimerType timerType = ETimerType.trigger, int ownerId = -1, bool isLoop = false, bool triggerOnStart = false, bool singleton = false, Func<bool> assertion = null, Action OnFinish = null)
+        public BaseTimer(float period, string timerName = null, Action OnStart = null, Action onComplete = null, Action<float> onUpdate = null, int ownerId = -1, bool isLoop = false, bool triggerOnStart = false, bool singleton = false, Func<bool> assertion = null, Action OnFinish = null)
         {
             this.id = seed++;
             this.owner = ownerId;
             this.period = period;
-            OnComplete = onComplete;
+            OnTrigger = onComplete;
             AddUpdate(onUpdate);
             this.OnStart = OnStart;
             this.triggerOnStart = triggerOnStart;
@@ -86,7 +97,7 @@ namespace CommonBase
             {
                 Debug.LogError("你指定了一个单例计时器，但未指定它的名称，确定吗？");
             }
-            this.OnFinish = OnFinish;
+            this.OnComplete = OnFinish;
         }
 
         public void AddUpdate(Action<float> onUpdate)
@@ -107,7 +118,7 @@ namespace CommonBase
 
         internal void OnDone()
         {
-            OnComplete?.Invoke();
+            OnTrigger?.Invoke();
             if (isLoop)
             {
                 _startTime = GetWorldTime();
@@ -116,7 +127,7 @@ namespace CommonBase
             else
             {
                 isDone = true;
-                OnFinish?.Invoke();
+                OnComplete?.Invoke();
             }
         }
 
@@ -135,7 +146,7 @@ namespace CommonBase
             if (assertion != null && !assertion.Invoke())
             {
                 isDone = true;
-                OnFinish?.Invoke();
+                OnComplete?.Invoke();
             }
             if (_isPause || isDone) { return; }
             OnUpdate?.Invoke(GetWorldTime() - _lastUpdateTime);
@@ -158,6 +169,39 @@ namespace CommonBase
         {
             return this._startTime + this.period;
         }
+
+        void ITimer.Tick()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class SimpleTimer : ITimer
+    {
+        public float duration;
+        public Action OnComplete;
+
+        public string Name { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public bool IsDone { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public int Owner { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public float TotalTime { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public float pastTime { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        public void Tick()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public interface ITimer
+    {
+        float TotalTime { get; set; }
+        float pastTime { get; set; }
+        string Name { get; set; }
+        bool IsDone { get; set; }
+        int Owner { get; set; }
+
+        void Tick();
     }
 
     public enum ETimerType

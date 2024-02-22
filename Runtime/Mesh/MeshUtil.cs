@@ -117,7 +117,7 @@ namespace CommonBase
             {
                 lineRenderer.SetPosition(i, mesh.vertices[i]);
             }
-            new Timer(duration, onComplete: () =>
+            new BaseTimer(duration, onComplete: () =>
             {
                 GameObject.Destroy(lineRenderer);
             });
