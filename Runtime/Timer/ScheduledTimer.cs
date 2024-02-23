@@ -57,7 +57,7 @@ namespace CommonBase
         /// <param name="triggerOnStart"></param>
         /// <param name="singleton"></param>
         /// <param name="assertion">断言，为真时持续执行</param>
-        public ScheduledTimer(float period, string timerName = null, Action OnStart = null, Action onComplete = null, Action<float> onUpdate = null, int ownerId = -1, bool isLoop = false, bool triggerOnStart = false, bool singleton = false, Func<bool> assertion = null, Action OnFinish = null)
+        public ScheduledTimer(float period, string timerName = null, Action OnStart = null, Action onComplete = null, Action<float> onUpdate = null, int ownerId = -1, bool isLoop = false, bool triggerOnStart = false, bool singleton = false, Func<bool> assertion = null, Action OnFinish = null) : base(period)
         {
             this.id = seed++;
             this.owner = ownerId;
