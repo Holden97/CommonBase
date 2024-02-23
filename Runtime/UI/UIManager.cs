@@ -490,7 +490,7 @@ namespace CommonBase
             if (destroyIt)
             {
                 uiDic[uiType].Remove(item);
-                item.EventUnregister();
+                item.EventUnregisterAll();
                 Destroy(item.gameObject);
             }
             else

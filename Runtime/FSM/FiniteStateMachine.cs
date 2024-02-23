@@ -73,7 +73,7 @@ namespace CommonBase
 
         public void Stop()
         {
-            this.EventUnregister();
+            this.EventUnregisterAll();
         }
 
         private void OnResetReq()
@@ -98,7 +98,7 @@ namespace CommonBase
 
         public void OnDestroy()
         {
-            this.EventUnregister();
+            this.EventUnregisterAll();
         }
 
         /// <summary>

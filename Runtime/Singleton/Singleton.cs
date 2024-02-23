@@ -44,7 +44,7 @@ namespace CommonBase
         public virtual void Dispose()
         {
             instance = null;
-            this.EventUnregister();
+            this.EventUnregisterAll();
         }
     }
 

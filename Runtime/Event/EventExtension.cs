@@ -21,7 +21,7 @@ namespace CommonBase
             EventCenter.Instance.Register(name, action, caller);
         }
 
-        public static void EventUnregister(this IListener listener)
+        public static void EventUnregisterAll(this IListener listener)
         {
             EventCenter.Instance.EventUnregister(listener);
         }

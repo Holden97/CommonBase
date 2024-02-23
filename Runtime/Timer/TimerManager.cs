@@ -4,9 +4,10 @@ namespace CommonBase
 {
     public class TimerManager : Singleton<TimerManager>
     {
-        public Dictionary<int, List<ITimer>> timerDic;
-        private List<ITimer> addTimerList = new List<ITimer>();
-        private List<ITimer> removeTimerList = new List<ITimer>();
+        public static int timerSeed = 0;
+        public Dictionary<int, List<BaseTimer>> timerDic;
+        private List<BaseTimer> addTimerList = new List<BaseTimer>();
+        private List<BaseTimer> removeTimerList = new List<BaseTimer>();
 
         private TimerManager()
         {
@@ -15,7 +16,7 @@ namespace CommonBase
         public override void OnCreateInstance()
         {
             base.OnCreateInstance();
-            timerDic = new Dictionary<int, List<ITimer>>();
+            timerDic = new Dictionary<int, List<BaseTimer>>();
         }
 
         private int GetTimersCout(int instanceID)
@@ -46,12 +47,12 @@ namespace CommonBase
                 {
                     item.Tick();
                 }
-                timerList.Value.RemoveAll(t => t.IsDone);
+                timerList.Value.RemoveAll(t => t.isCompleted);
             }
             //删除旧的计时器
             for (int i = 0; i < removeTimerList.Count; i++)
             {
-                if (timerDic.TryGetValue(removeTimerList[i].Owner, out var timers))
+                if (timerDic.TryGetValue(removeTimerList[i].owner, out var timers))
                 {
                     if (timers.Contains(removeTimerList[i]))
                     {
@@ -70,7 +71,7 @@ namespace CommonBase
             //Debug.Log($"正在计时的计时器个数:{GetAllTimersCout()}");
         }
 
-        public void RegisterTimer(BaseTimer timer)
+        public void RegisterTimer(LoopTimer timer)
         {
             addTimerList.Add(timer);
         }
@@ -79,31 +80,28 @@ namespace CommonBase
         /// 添加计时器，并执行开始的回调
         /// </summary>
         /// <param name="curTimer"></param>
-        private void Add(ITimer timer)
+        private void Add(BaseTimer timer)
         {
-            if (timer is BaseTimer curTimer)
+            if (timer is LoopTimer curTimer)
             {
                 if (timerDic.TryGetValue(curTimer.owner, out var timers))
                 {
-                    if (!curTimer.singleton || (curTimer.singleton && timers.Find(x => x.Name == curTimer.timerName) == null))
+                    //周期大于0的计时器才放入列表中，否则就执行一次
+                    OnStart(curTimer);
+                    if (curTimer.interval > 0)
                     {
-                        //周期大于0的计时器才放入列表中，否则就执行一次
-                        OnStart(curTimer);
-                        if (curTimer.period > 0)
-                        {
-                            timers.Add(curTimer);
-                        }
-                        else
-                        {
-                            curTimer.OnTrigger?.Invoke();
-                        }
+                        timers.Add(curTimer);
+                    }
+                    else
+                    {
+                        curTimer.OnTrigger?.Invoke();
                     }
                 }
                 else
                 {
-                    if (curTimer.period > 0)
+                    if (curTimer.interval > 0)
                     {
-                        this.timerDic.Add(curTimer.owner, new List<ITimer>() { curTimer });
+                        this.timerDic.Add(curTimer.owner, new List<BaseTimer>() { curTimer });
                     }
                     OnStart(curTimer);
                 }
@@ -111,7 +109,7 @@ namespace CommonBase
 
         }
 
-        private static void OnStart(BaseTimer timer)
+        private static void OnStart(LoopTimer timer)
         {
             timer.OnStart?.Invoke();
             if (timer.triggerOnStart)
@@ -120,7 +118,7 @@ namespace CommonBase
             }
         }
 
-        public void UnregisterTimer(BaseTimer timer)
+        public void UnregisterTimer(LoopTimer timer)
         {
             if (timer == null) { return; }
             if (timerDic.TryGetValue(timer.owner, out var timers))
@@ -128,19 +126,6 @@ namespace CommonBase
                 if (timers.Contains(timer))
                 {
                     removeTimerList.Add(timer);
-                }
-            }
-        }
-
-        public void UnregisterTimer(int instanceID, string timerName)
-        {
-            if (timerDic.TryGetValue(instanceID, out var timers))
-            {
-                BaseTimer curTimer = timers.Find(t => t.Name == timerName) as BaseTimer;
-                if (curTimer != null)
-                {
-                    curTimer.Pause();
-                    removeTimerList.Add(curTimer);
                 }
             }
         }

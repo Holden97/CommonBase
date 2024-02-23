@@ -59,7 +59,7 @@ namespace CommonBase
 
         protected virtual void OnDisable()
         {
-            this.EventUnregister();
+            this.EventUnregisterAll();
         }
 
         /// <summary>
