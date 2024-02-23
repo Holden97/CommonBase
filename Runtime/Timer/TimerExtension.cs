@@ -6,12 +6,12 @@ namespace CommonBase
 {
     public static class TimerExtension
     {
-        public static void Register(this LoopTimer timer)
+        public static void Register(this BaseTimer timer)
         {
             TimerManager.Instance.RegisterTimer(timer);
         }
 
-        public static void Unregister(this LoopTimer timer)
+        public static void Unregister(this BaseTimer timer)
         {
             TimerManager.Instance.UnregisterTimer(timer);
         }

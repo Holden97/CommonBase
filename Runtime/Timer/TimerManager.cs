@@ -71,7 +71,7 @@ namespace CommonBase
             //Debug.Log($"正在计时的计时器个数:{GetAllTimersCout()}");
         }
 
-        public void RegisterTimer(LoopTimer timer)
+        public void RegisterTimer(BaseTimer timer)
         {
             addTimerList.Add(timer);
         }
@@ -81,6 +81,12 @@ namespace CommonBase
         /// </summary>
         /// <param name="curTimer"></param>
         private void Add(BaseTimer timer)
+        {
+            TryAddAsLoopTimer(timer);
+            TryAddAsOnceTimer(timer);
+        }
+
+        private void TryAddAsLoopTimer(BaseTimer timer)
         {
             if (timer is LoopTimer curTimer)
             {
@@ -106,10 +112,37 @@ namespace CommonBase
                     OnStart(curTimer);
                 }
             }
-
         }
 
-        private static void OnStart(LoopTimer timer)
+        private void TryAddAsOnceTimer(BaseTimer timer)
+        {
+            if (timer is OnceTimer onceTimer)
+            {
+                if (timerDic.TryGetValue(onceTimer.owner, out var timers))
+                {
+                    //周期大于0的计时器才放入列表中，否则就执行一次
+                    OnStart(onceTimer);
+                    if (onceTimer.interval > 0)
+                    {
+                        timers.Add(onceTimer);
+                    }
+                    else
+                    {
+                        onceTimer.OnTrigger?.Invoke();
+                    }
+                }
+                else
+                {
+                    if (onceTimer.interval > 0)
+                    {
+                        this.timerDic.Add(onceTimer.owner, new List<BaseTimer>() { onceTimer });
+                    }
+                    OnStart(onceTimer);
+                }
+            }
+        }
+
+        private static void OnStart(BaseTimer timer)
         {
             timer.OnStart?.Invoke();
             if (timer.triggerOnStart)
@@ -118,7 +151,7 @@ namespace CommonBase
             }
         }
 
-        public void UnregisterTimer(LoopTimer timer)
+        public void UnregisterTimer(BaseTimer timer)
         {
             if (timer == null) { return; }
             if (timerDic.TryGetValue(timer.owner, out var timers))
