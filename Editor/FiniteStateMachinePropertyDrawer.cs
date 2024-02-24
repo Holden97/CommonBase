@@ -1,11 +1,17 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 
 //使用utf-8
+using Sirenix.OdinInspector.Editor;
+using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace CommonBase.Editor
 {
+#if ODIN_INSPECTOR
+
+#else
     [CustomPropertyDrawer(typeof(FiniteStateMachine))]
     public class FiniteStateMachinePropertyDrawer : PropertyDrawer
     {
@@ -21,5 +27,6 @@ namespace CommonBase.Editor
             return EditorGUIUtility.singleLineHeight;
         }
     }
+#endif
 }
 #endif

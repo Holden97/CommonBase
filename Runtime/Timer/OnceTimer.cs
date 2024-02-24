@@ -7,7 +7,7 @@ namespace CommonBase
     /// </summary>
     public class OnceTimer : BaseTimer
     {
-        public OnceTimer(float duration, Action OnTrigger = null) : base(duration)
+        public OnceTimer(float duration, Action OnTrigger = null) : base()
         {
             this.interval = duration;
             this.OnTrigger = OnTrigger;

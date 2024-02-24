@@ -24,12 +24,13 @@ namespace CommonBase
         protected float _nextTriggerTime;
         protected bool _isPause;
 
-        public BaseTimer(float interval)
+        public bool autoTick = true;
+
+        public BaseTimer()
         {
             this.id = TimerManager.timerSeed++;
 
             isCompleted = false;
-            this.interval = interval;
             _startTime = GetWorldTime();
             _lastUpdateTime = GetWorldTime();
             this._nextTriggerTime = GetNextTriggerTime();
@@ -82,7 +83,7 @@ namespace CommonBase
             return Time.time;
         }
 
-        protected float GetNextTriggerTime()
+        protected virtual float GetNextTriggerTime()
         {
             return this._startTime + this.interval;
         }
