@@ -10,7 +10,7 @@ namespace CommonBase
     public class LoopTimer : BaseTimer
     {
         public LoopTimer(float interval, Action OnStart = null, Action onTrigger = null,
-            int ownerId = -1, bool triggerOnStart = false) : base()
+            int ownerId = -1, bool triggerOnStart = false) : base(interval)
         {
             this.interval = interval;
             this.owner = ownerId;

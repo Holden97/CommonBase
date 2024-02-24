@@ -47,7 +47,7 @@ namespace CommonBase
         /// <summary>
         /// 构造
         /// </summary>
-        /// <param name="period">持续时间，单位/s</param>
+        /// <param name="interval">持续时间，单位/s</param>
         /// <param name="timerName"></param>
         /// <param name="OnStart"></param>
         /// <param name="onComplete"></param>
@@ -58,12 +58,12 @@ namespace CommonBase
         /// <param name="triggerOnStart"></param>
         /// <param name="singleton"></param>
         /// <param name="assertion">断言，为真时持续执行</param>
-        public AssertionTimer(float period, string timerName = null, Action OnStart = null, Action onComplete = null, Action<float> onUpdate = null, int ownerId = -1, bool isLoop = false, bool triggerOnStart = false, bool singleton = false, Func<bool> assertion = null, Action OnFinish = null) : base()
+        public AssertionTimer(float interval, string timerName = null, Action OnStart = null, Action onComplete = null, Action<float> onUpdate = null, int ownerId = -1, bool isLoop = false, bool triggerOnStart = false, bool singleton = false, Func<bool> assertion = null, Action OnFinish = null) : base(interval)
         {
             this.id = seed++;
-            this.interval = period;
+            this.interval = interval;
             this.owner = ownerId;
-            this.period = period;
+            this.period = interval;
             OnTrigger = onComplete;
             AddUpdate(onUpdate);
             this.OnStart = OnStart;

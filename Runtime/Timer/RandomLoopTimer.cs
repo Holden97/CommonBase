@@ -34,12 +34,9 @@ namespace CommonBase
         {
             if (getNextInterval != null)
             {
-                return getNextInterval();
+                this.interval = getNextInterval();
             }
-            else
-            {
-                return 0;
-            }
+            return _startTime + this.interval;
         }
     }
 

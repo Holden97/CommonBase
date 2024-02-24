@@ -22,14 +22,14 @@ namespace CommonBase
         protected float _startTime;
         protected float _lastUpdateTime;
         protected float _nextTriggerTime;
-        protected bool _isPause;
+        protected bool isExpired;
 
         public bool autoTick = true;
 
-        public BaseTimer()
+        public BaseTimer(float interval = 0)
         {
             this.id = TimerManager.timerSeed++;
-
+            this.interval = interval;
             isCompleted = false;
             _startTime = GetWorldTime();
             _lastUpdateTime = GetWorldTime();
@@ -40,7 +40,7 @@ namespace CommonBase
 
         public virtual void Tick()
         {
-            if (_isPause || isCompleted) { return; }
+            if (isExpired || isCompleted) { return; }
             OnUpdate?.Invoke(GetWorldTime() - _lastUpdateTime);
             _lastUpdateTime = GetWorldTime();
             if (_lastUpdateTime > _nextTriggerTime)
@@ -51,9 +51,9 @@ namespace CommonBase
             }
         }
 
-        public void SetDuration(float duration)
+        public void SetInterval(float interval)
         {
-            this.interval = duration;
+            this.interval = interval;
             this._nextTriggerTime = GetNextTriggerTime();
         }
 
@@ -67,14 +67,14 @@ namespace CommonBase
         {
         }
 
-        public void Pause()
+        public void Stop()
         {
-            _isPause = true;
+            isExpired = true;
         }
 
         public void Resume()
         {
-            _isPause = false;
+            isExpired = false;
         }
 
 
