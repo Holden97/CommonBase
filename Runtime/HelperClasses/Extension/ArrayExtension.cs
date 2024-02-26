@@ -19,6 +19,22 @@ namespace CommonBase
             return default;
         }
 
+        public static T FindNotNull<T>(this T[] array, Predicate<T> assertion)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (array[i] == null)
+                {
+                    continue;
+                }
+                if (assertion(array[i]))
+                {
+                    return array[i];
+                }
+            }
+            return default;
+        }
+
         public static List<T> FindAll<T>(this T[] array, Predicate<T> assertion)
         {
             var list = new List<T>();
