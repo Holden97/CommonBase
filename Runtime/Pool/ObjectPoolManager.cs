@@ -142,12 +142,13 @@ namespace CommonBase
                 }
                 else
                 {
-                    Debug.LogWarning($"No pool object for {key}");
+                    Debug.LogError($"未创建键值为{key}的对象池");
                     return null;
                 }
             }
             else
             {
+                Debug.LogError($"未找到键值为{key}的对象池信息配置!");
                 return null;
             }
         }
