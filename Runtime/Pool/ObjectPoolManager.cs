@@ -32,7 +32,7 @@ namespace CommonBase
             return poolInfo.ContainsKey(poolName);
         }
 
-        public void CreatePool(string poolName, GameObject poolPrefab, int poolSize, Transform parent = null, bool dontDestroyOnLoad = false)
+        public void CreatePool(string poolName, GameObject poolPrefab, int poolSize, Transform parent = null, bool dontDestroyOnLoad = false, Action<GameObject> OnCreate = null)
         {
             if (poolInfo.ContainsKey(poolName))
             {
@@ -63,6 +63,7 @@ namespace CommonBase
                         realParent = defaultParent;
                     }
                     go = GameObject.Instantiate(poolPrefab, realParent);
+                    OnCreate?.Invoke(go);
                     go.SetActive(false);
                     if (poolQueue.ContainsKey(poolPrefab.GetInstanceID()))
                     {
