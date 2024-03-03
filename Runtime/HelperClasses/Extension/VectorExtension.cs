@@ -154,6 +154,11 @@ namespace CommonBase
             Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, rotationAngleDegrees);
             return rotation * originalVector;
         }
+
+        public static Vector2 Lerp(Vector2 a, Vector2 b, float amount)
+        {
+            return a + (b - a) * amount;
+        }
     }
 }
 
