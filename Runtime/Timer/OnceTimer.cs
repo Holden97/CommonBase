@@ -12,6 +12,13 @@ namespace CommonBase
             this.interval = interval;
             this.OnTrigger = OnTrigger;
         }
+
+        public void Reset()
+        {
+            this._startTime = GetWorldTime();
+            this._nextTriggerTime = GetNextTriggerTime();
+        }
+
         protected override void OnDone()
         {
             this.OnTrigger?.Invoke();
