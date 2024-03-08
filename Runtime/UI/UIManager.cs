@@ -107,9 +107,9 @@ namespace CommonBase
             return p;
         }
 
-        public T ShowFloatWindow<T>(Vector3 pos, Action<T> OnShow = null, object data = null, Action<T> beforeShow = null) where T : BaseUI, IFloatWindow, new()
+        public T ShowFloatWindow<T>(Vector3 pos, Action<T> OnShow = null, object data = null, Action<T> onCreate = null) where T : BaseUI, IFloatWindow, new()
         {
-            var p = Show(OnShow, beforeShow);
+            var p = Show(OnShow, onCreate);
             var floatWindow = p as IFloatWindow;
             floatWindow.FloatWindowTransform.position = pos;
             if (data != null)
@@ -172,7 +172,7 @@ namespace CommonBase
             }
         }
 
-        private T Get<T>(UIType uiType, GameObject go) where T : BaseUI, new()
+        private T Get<T>(UIType uiType, GameObject go, Action<T> beforeShow) where T : BaseUI, new()
         {
             if (!panelParent)
             {
@@ -194,8 +194,8 @@ namespace CommonBase
             if (uiToShow == null)
             {
                 GameObject uiObject = GameObject.Instantiate(go, panelParent.transform);
-                uiObject.SetActive(false);
-                uiToShow = uiObject.GetComponent<BaseUI>();
+                uiToShow = uiObject.GetComponent<T>();
+                beforeShow?.Invoke(uiToShow as T);
                 if (uiToShow == null)
                 {
                     Debug.LogError("创建的UI并没有挂载BaseUI组件!");
@@ -206,6 +206,7 @@ namespace CommonBase
                 }
                 uiDic[uiType].Push(uiToShow);
                 uiToShow.Initialize();
+                uiObject.SetActive(false);
             }
 
             //如果需要覆盖其他面板，则覆盖
@@ -246,7 +247,7 @@ namespace CommonBase
         }
 
 
-        private T Show<T>(Action<T> OnShow, Action<T> beforeShow = null) where T : BaseUI, new()
+        private T Show<T>(Action<T> OnShow, Action<T> onCreate = null) where T : BaseUI, new()
         {
             UIInfo realPath = uiPath.uIInfos.Find(x => x.name == $"{typeof(T).Name}");
             if (realPath == null)
@@ -254,12 +255,12 @@ namespace CommonBase
                 Debug.LogError($"{typeof(T).Name} 在UI_PATH配置中未找到");
                 return null;
             }
-            var uiToShow = Get<T>(realPath.uiType, realPath.uiPrefab);
-            ShowInside(uiToShow, OnShow, beforeShow);
+            var uiToShow = Get<T>(realPath.uiType, realPath.uiPrefab, onCreate);
+            ShowInside(uiToShow, OnShow);
             return uiToShow as T;
         }
 
-        private void ShowInside<T>(BaseUI uiToShow, Action<T> onShow = null, Action<T> beforeShow = null) where T : BaseUI, new()
+        private void ShowInside<T>(BaseUI uiToShow, Action<T> onShow = null) where T : BaseUI, new()
         {
             uiToShow.transform.DOKill();
             var i = uiToShow.transform.parent.childCount - 1;
@@ -289,7 +290,6 @@ namespace CommonBase
             {
                 uiToShow.transform.SetAsFirstSibling();
             }
-            beforeShow?.Invoke(uiToShow as T);
             switch (uiToShow.fadeType)
             {
                 case PanelFadeType.None:
@@ -569,6 +569,7 @@ namespace CommonBase
         /// </summary>
         public void ConstrainFullyInGameWindow(RectTransform floatTransform)
         {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(floatTransform);
             // UI 的真实坐标
             var pos = floatTransform.anchoredPosition;
 
