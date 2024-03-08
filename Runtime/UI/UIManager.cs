@@ -107,9 +107,9 @@ namespace CommonBase
             return p;
         }
 
-        public T ShowFloatWindow<T>(Vector3 pos, Action<T> OnShow = null, object data = null) where T : BaseUI, IFloatWindow, new()
+        public T ShowFloatWindow<T>(Vector3 pos, Action<T> OnShow = null, object data = null, Action<T> beforeShow = null) where T : BaseUI, IFloatWindow, new()
         {
-            var p = Show(OnShow);
+            var p = Show(OnShow, beforeShow);
             var floatWindow = p as IFloatWindow;
             floatWindow.FloatWindowTransform.position = pos;
             if (data != null)
@@ -246,7 +246,7 @@ namespace CommonBase
         }
 
 
-        private T Show<T>(Action<T> OnShow) where T : BaseUI, new()
+        private T Show<T>(Action<T> OnShow, Action<T> beforeShow = null) where T : BaseUI, new()
         {
             UIInfo realPath = uiPath.uIInfos.Find(x => x.name == $"{typeof(T).Name}");
             if (realPath == null)
@@ -255,11 +255,11 @@ namespace CommonBase
                 return null;
             }
             var uiToShow = Get<T>(realPath.uiType, realPath.uiPrefab);
-            ShowInside(uiToShow, OnShow);
+            ShowInside(uiToShow, OnShow, beforeShow);
             return uiToShow as T;
         }
 
-        private void ShowInside<T>(BaseUI uiToShow, Action<T> OnShow = null) where T : BaseUI, new()
+        private void ShowInside<T>(BaseUI uiToShow, Action<T> onShow = null, Action<T> beforeShow = null) where T : BaseUI, new()
         {
             uiToShow.transform.DOKill();
             var i = uiToShow.transform.parent.childCount - 1;
@@ -289,6 +289,7 @@ namespace CommonBase
             {
                 uiToShow.transform.SetAsFirstSibling();
             }
+            beforeShow?.Invoke(uiToShow as T);
             switch (uiToShow.fadeType)
             {
                 case PanelFadeType.None:
@@ -315,7 +316,7 @@ namespace CommonBase
                     break;
             }
             uiToShow.OnEnter();
-            OnShow?.Invoke(uiToShow as T);
+            onShow?.Invoke(uiToShow as T);
             SetManagerProperty(uiToShow.uiLayer);
         }
 
@@ -460,7 +461,7 @@ namespace CommonBase
             SetManagerProperty(item.uiLayer);
         }
 
-        public void HideAll(UIType uiType, bool destroyIt , int Layer = -100)
+        public void HideAll(UIType uiType, bool destroyIt, int Layer = -100)
         {
             for (int i = uiDic[uiType].Count - 1; i >= 0; i--)
             {
@@ -560,6 +561,30 @@ namespace CommonBase
 
         private void OnGUI()
         {
+        }
+
+        /// <summary>
+        /// 限制UI完全显示在屏幕内
+        /// https://huotuyouxi.com/2021/12/26/unity-tips-017/#%E9%99%90%E5%88%B6-UI-%E8%8C%83%E5%9B%B4
+        /// </summary>
+        public void ConstrainFullyInGameWindow(RectTransform floatTransform)
+        {
+            // UI 的真实坐标
+            var pos = floatTransform.anchoredPosition;
+
+            // UI 的大小尺寸
+            var size = floatTransform.sizeDelta;
+
+            // 计算屏幕的尺寸
+            float xDistance = Screen.width;
+            float yDistance = Screen.height;
+
+            // 限制 UI 坐标最大最小值
+            float x = Mathf.Clamp(pos.x, floatTransform.pivot.x * size.x, xDistance - (1 - floatTransform.pivot.x) * size.x);
+            float y = Mathf.Clamp(pos.y, floatTransform.pivot.y * size.y, yDistance - (1 - floatTransform.pivot.y) * size.y);
+
+            // 调整 UI 坐标
+            floatTransform.position = new Vector2(x, y);
         }
 
 
