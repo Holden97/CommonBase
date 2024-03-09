@@ -17,6 +17,8 @@ namespace CommonBase
         {
             this._startTime = GetWorldTime();
             this._nextTriggerTime = GetNextTriggerTime();
+            isExpired = false;
+            isCompleted = false;
         }
 
         protected override void OnDone()
