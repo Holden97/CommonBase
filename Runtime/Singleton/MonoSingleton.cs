@@ -15,10 +15,10 @@ namespace CommonBase
         {
             get
             {
-                if (AppIsQuit)
-                {
-                    return null;
-                }
+                //if (AppIsQuit)
+                //{
+                //    return null;
+                //}
                 if (instance == null)
                 {
                     instance = FindObjectOfType<T>();
