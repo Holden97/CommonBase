@@ -544,13 +544,13 @@ namespace CommonBase
             return false;
         }
 
-        public bool CloseCurrent(UIType uIType = UIType.PANEL)
+        public bool CloseCurrent(UIType uIType = UIType.PANEL, bool destroyIt = false)
         {
 
-            var curUI = uiDic[uIType].PopFirstActive();
+            var curUI = uiDic[uIType].PeekFirstActive();
             if (curUI != null)
             {
-                HideInside(curUI, true);
+                HideInside(curUI, destroyIt);
                 return true;
             }
             else

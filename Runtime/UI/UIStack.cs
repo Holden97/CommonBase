@@ -22,11 +22,32 @@ public class UIStack : StackPro<BaseUI>
                 items.RemoveAt(items.Count - 1);
                 return item;
             }
-            return default(BaseUI);
+            return default;
         }
         else
         {
-            return default(BaseUI);
+            return default;
+        }
+    }
+
+    public BaseUI PeekFirstActive()
+    {
+        if (items.Count > 0)
+        {
+            for (int i = items.Count - 1; i >= 0; i--)
+            {
+                BaseUI item = items[i];
+                if (!item.escRemovable || !item.IsShowing)
+                {
+                    continue;
+                }
+                return item;
+            }
+            return default;
+        }
+        else
+        {
+            return default;
         }
     }
 }
