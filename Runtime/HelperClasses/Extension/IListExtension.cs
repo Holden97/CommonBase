@@ -36,6 +36,7 @@ namespace CommonBase
 
         public static T Random<T>(this IList<T> list)
         {
+            if (list == null || list.Count == 0) return default;
             var random = UnityEngine.Random.Range(0, list.Count);
             return list[random];
         }
