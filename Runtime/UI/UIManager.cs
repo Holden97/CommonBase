@@ -100,10 +100,7 @@ namespace CommonBase
         public T ShowPanel<T>(Action<T> OnShow = null, object data = null) where T : BaseUI, new()
         {
             var p = Show(OnShow);
-            if (data != null)
-            {
-                p.UpdateView(data);
-            }
+            p.UpdateView(data);
             return p;
         }
 
@@ -112,10 +109,7 @@ namespace CommonBase
             var p = Show(OnShow, onCreate);
             var floatWindow = p as IFloatWindow;
             floatWindow.FloatWindowTransform.position = pos;
-            if (data != null)
-            {
-                p.UpdateView(data);
-            }
+            p.UpdateView(data);
             return p;
         }
 
