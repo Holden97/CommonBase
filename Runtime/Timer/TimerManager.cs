@@ -1,25 +1,28 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace CommonBase
 {
-    public class TimerManager : Singleton<TimerManager>
+    public class TimerManager : MonoSingleton<TimerManager>
     {
         public static int timerSeed = 0;
         public Dictionary<int, List<BaseTimer>> timerDic;
-        private List<BaseTimer> addTimerList = new List<BaseTimer>();
-        private List<BaseTimer> removeTimerList = new List<BaseTimer>();
+        private List<BaseTimer> addTimerList;
+        private List<BaseTimer> removeTimerList;
 
         private TimerManager()
         {
         }
 
-        public override void OnCreateInstance()
+        public override void Initialize()
         {
-            base.OnCreateInstance();
+            base.Initialize();
             timerDic = new Dictionary<int, List<BaseTimer>>();
+            addTimerList = new List<BaseTimer>();
+            removeTimerList = new List<BaseTimer>();
         }
 
-        private int GetTimersCout(int instanceID)
+        private int GetTimersCount(int instanceID)
         {
             var curOwner = timerDic.TryGetValue(instanceID, out var timers);
             if (timers == null) { return 0; }
@@ -36,12 +39,10 @@ namespace CommonBase
             return result;
         }
 
-        public override void Tick()
+        private void Update()
         {
-
             //foreach在MoveNext还在执行的过程中不能够修改每个item中的值，比如这里就不能修改每个timerList中的值
-            base.Tick();
-            foreach (var timerList in timerDic)
+            foreach (var timerList in timerDic.ToList())
             {
                 foreach (var item in timerList.Value)
                 {
