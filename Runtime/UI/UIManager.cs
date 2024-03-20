@@ -162,7 +162,7 @@ namespace CommonBase
             }
             else
             {
-                Debug.LogError($"未找到{typeof(T)}类型的UI！");
+                Debug.LogWarning($"未找到{typeof(T)}类型的UI！");
             }
         }
 
