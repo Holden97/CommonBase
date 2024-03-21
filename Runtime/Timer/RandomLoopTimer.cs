@@ -5,7 +5,7 @@ namespace CommonBase
 {
     /// <summary>
     /// 计时器类，不支持间隔为0的循环计时器
-    /// 循环计时器 每隔x秒，触发一次事件
+    /// 随机循环计时器 每隔x秒，触发一次事件
     /// </summary>
     public class RandomLoopTimer : BaseTimer
     {
