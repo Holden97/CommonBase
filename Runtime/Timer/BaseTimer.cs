@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CommonBase;
+using System;
 using UnityEngine;
 
 namespace CommonBase
@@ -36,7 +37,18 @@ namespace CommonBase
             this._nextTriggerTime = GetNextTriggerTime();
         }
 
-        public float CurProgress => (_lastUpdateTime - _startTime) / (_nextTriggerTime - _startTime);
+        public float CurProgress
+        {
+            get
+            {
+                if (_nextTriggerTime == _startTime)
+                {
+                    Debug.LogError("触发时间与开始时间相同，请检查！");
+                    return 1;
+                }
+                return (_lastUpdateTime - _startTime) / (_nextTriggerTime - _startTime);
+            }
+        }
 
         public virtual void Tick()
         {
@@ -86,6 +98,14 @@ namespace CommonBase
         protected virtual float GetNextTriggerTime()
         {
             return this._startTime + this.interval;
+        }
+
+        public void Reset()
+        {
+            this._startTime = GetWorldTime();
+            this._nextTriggerTime = GetNextTriggerTime();
+            isExpired = false;
+            isCompleted = false;
         }
 
     }

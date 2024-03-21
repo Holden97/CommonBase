@@ -13,14 +13,6 @@ namespace CommonBase
             this.OnTrigger = OnTrigger;
         }
 
-        public void Reset()
-        {
-            this._startTime = GetWorldTime();
-            this._nextTriggerTime = GetNextTriggerTime();
-            isExpired = false;
-            isCompleted = false;
-        }
-
         protected override void OnDone()
         {
             this.OnTrigger?.Invoke();
