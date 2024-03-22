@@ -35,12 +35,19 @@ namespace CommonBase
             isExpired = true;
         }
 
-        public void Start()
+        public virtual void Start()
         {
             this._startTime = GetWorldTime();
             this._lastUpdateTime = GetWorldTime();
             this._nextTriggerTime = GetNextTriggerTime();
             isExpired = false;
+            isCompleted = false;
+
+            this.OnStart?.Invoke();
+            if (this.triggerOnStart)
+            {
+                this.OnTrigger?.Invoke();
+            }
         }
 
         public float CurProgress
@@ -105,14 +112,5 @@ namespace CommonBase
         {
             return this._startTime + this.interval;
         }
-
-        public void Reset()
-        {
-            this._startTime = GetWorldTime();
-            this._nextTriggerTime = GetNextTriggerTime();
-            isExpired = false;
-            isCompleted = false;
-        }
-
     }
 }

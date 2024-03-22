@@ -21,6 +21,12 @@ namespace CommonBase
             this.totalLoopCount = loopCount;
         }
 
+        public override void Start()
+        {
+            curLoopCount = 0;
+            base.Start();
+        }
+
         protected override void OnDone()
         {
             this.OnTrigger?.Invoke();
