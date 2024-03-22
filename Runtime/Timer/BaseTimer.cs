@@ -32,9 +32,15 @@ namespace CommonBase
             this.id = TimerManager.timerSeed++;
             this.interval = interval;
             isCompleted = false;
-            _startTime = GetWorldTime();
-            _lastUpdateTime = GetWorldTime();
+            isExpired = true;
+        }
+
+        public void Start()
+        {
+            this._startTime = GetWorldTime();
+            this._lastUpdateTime = GetWorldTime();
             this._nextTriggerTime = GetNextTriggerTime();
+            isExpired = false;
         }
 
         public float CurProgress

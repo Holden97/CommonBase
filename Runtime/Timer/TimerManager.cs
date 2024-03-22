@@ -74,6 +74,7 @@ namespace CommonBase
 
         public void RegisterTimer(BaseTimer timer)
         {
+            timer.Start();
             addTimerList.Add(timer);
         }
 
