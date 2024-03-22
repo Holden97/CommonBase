@@ -9,13 +9,16 @@ namespace CommonBase
     /// </summary>
     public class LoopTimer : BaseTimer
     {
+        public int totalLoopCount;
+        public int curLoopCount;
         public LoopTimer(float interval, Action OnStart = null, Action onTrigger = null,
-            int ownerId = -1, bool triggerOnStart = false) : base(interval)
+            int ownerId = -1, bool triggerOnStart = false, int loopCount = -1) : base(interval)
         {
             this.owner = ownerId;
             this.OnStart = OnStart;
             this.triggerOnStart = triggerOnStart;
             this.OnTrigger = onTrigger;
+            this.totalLoopCount = loopCount;
         }
 
         protected override void OnDone()
@@ -23,6 +26,11 @@ namespace CommonBase
             this.OnTrigger?.Invoke();
             this._startTime = GetWorldTime();
             this._nextTriggerTime = GetNextTriggerTime();
+            this.curLoopCount++;
+            if (this.totalLoopCount <= curLoopCount && totalLoopCount != -1)
+            {
+                this.isCompleted = true;
+            }
         }
     }
 
