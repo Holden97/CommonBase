@@ -63,6 +63,7 @@ namespace CommonBase
                         realParent = defaultParent;
                     }
                     go = GameObject.Instantiate(poolPrefab, realParent);
+                    go.AddComponent<PoolIdentityComponent>().Init(poolName);
                     OnCreate?.Invoke(go);
                     go.GetOrAddComponent<PoolIdentityComponent>().Init(poolName);
                     go.SetActive(false);
@@ -134,6 +135,7 @@ namespace CommonBase
                     else
                     {
                         var go = GameObject.Instantiate(curPool.poolPrefab, defaultParent);
+                        go.AddComponent<PoolIdentityComponent>().Init(key);
                         var poolItem = new PoolItem<GameObject>(go);
                         poolQueue[curPool.prefabId].Add(poolItem);
                         poolItem.poolInstance.SetActive(true);
@@ -293,17 +295,6 @@ namespace CommonBase
                 poolInfo.Remove(key);
                 poolQueue.Remove(curPool.prefabId);
             }
-        }
-
-        public GameObject Instantiate(GameObject prefab, int size = 20)
-        {
-            CreatePool(prefab.name, prefab, size);
-            return GetNextObject(prefab.name);
-        }
-
-        public void Destroy(GameObject intance)
-        {
-
         }
     }
 
