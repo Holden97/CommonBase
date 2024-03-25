@@ -8,7 +8,9 @@ namespace CommonBase
         public static int timerSeed = 0;
         public Dictionary<int, List<BaseTimer>> timerDic;
         private List<BaseTimer> addTimerList;
+        private List<BaseTimer> addTimerTempList;
         private List<BaseTimer> removeTimerList;
+        private List<BaseTimer> removeTimerTempList;
 
         private TimerManager()
         {
@@ -51,24 +53,26 @@ namespace CommonBase
                 timerList.Value.RemoveAll(t => t.isCompleted);
             }
             //删除旧的计时器
-            for (int i = 0; i < removeTimerList.Count; i++)
+            removeTimerTempList = removeTimerList.ToList();
+            foreach (BaseTimer bt in removeTimerTempList)
             {
-                if (timerDic.TryGetValue(removeTimerList[i].owner, out var timers))
+                if (timerDic.TryGetValue(bt.owner, out var timers))
                 {
-                    if (timers.Contains(removeTimerList[i]))
+                    if (timers.Contains(bt))
                     {
-                        timers.Remove(removeTimerList[i]);
+                        timers.Remove(bt);
+
                     }
                 }
             }
-            removeTimerList?.Clear();
+            removeTimerList?.RemoveAll(x => removeTimerTempList.Contains(x));
             //添加新的计时器
-            for (int i = 0; i < addTimerList.Count; i++)
+            addTimerTempList = addTimerList.ToList();
+            foreach (var timer in addTimerTempList)
             {
-                var timer = addTimerList[i];
                 Add(timer);
             }
-            addTimerList?.Clear();
+            addTimerList?.RemoveAll(x => addTimerTempList.Contains(x));
             //Debug.Log($"正在计时的计时器个数:{GetAllTimersCout()}");
         }
 
