@@ -94,28 +94,30 @@ namespace CommonBase
 
         private void TryAddAsLoopTimer(BaseTimer timer)
         {
-            if (timer is LoopTimer curTimer)
+            if (timer is LoopTimer loopTimer)
             {
-                if (timerDic.TryGetValue(curTimer.owner, out var timers))
+                if (timerDic.TryGetValue(loopTimer.owner, out var timers))
                 {
+                    //已有，那么不执行
+                    if (timers.Contains(loopTimer)) return;
                     //周期大于0的计时器才放入列表中，否则就执行一次
-                    Launch(curTimer);
-                    if (curTimer.interval > 0)
+                    Launch(loopTimer);
+                    if (loopTimer.interval > 0)
                     {
-                        timers.Add(curTimer);
+                        timers.Add(loopTimer);
                     }
                     else
                     {
-                        curTimer.OnTrigger?.Invoke();
+                        loopTimer.OnTrigger?.Invoke();
                     }
                 }
                 else
                 {
-                    if (curTimer.interval > 0)
+                    if (loopTimer.interval > 0)
                     {
-                        this.timerDic.Add(curTimer.owner, new List<BaseTimer>() { curTimer });
+                        this.timerDic.Add(loopTimer.owner, new List<BaseTimer>() { loopTimer });
                     }
-                    Launch(curTimer);
+                    Launch(loopTimer);
                 }
             }
         }
@@ -126,6 +128,8 @@ namespace CommonBase
             {
                 if (timerDic.TryGetValue(onceTimer.owner, out var timers))
                 {
+                    //已有，那么不执行
+                    if (timers.Contains(onceTimer)) return;
                     //周期大于0的计时器才放入列表中，否则就执行一次
                     Launch(onceTimer);
                     if (onceTimer.interval > 0)
