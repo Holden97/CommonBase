@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace CommonBase
 {
@@ -18,7 +19,8 @@ namespace CommonBase
     public class Transfer
     {
         public string startState;
-        public string trransition;
+        [FormerlySerializedAs("trransition")]
+        public string transition;
         public string endState;
     }
 

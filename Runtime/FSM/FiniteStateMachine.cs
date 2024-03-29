@@ -126,7 +126,7 @@ namespace CommonBase
         {
             foreach (var transfer in this.FSMData.transfers)
             {
-                if (transfer.trransition == transition && transfer.startState == this.curState.stateName)
+                if (transfer.transition == transition && transfer.startState == this.curState.stateName)
                 {
                     this.curState.OnStateEnd();
                     this.curState = this.GetState(transfer.endState);
