@@ -1,4 +1,5 @@
-﻿using CommonBase;
+﻿using Codice.Client.BaseCommands.Merge.Restorer;
+using CommonBase;
 using System;
 using UnityEngine;
 
@@ -35,7 +36,21 @@ namespace CommonBase
             isExpired = true;
         }
 
+        /// <summary>
+        /// 开始，如果已经开始，则不重新开始
+        /// </summary>
         public virtual void Start()
+        {
+            if (isExpired || isCompleted)
+            {
+                Reset();
+            }
+        }
+
+        /// <summary>
+        /// 强制重置
+        /// </summary>
+        public virtual void Reset()
         {
             this._startTime = GetWorldTime();
             this._lastUpdateTime = GetWorldTime();
@@ -93,6 +108,11 @@ namespace CommonBase
         }
 
         public void Stop()
+        {
+            isExpired = true;
+        }
+
+        public void Pause()
         {
             isExpired = true;
         }

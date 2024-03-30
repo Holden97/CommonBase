@@ -6,14 +6,16 @@ namespace CommonBase
 {
     public static class TimerExtension
     {
-        public static void Register(this BaseTimer timer)
+        public static T Register<T>(this T timer) where T : BaseTimer
         {
             TimerManager.Instance.RegisterTimer(timer);
+            return timer;
         }
 
-        public static void Unregister(this BaseTimer timer)
+        public static T Unregister<T>(this T timer) where T : BaseTimer
         {
             TimerManager.Instance.UnregisterTimer(timer);
+            return timer;
         }
     }
 }
