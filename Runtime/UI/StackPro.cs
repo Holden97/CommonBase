@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace CommonBase
 {
-    public class StackPro<T> : IEnumerable<T>
+    public class StackPro<T> : IEnumerable<T> where T : BaseUI
     {
         public int Count => items.Count;
         protected List<T> items = new List<T>();
@@ -12,6 +13,12 @@ namespace CommonBase
         public void Push(T baseUI)
         {
             items.Add(baseUI);
+            items.Sort(new UIComparer());
+            Debug.Log("uisort:--------");
+            foreach (var item in items)
+            {
+                Debug.Log("uiname:" + item.name + ",uilayer" + item.uiLayer.ToString() + ",uisortlayer:" + item.orderInLayer);
+            }
         }
 
         public T Pop()
@@ -103,6 +110,32 @@ namespace CommonBase
                 {
                     throw new IndexOutOfRangeException("Index is out of range.");
                 }
+            }
+        }
+    }
+
+    class UIComparer : IComparer<BaseUI>
+    {
+
+        public UIComparer()
+        {
+        }
+
+        /// <summary>
+        /// 自定义距离排序器
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public int Compare(BaseUI x, BaseUI y)
+        {
+            if (x.uiLayer != y.uiLayer)
+            {
+                return x.uiLayer.CompareTo(y.uiLayer);
+            }
+            else
+            {
+                return x.orderInLayer.CompareTo(y.orderInLayer);
             }
         }
     }

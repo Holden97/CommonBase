@@ -129,6 +129,7 @@ namespace CommonBase
                 if (transfer.transition == transition && transfer.startState == this.curState.stateName)
                 {
                     this.curState.OnStateEnd();
+                    Debug.Log("FSM change state from " + curState.stateName + " to " + this.GetState(transfer.endState).stateName);
                     this.curState = this.GetState(transfer.endState);
                     this.curState.OnStateStart();
                 }
