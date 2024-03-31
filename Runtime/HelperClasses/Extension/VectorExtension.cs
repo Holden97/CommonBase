@@ -160,6 +160,30 @@ namespace CommonBase
         {
             return a + (b - a) * amount;
         }
+
+        public static Vector2 GetRandomAdjacentVector(this Vector2 originalVector, float maxAngle)
+        {
+            // 在指定角度范围内生成随机弧度
+            float randomAngleRad = UnityEngine.Random.Range(-maxAngle / 2, maxAngle / 2);
+
+            // 使用Quaternion进行旋转
+            Quaternion rotation = Quaternion.Euler(0, 0, randomAngleRad);
+            Vector2 randomAdjacentVector = rotation * originalVector;
+
+            return randomAdjacentVector;
+        }
+
+        public static Vector3 GetRandomAdjacentVector(this Vector3 originalVector, float maxAngle)
+        {
+            // 在指定角度范围内生成随机弧度
+            float randomAngleRad = UnityEngine.Random.Range(-maxAngle / 2, maxAngle / 2);
+
+            // 使用Quaternion进行旋转
+            Quaternion rotation = Quaternion.Euler(0, 0, randomAngleRad);
+            Vector2 randomAdjacentVector = rotation * originalVector;
+
+            return randomAdjacentVector;
+        }
     }
 }
 
