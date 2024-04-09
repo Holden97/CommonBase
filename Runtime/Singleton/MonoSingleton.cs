@@ -11,6 +11,11 @@ namespace CommonBase
         private static T instance;
         protected static bool AppIsQuit;
         private static bool IsDirty = true;
+
+        public static T GetCurrentInstance()
+        {
+            return instance;
+        }
         public static T Instance
         {
             get
@@ -75,7 +80,7 @@ namespace CommonBase
             {
                 if (instance != this)
                 {
-                    Debug.LogError($"已经有{typeof(T).Name}的单例示例,新生成的示例已被删除。");
+                    Debug.LogError($"已经有{typeof(T).Name}的单例实例,新生成的实例已被删除。");
                     Destroy(gameObject);
                 }
             }
