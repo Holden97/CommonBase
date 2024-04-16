@@ -101,14 +101,9 @@ namespace CommonBase
                     //已有，那么不执行
                     if (timers.Contains(loopTimer)) return;
                     //周期大于0的计时器才放入列表中，否则就执行一次
-                    Launch(loopTimer);
                     if (loopTimer.interval > 0)
                     {
                         timers.Add(loopTimer);
-                    }
-                    else
-                    {
-                        loopTimer.OnTrigger?.Invoke();
                     }
                 }
                 else
@@ -117,7 +112,6 @@ namespace CommonBase
                     {
                         this.timerDic.Add(loopTimer.owner, new List<BaseTimer>() { loopTimer });
                     }
-                    Launch(loopTimer);
                 }
             }
         }
@@ -131,14 +125,9 @@ namespace CommonBase
                     //已有，那么不执行
                     if (timers.Contains(onceTimer)) return;
                     //周期大于0的计时器才放入列表中，否则就执行一次
-                    Launch(onceTimer);
                     if (onceTimer.interval > 0)
                     {
                         timers.Add(onceTimer);
-                    }
-                    else
-                    {
-                        onceTimer.OnTrigger?.Invoke();
                     }
                 }
                 else
@@ -147,17 +136,7 @@ namespace CommonBase
                     {
                         this.timerDic.Add(onceTimer.owner, new List<BaseTimer>() { onceTimer });
                     }
-                    Launch(onceTimer);
                 }
-            }
-        }
-
-        public static void Launch(BaseTimer timer)
-        {
-            timer.OnStart?.Invoke();
-            if (timer.triggerOnStart)
-            {
-                timer.OnTrigger?.Invoke();
             }
         }
 
