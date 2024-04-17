@@ -1,5 +1,6 @@
 ﻿
 using System;
+using UnityEngine;
 
 namespace CommonBase
 {
@@ -35,7 +36,11 @@ namespace CommonBase
 
         public static string ToRemarkValueColor(this string str, float selfValue, float d = 0)
         {
-            if (selfValue < d)
+            if (Mathf.Approximately(selfValue, d))
+            {
+                return str;
+            }
+            else if (selfValue < d)
             {
                 str = str.ToRed();
             }
