@@ -118,7 +118,7 @@ namespace CommonBase
             }
         }
 
-        public GameObject GetNextObject(string key, bool autoRecycle = false)
+        public GameObject GetNextObject(string key, bool autoActive = true)
         {
             if (poolInfo.ContainsKey(key))
             {
@@ -128,7 +128,7 @@ namespace CommonBase
                     var curGo = poolQueue[curPool.prefabId].Find(x => !x.hasBeenUsed);
                     if (curGo != null)
                     {
-                        curGo.poolInstance.SetActive(true);
+                        curGo.poolInstance.SetActive(autoActive);
                         curGo.hasBeenUsed = true;
                         return curGo.poolInstance;
                     }
