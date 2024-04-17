@@ -22,7 +22,6 @@ namespace CommonBase
         public List<BaseState> statesDic;
         public FSMSO fsmData;
 
-
         public FSMSO FSMData { get => fsmData; private set { fsmData = value; } }
 
         public BaseState GetState(string key)
@@ -123,7 +122,7 @@ namespace CommonBase
             }
         }
 
-        public void Transfer(string transition)
+        private void Transfer(string transition)
         {
             foreach (var transfer in this.FSMData.transfers)
             {
