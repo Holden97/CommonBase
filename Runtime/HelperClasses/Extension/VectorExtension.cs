@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace CommonBase
@@ -171,6 +172,13 @@ namespace CommonBase
             Vector2 randomAdjacentVector = rotation * originalVector;
 
             return randomAdjacentVector;
+        }
+
+        public static Vector2 GetRandomAdjacentVector(this Vector3 original, Vector3 target, float maxAngle)
+        {
+            Vector2 originalVector = target - original;
+            // 在指定角度范围内生成随机弧度
+            return GetRandomAdjacentVector(originalVector, maxAngle);
         }
 
         public static Vector3 GetRandomAdjacentVector(this Vector3 originalVector, float maxAngle)
