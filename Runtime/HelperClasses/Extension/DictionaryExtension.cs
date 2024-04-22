@@ -42,7 +42,7 @@ namespace CommonBase
         /// <param name="dictionary">Dictionary to remove entries from</param>
         /// <param name="match">Delegate to match keys</param>
         /// <returns>Number of entries removed</returns>
-        public static int RemoveAllByKey<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, Predicate<TKey> match)
+        public static int RemoveAllByKey<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, Predicate<TKey> match, Action<TKey> onRemove = null)
         {
             if (dictionary == null || match == null) return 0;
             var keysToRemove = dictionary.Keys.Where(k => match(k)).ToList();
@@ -50,6 +50,7 @@ namespace CommonBase
             {
                 foreach (var key in keysToRemove)
                 {
+                    onRemove?.Invoke(key);
                     dictionary.Remove(key);
                 }
             }
