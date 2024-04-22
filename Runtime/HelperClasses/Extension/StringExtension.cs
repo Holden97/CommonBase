@@ -34,6 +34,16 @@ namespace CommonBase
             return str;
         }
 
+        public static string ToGrey(this string str)
+        {
+            return "<color =#8C8C8C>" + str + "</color>";
+        }
+
+        public static string ToWhite(this string str)
+        {
+            return "<color =#FFFFFF>" + str + "</color>";
+        }
+
         public static string ToRemarkValueColor(this string str, float selfValue, float d = 0)
         {
             if (Mathf.Approximately(selfValue, d))
