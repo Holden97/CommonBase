@@ -25,6 +25,14 @@ namespace CommonBase
             }
         }
 
+        public static void SetExistedFloat(this Animator animator, string paramName, float value)
+        {
+            if (animator.HasParameter(paramName))
+            {
+                animator.SetFloat(paramName, value);
+            }
+        }
+
         public static void SetExistedTrigger(this Animator animator, string paramName)
         {
             if (animator.HasParameter(paramName))
