@@ -36,12 +36,12 @@ namespace CommonBase
 
         public static string ToGrey(this string str)
         {
-            return "<color =#8C8C8C>" + str + "</color>";
+            return "<color=#8C8C8C>" + str + "</color>";
         }
 
         public static string ToWhite(this string str)
         {
-            return "<color =#FFFFFF>" + str + "</color>";
+            return "<color=#FFFFFF>" + str + "</color>";
         }
 
         public static string ToRemarkValueColor(this string str, float selfValue, float d = 0)
