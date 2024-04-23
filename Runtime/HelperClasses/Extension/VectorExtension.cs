@@ -164,6 +164,10 @@ namespace CommonBase
 
         public static Vector2 GetRandomAdjacentVector(this Vector2 originalVector, float maxAngle)
         {
+            if (originalVector == default)
+            {
+                return default;
+            }
             // 在指定角度范围内生成随机弧度
             float randomAngleRad = UnityEngine.Random.Range(-maxAngle / 2, maxAngle / 2);
 

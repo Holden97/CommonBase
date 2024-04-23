@@ -11,14 +11,16 @@ namespace CommonBase
     {
         public int totalLoopCount;
         public int curLoopCount;
+        private Action OnComplete;
         public LoopTimer(float interval, Action OnStart = null, Action onTrigger = null,
-            int ownerId = -1, bool triggerOnStart = false, int loopCount = -1) : base(interval)
+            int ownerId = -1, bool triggerOnStart = false, int loopCount = -1, Action onComplete = null) : base(interval)
         {
             this.owner = ownerId;
             this.OnStart = OnStart;
             this.triggerOnStart = triggerOnStart;
             this.OnTrigger = onTrigger;
             this.totalLoopCount = loopCount;
+            this.OnComplete = onComplete;
         }
 
         public override void Start()
@@ -36,6 +38,7 @@ namespace CommonBase
             if (this.totalLoopCount <= curLoopCount && totalLoopCount != -1)
             {
                 this.isCompleted = true;
+                this.OnComplete?.Invoke();
             }
         }
     }
