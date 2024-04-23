@@ -561,7 +561,7 @@ namespace CommonBase
         /// 限制UI完全显示在屏幕内
         /// https://huotuyouxi.com/2021/12/26/unity-tips-017/#%E9%99%90%E5%88%B6-UI-%E8%8C%83%E5%9B%B4
         /// </summary>
-        public void ConstrainFullyInGameWindow(RectTransform floatTransform)
+        public static void ConstrainFullyInGameWindow(RectTransform floatTransform)
         {
             LayoutRebuilder.ForceRebuildLayoutImmediate(floatTransform);
             // UI 的真实坐标
