@@ -65,7 +65,7 @@ namespace CommonBase
         /// <param name="dictionary">Dictionary to remove entries from</param>
         /// <param name="match">Delegate to match keys</param>
         /// <returns>Number of entries removed</returns>
-        public static void RemoveAllByValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, Predicate<TValue> match)
+        public static void RemoveAllByValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, Predicate<TValue> match, Action<TValue> onRemove = null)
         {
             if (dictionary == null || match == null)
                 return;
@@ -75,6 +75,27 @@ namespace CommonBase
             {
                 if (match(dictionary[keys[i]]))
                 {
+                    onRemove?.Invoke(dictionary[keys[i]]);
+                    dictionary.Remove(keys[i]);
+                }
+            }
+        }
+
+        public static void RemoveAllByValueNonAlloc<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, in List<TKey> keys, Predicate<TValue> match, Action<TValue> onRemove = null)
+        {
+            if (dictionary == null || match == null)
+                return;
+            keys.Clear();
+            foreach (var item in dictionary)
+            {
+                keys.Add(item.Key);
+            }
+
+            for (var i = 0; i < keys.Count; i++)
+            {
+                if (match(dictionary[keys[i]]))
+                {
+                    onRemove?.Invoke(dictionary[keys[i]]);
                     dictionary.Remove(keys[i]);
                 }
             }
