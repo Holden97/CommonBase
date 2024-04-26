@@ -6,10 +6,10 @@ namespace CommonBase
     public class BaseState
     {
         public static string TRANSITION_REQ = "TRANSITION_REQ";
-        public static string RESET_REQ = "RESET_REQ";
 
         public int stateID;
         public string stateName;
+        private FiniteStateMachine fsm;
         public int StateID { get => stateID; }
 
         /// <summary>
@@ -57,20 +57,16 @@ namespace CommonBase
 
         }
 
-        public BaseState(string stateName)
+        public BaseState(string stateName, FiniteStateMachine fsm)
         {
             this.stateName = stateName;
+            this.fsm = fsm;
         }
 
         //TODO:不够直白，能不能直接转换成指定的状态？
         public void Transfer(string transition)
         {
             this.EventTrigger(TRANSITION_REQ, transition);
-        }
-
-        public void RequestReset()
-        {
-            this.EventTrigger(RESET_REQ);
         }
     }
 

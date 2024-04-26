@@ -37,11 +37,11 @@ namespace CommonBase
             foreach (var item in fsmData.states)
             {
                 var type = assembly.GetType(item.stateClass);
-                ConstructorInfo constructor = type.GetConstructor(new[] { typeof(string) });
+                ConstructorInfo constructor = type.GetConstructor(new[] { typeof(string), typeof(FiniteStateMachine) });
 
                 if (constructor != null)
                 {
-                    curState = (BaseState)constructor.Invoke(new object[] { item.stateName });
+                    curState = (BaseState)constructor.Invoke(new object[] { item.stateName, this });
                     AddState(curState);
                     if (item.isDefaultState)
                     {
@@ -65,7 +65,6 @@ namespace CommonBase
         public void Start()
         {
             this.EventRegister<string>(BaseState.TRANSITION_REQ, OnTransistionReq);
-            this.EventRegister(BaseState.RESET_REQ, OnResetReq);
             curState = defaultState;
             curState.OnStateStart();
         }
@@ -102,7 +101,7 @@ namespace CommonBase
         }
 
         /// <summary>
-        /// 重置FSM状态[不清除数据]
+        /// 重置FSM状态[重置状态]
         /// </summary>
         public void Reset()
         {
@@ -112,6 +111,17 @@ namespace CommonBase
             }
             curState = defaultState;
             curState.OnStateStart();
+        }
+
+        /// <summary>
+        /// 重置FSM状态[不重置状态]
+        /// </summary>
+        public void ResetData()
+        {
+            foreach (var item in statesDic)
+            {
+                item.OnReset();
+            }
         }
 
         public void AddState(BaseState state)
@@ -128,12 +138,17 @@ namespace CommonBase
             {
                 if (transfer.transition == transition && transfer.startState == this.curState.stateName)
                 {
-                    this.curState.OnStateEnd();
-                    Debug.Log("FSM change state from " + curState.stateName + " to " + this.GetState(transfer.endState).stateName);
-                    this.curState = this.GetState(transfer.endState);
-                    this.curState.OnStateStart();
+                    TransferTo(transfer.endState);
                 }
             }
+        }
+
+        public void TransferTo(string endState)
+        {
+            this.curState.OnStateEnd();
+            Debug.Log("FSM change state from " + curState.stateName + " to " + this.GetState(endState).stateName);
+            this.curState = this.GetState(endState);
+            this.curState.OnStateStart();
         }
 
         public void RemoveState(BaseState state)
