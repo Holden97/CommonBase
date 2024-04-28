@@ -64,6 +64,9 @@ namespace CommonBase
                     }
                     go = GameObject.Instantiate(poolPrefab, realParent);
                     go.AddComponent<PoolIdentityComponent>().Init(poolName);
+#if UNITY_EDITOR
+                    go.gameObject.name = $"{poolName}_{go.GetInstanceID()}";
+#endif
                     OnCreate?.Invoke(go);
                     go.GetOrAddComponent<PoolIdentityComponent>().Init(poolName);
                     go.SetActive(false);
