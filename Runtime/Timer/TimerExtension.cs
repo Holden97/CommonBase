@@ -14,8 +14,12 @@ namespace CommonBase
 
         public static T Unregister<T>(this T timer) where T : BaseTimer
         {
-            TimerManager.Instance.UnregisterTimer(timer);
-            return timer;
+            if (TimerManager.GetCurrentInstance() != null)
+            {
+                TimerManager.Instance.UnregisterTimer(timer);
+                return timer;
+            }
+            return null;
         }
     }
 }
