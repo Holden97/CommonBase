@@ -203,10 +203,8 @@ namespace CommonBase
 
         }
 
-        public void PutbackAll(string key, bool isMainThread = true)
+        public void PutbackAll(string key, bool active = false, Vector3 pos = default)
         {
-            //只有主线程可以使用SetActive方法
-            if (!isMainThread) return;
 
             if (poolInfo.ContainsKey(key))
             {
@@ -215,8 +213,14 @@ namespace CommonBase
                 {
                     foreach (PoolItem<GameObject> item in poolQueue[curPool.prefabId])
                     {
-
-                        item.poolInstance.gameObject.SetActive(false);
+                        if (!active)
+                        {
+                            item.poolInstance.gameObject.SetActive(active);
+                        }
+                        else
+                        {
+                            item.poolInstance.gameObject.transform.position = pos;
+                        }
                         item.hasBeenUsed = false;
                     }
                 }
