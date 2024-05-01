@@ -1,4 +1,4 @@
-//使用UTF-8
+﻿//使用UTF-8
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,8 +9,9 @@ namespace CommonBase
     {
         public static bool HasParameter(this Animator animator, string paramName)
         {
-            foreach (var param in animator.parameters)
+            for (int i = 0; i < animator.parameters.Length; i++)
             {
+                AnimatorControllerParameter param = animator.parameters[i];
                 if (param.name == paramName)
                     return true;
             };
