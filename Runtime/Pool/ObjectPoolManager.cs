@@ -160,14 +160,22 @@ namespace CommonBase
             }
         }
 
-        public void Putback(string key, GameObject curObject)
+        public void Putback(string key, GameObject curObject, bool active = false, Vector3 pos = default)
         {
             if (poolInfo.ContainsKey(key))
             {
                 var curPool = poolInfo[key];
                 if (poolQueue.ContainsKey(curPool.prefabId))
                 {
-                    curObject.SetActive(false);
+                    if (!active)
+                    {
+                        curObject.SetActive(false);
+                    }
+                    else
+                    {
+                        //不设置为false，而是放到指定位置
+                        curObject.transform.position = pos;
+                    }
                     var curPoolItem = poolQueue[curPool.prefabId].
                         Find(x =>
                         x.poolInstance.GetInstanceID()
