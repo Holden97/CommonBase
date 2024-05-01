@@ -15,14 +15,14 @@ namespace CommonBase
         public float interval;
         public Action OnStart;
         public Action OnTrigger;
-        public Action OnDispose;
+        private Action OnStop;
         public Action<float> OnUpdate;
         public bool triggerOnStart;
 
         protected float _startTime;
         protected float _lastUpdateTime;
         protected float _nextTriggerTime;
-        protected bool isExpired;
+        protected bool isStopped;
 
         public bool autoTick = true;
 
@@ -31,7 +31,7 @@ namespace CommonBase
             this.id = TimerManager.timerSeed++;
             this.interval = interval;
             isCompleted = false;
-            isExpired = true;
+            isStopped = true;
         }
 
         /// <summary>
@@ -39,9 +39,18 @@ namespace CommonBase
         /// </summary>
         public virtual void Start()
         {
-            if (isExpired || isCompleted)
+            if (isStopped || isCompleted)
             {
                 Reset();
+
+                isStopped = false;
+                isCompleted = false;
+
+                this.OnStart?.Invoke();
+                if (this.triggerOnStart)
+                {
+                    this.OnTrigger?.Invoke();
+                }
             }
         }
 
@@ -53,14 +62,6 @@ namespace CommonBase
             this._startTime = GetWorldTime();
             this._lastUpdateTime = GetWorldTime();
             this._nextTriggerTime = GetNextTriggerTime();
-            isExpired = false;
-            isCompleted = false;
-
-            this.OnStart?.Invoke();
-            if (this.triggerOnStart)
-            {
-                this.OnTrigger?.Invoke();
-            }
         }
 
         public float CurProgress
@@ -78,7 +79,7 @@ namespace CommonBase
 
         public virtual void Tick()
         {
-            if (isExpired || isCompleted) { return; }
+            if (isStopped || isCompleted) { return; }
             OnUpdate?.Invoke(GetWorldTime() - _lastUpdateTime);
             _lastUpdateTime = GetWorldTime();
             if (_lastUpdateTime > _nextTriggerTime)
@@ -95,10 +96,11 @@ namespace CommonBase
             this._nextTriggerTime = GetNextTriggerTime();
         }
 
+        [Obsolete]
         public void Dispose()
         {
             isCompleted = true;
-            OnDispose?.Invoke();
+            OnStop?.Invoke();
         }
 
         protected virtual void OnDone()
@@ -107,17 +109,13 @@ namespace CommonBase
 
         public void Stop()
         {
-            isExpired = true;
-        }
-
-        public void Pause()
-        {
-            isExpired = true;
+            isStopped = true;
+            OnStop?.Invoke();
         }
 
         public void Resume()
         {
-            isExpired = false;
+            isStopped = false;
         }
 
 

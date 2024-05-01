@@ -143,6 +143,7 @@ namespace CommonBase
         public void UnregisterTimer(BaseTimer timer)
         {
             if (timer == null) { return; }
+            timer.Dispose();
             if (timerDic.TryGetValue(timer.owner, out var timers))
             {
                 if (timers.Contains(timer))

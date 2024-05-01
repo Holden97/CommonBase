@@ -45,7 +45,7 @@ namespace CommonBase
 
         public override void Tick()
         {
-            if (isExpired || isCompleted) { return; }
+            if (isStopped || isCompleted) { return; }
             var curtime = GetWorldTime();
             var delta = GetWorldTime() - _lastUpdateTime;
             curTime += delta;

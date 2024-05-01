@@ -78,7 +78,7 @@ namespace CommonBase
                 isDone = true;
                 OnComplete?.Invoke();
             }
-            if (isExpired || isDone) { return; }
+            if (isStopped || isDone) { return; }
             OnUpdate?.Invoke(GetWorldTime() - _lastUpdateTime);
             _lastUpdateTime = GetWorldTime();
             if (_lastUpdateTime > _nextTriggerTime)
