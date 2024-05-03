@@ -9,10 +9,10 @@ namespace CommonBase
     {
         public static bool HasParameter(this Animator animator, string paramName)
         {
+            if (animator == null || animator.parameters == null) return false;
             for (int i = 0; i < animator.parameters.Length; i++)
             {
-                AnimatorControllerParameter param = animator.parameters[i];
-                if (param.name == paramName)
+                if (animator.parameters[i].name == paramName)
                     return true;
             };
             return false;
