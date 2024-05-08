@@ -582,6 +582,28 @@ namespace CommonBase
             floatTransform.position = new Vector2(x, y);
         }
 
+        public static void ConstrainFullyInMainCanvas(RectTransform floatTransform)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(floatTransform);
+            // UI 的世界坐标
+            var pos = floatTransform.transform.position;
+
+            // UI 的大小尺寸
+            var size = floatTransform.sizeDelta;
+
+            // 计算屏幕的尺寸
+            var canvasRect = UIManager.Instance.UICanvas.GetComponent<Canvas>().GetComponent<RectTransform>();
+            float xDistance = canvasRect.rect.width;
+            float yDistance = canvasRect.rect.height;
+
+            // 限制 UI 坐标最大最小值
+            float x = Mathf.Clamp(pos.x, floatTransform.pivot.x * size.x, xDistance - (1 - floatTransform.pivot.x) * size.x);
+            float y = Mathf.Clamp(pos.y, floatTransform.pivot.y * size.y, yDistance - (1 - floatTransform.pivot.y) * size.y);
+
+            // 调整 UI 坐标
+            floatTransform.position = new Vector2(x, y);
+        }
+
 
     }
     public enum UIType
