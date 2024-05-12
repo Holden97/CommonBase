@@ -455,6 +455,12 @@ namespace CommonBase
             SetManagerProperty(item.uiLayer);
         }
 
+        /// <summary>
+        /// 隐藏所有ui
+        /// </summary>
+        /// <param name="uiType"></param>
+        /// <param name="destroyIt"></param>
+        /// <param name="Layer">指定小于等于此layer的层级的面板均被隐藏</param>
         public void HideAll(UIType uiType, bool destroyIt, int Layer = -100)
         {
             for (int i = uiDic[uiType].Count - 1; i >= 0; i--)
@@ -468,7 +474,7 @@ namespace CommonBase
                 {
                     if (Layer < item.orderInLayer)
                     {
-                        return;
+                        continue;
                     }
                     else
                     {
