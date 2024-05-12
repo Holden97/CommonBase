@@ -472,7 +472,7 @@ namespace CommonBase
                 }
                 else
                 {
-                    if (Layer < item.orderInLayer)
+                    if (Layer <= item.orderInLayer)
                     {
                         continue;
                     }
@@ -509,11 +509,11 @@ namespace CommonBase
             }
         }
 
-        public void HideAllLayerBelow(int layer, bool destroyIt = false)
+        public void HideAllLayerBelow(int layerExcluded, bool destroyIt = false)
         {
             foreach (var item in uiDic)
             {
-                HideAll(item.Key, destroyIt, layer);
+                HideAll(item.Key, destroyIt, layerExcluded);
             }
         }
 
