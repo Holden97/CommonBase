@@ -67,6 +67,17 @@ namespace CommonBase
         /// </summary>
         /// <param name="o"></param>
         public virtual void UpdateView(object o) { }
+
+        public virtual GameObject AddPrefab(GameObject o)
+        {
+            GameObject go = GameObject.Instantiate(o);
+            go.transform.parent = this.transform;
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localRotation = Quaternion.identity;
+            go.transform.localScale = Vector3.one;
+
+            return go;
+        }
     }
 
     internal interface IView
