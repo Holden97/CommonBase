@@ -4,6 +4,10 @@ using UnityEngine;
 
 namespace CommonBase
 {
+    /// <summary>
+    /// ui基类
+    /// 注意，ui的事件默认会在disable时注销，所以最好不要在Awake时注册事件
+    /// </summary>
     [RequireComponent(typeof(CanvasGroup))]
 #if UNITY_EDITOR
     [CanEditMultipleObjects]
