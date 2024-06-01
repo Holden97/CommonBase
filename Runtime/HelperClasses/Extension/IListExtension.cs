@@ -59,7 +59,7 @@ namespace CommonBase
 
             for (int i = 0; i < count; i++)
             {
-                var current = tempList[UnityEngine.Random.Range(0, list.Count)];
+                var current = tempList[UnityEngine.Random.Range(0, tempList.Count)];
                 tempList.Remove(current);
                 result.Add(current);
             }
