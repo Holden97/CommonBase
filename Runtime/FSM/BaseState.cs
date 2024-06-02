@@ -9,7 +9,7 @@ namespace CommonBase
 
         public int stateID;
         public string stateName;
-        private FiniteStateMachine fsm;
+        protected FiniteStateMachine fsm;
         public int StateID { get => stateID; }
 
         /// <summary>
