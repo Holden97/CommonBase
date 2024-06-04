@@ -8,9 +8,6 @@ namespace CommonBase
         public int id;
         public int owner;
 
-        public float totalTime;
-        public float pastTime;
-
         public bool isCompleted;
         public float interval;
         public Action OnStart;
