@@ -93,6 +93,12 @@ namespace CommonBase
             this._nextTriggerTime = GetNextTriggerTime();
         }
 
+        public void AddInterval(float offset)
+        {
+            this.interval += offset;
+            this._nextTriggerTime = GetNextTriggerTime();
+        }
+
         [Obsolete]
         public void Dispose()
         {

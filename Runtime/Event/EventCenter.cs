@@ -184,6 +184,11 @@ namespace CommonBase
         {
             if (eventDic.ContainsKey(name))
             {
+                if (eventDic[name] is not EventInfo<T>)
+                {
+                    Debug.LogError($"trigger is {typeof(EventInfo<T>)},but register is {eventDic[name].GetType()}");
+                    return;
+                }
                 (eventDic[name] as EventInfo<T>).actions?.Invoke(info);
             }
         }
