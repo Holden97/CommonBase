@@ -13,6 +13,7 @@ namespace CommonBase
         public Action OnStart;
         public Action OnTrigger;
         private Action OnStop;
+        private Action OnResume;
         public Action<float> OnUpdate;
         public bool triggerOnStart;
 
@@ -99,18 +100,24 @@ namespace CommonBase
             this._nextTriggerTime = GetNextTriggerTime();
         }
 
-        [Obsolete]
-        public void Dispose()
-        {
-            isCompleted = true;
-            OnStop?.Invoke();
-        }
-
         protected virtual void OnDone()
         {
         }
 
-        public void Stop()
+        /// <summary>
+        /// 完成，随时可以丢弃
+        /// </summary>
+        public void Complete()
+        {
+            isStopped = true;
+            isCompleted = true;
+            OnStop?.Invoke();
+        }
+
+        /// <summary>
+        /// 暂停，保持引用，不能随意丢弃
+        /// </summary>
+        public void Paused()
         {
             isStopped = true;
             OnStop?.Invoke();
@@ -119,6 +126,7 @@ namespace CommonBase
         public void Resume()
         {
             isStopped = false;
+            OnResume?.Invoke();
         }
 
 

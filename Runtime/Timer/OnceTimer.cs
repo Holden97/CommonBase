@@ -17,7 +17,7 @@ namespace CommonBase
         protected override void OnDone()
         {
             this.OnTrigger?.Invoke();
-            this.Dispose();
+            this.Complete();
         }
     }
 }
