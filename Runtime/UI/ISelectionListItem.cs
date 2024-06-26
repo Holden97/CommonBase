@@ -6,7 +6,7 @@ using UnityEngine.Events;
 
 namespace CommonBase
 {
-    public interface ILoopListItem : IListItem
+    public interface ISelectionListItem : IListItem
     {
         void OnSelected();
         void OnUnselected();
