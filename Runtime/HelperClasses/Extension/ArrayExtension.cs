@@ -107,5 +107,36 @@ namespace CommonBase
             }
             return -1;
         }
+
+        public static List<T> Find<T>(this T[,] array, Func<T, bool> predict)
+        {
+            var list = new List<T>();
+            for (int i = 0; i < array.GetLength(0); i++)
+            {
+                for (int j = 0; j < array.GetLength(1); j++)
+                {
+                    if (predict.Invoke(array[i, j]))
+                    {
+                        list.Add(array[i, j]);
+                    }
+                }
+            }
+            return list;
+        }
+
+        public static bool TryGet<T>(this T[,] array, int x, int y, out T result)
+        {
+            var list = new List<T>();
+            if (x < 0 || y < 0 || x >= array.GetLength(0) || y >= array.GetLength(1))
+            {
+                result = default(T);
+                return false;
+            }
+            else
+            {
+                result = array[x, y];
+                return true;
+            }
+        }
     }
 }
