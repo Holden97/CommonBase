@@ -124,6 +124,21 @@ namespace CommonBase
             return list;
         }
 
+        public static T FindFirst<T>(this T[,] array, Func<T, bool> predict)
+        {
+            for (int i = 0; i < array.GetLength(0); i++)
+            {
+                for (int j = 0; j < array.GetLength(1); j++)
+                {
+                    if (predict.Invoke(array[i, j]))
+                    {
+                        return array[i, j];
+                    }
+                }
+            }
+            return default;
+        }
+
         public static bool TryGet<T>(this T[,] array, int x, int y, out T result)
         {
             var list = new List<T>();
