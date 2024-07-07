@@ -8,11 +8,13 @@ namespace CommonBase
     {
         public T poolInstance;
         public bool hasBeenUsed;
+        public Transform parent;
 
-        public PoolItem(T poolInstance, bool hasBeenUsed = false)
+        public PoolItem(T poolInstance, bool hasBeenUsed, Transform parent)
         {
             this.poolInstance = poolInstance;
             this.hasBeenUsed = hasBeenUsed;
+            this.parent = parent;
         }
     }
 }

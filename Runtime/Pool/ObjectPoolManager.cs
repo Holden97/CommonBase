@@ -53,16 +53,16 @@ namespace CommonBase
                 for (int i = 0; i < pool.poolSize; i++)
                 {
                     GameObject go;
-                    Transform realParent = null;
+                    Transform actualParent = null;
                     if (parent != null)
                     {
-                        realParent = parent;
+                        actualParent = parent;
                     }
                     else
                     {
-                        realParent = defaultParent;
+                        actualParent = defaultParent;
                     }
-                    go = GameObject.Instantiate(poolPrefab, realParent);
+                    go = GameObject.Instantiate(poolPrefab, actualParent);
                     go.AddComponent<PoolIdentityComponent>().Init(poolName);
 #if UNITY_EDITOR
                     go.gameObject.name = $"{poolName}_{go.GetInstanceID()}";
@@ -72,11 +72,11 @@ namespace CommonBase
                     go.SetActive(false);
                     if (poolQueue.ContainsKey(poolPrefab.GetInstanceID()))
                     {
-                        poolQueue[poolPrefab.GetInstanceID()].Add(new PoolItem<GameObject>(go));
+                        poolQueue[poolPrefab.GetInstanceID()].Add(new PoolItem<GameObject>(go, false, actualParent));
                     }
                     else
                     {
-                        poolQueue.Add(poolPrefab.GetInstanceID(), new List<PoolItem<GameObject>>() { new PoolItem<GameObject>(go) });
+                        poolQueue.Add(poolPrefab.GetInstanceID(), new List<PoolItem<GameObject>>() { new PoolItem<GameObject>(go, false, actualParent) });
                     }
 
                 }
@@ -139,7 +139,7 @@ namespace CommonBase
                     {
                         var go = GameObject.Instantiate(curPool.poolPrefab, defaultParent);
                         go.AddComponent<PoolIdentityComponent>().Init(key);
-                        var poolItem = new PoolItem<GameObject>(go);
+                        var poolItem = new PoolItem<GameObject>(go, false, defaultParent);
                         poolQueue[curPool.prefabId].Add(poolItem);
                         poolItem.poolInstance.SetActive(true);
                         poolItem.hasBeenUsed = true;
@@ -205,7 +205,7 @@ namespace CommonBase
 
         public void PutbackAll(string key, bool active = false, Vector3 pos = default)
         {
-
+            if (key == null) return;
             if (poolInfo.ContainsKey(key))
             {
                 var curPool = poolInfo[key];
@@ -221,6 +221,7 @@ namespace CommonBase
                         {
                             item.poolInstance.gameObject.transform.position = pos;
                         }
+                        item.poolInstance.transform.SetParent(item.parent);
                         item.hasBeenUsed = false;
                     }
                 }
