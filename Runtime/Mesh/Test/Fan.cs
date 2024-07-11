@@ -11,19 +11,14 @@ namespace CommonBase
         public Vector3 center;
         public float radius;
         /// <summary>
-        ///扇形弧度（角度制）
-        /// </summary>
-        public float arcDegree;
-        /// <summary>
         /// 扇形中线角度（角度制）
         /// </summary>
         public float centerlineDegree;
 
-        public Fan(Vector3 center, float radius, float arcDegree, float centerlineDegree)
+        public Fan(Vector3 center, float radius, float centerlineDegree)
         {
             this.center = center;
             this.radius = radius;
-            this.arcDegree = arcDegree;
             this.centerlineDegree = centerlineDegree;
         }
 
