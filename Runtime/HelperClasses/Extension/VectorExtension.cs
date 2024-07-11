@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace CommonBase
@@ -46,6 +45,12 @@ namespace CommonBase
         public static Vector2Int ToCellRound(this Vector2 vector)
         {
             return new Vector2Int(Mathf.RoundToInt(vector.x), Mathf.RoundToInt(vector.y));
+        }
+
+        public static float Vector2ToAngle(this Vector2 vector2)
+        {
+            var rad = Mathf.Atan2(vector2.y, vector2.x);
+            return rad * Mathf.Rad2Deg;
         }
 
         public static Vector3Int To3(this Vector2Int vector2)
@@ -161,6 +166,8 @@ namespace CommonBase
         {
             return a + (b - a) * amount;
         }
+
+
 
         public static Vector2 GetRandomAdjacentVector(this Vector2 originalVector, float maxAngle)
         {
