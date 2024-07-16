@@ -52,6 +52,9 @@ namespace CommonBase
 
         }
 
+        /// <summary>
+        /// 不正常结束（直接中断时）
+        /// </summary>
         public virtual void OnDispose()
         {
 
