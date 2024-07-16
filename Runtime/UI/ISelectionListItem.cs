@@ -14,6 +14,8 @@ namespace CommonBase
         void ToUnselected(float duration);
         void OnUnselected();
         public bool IsSelected { get; set; }
+
+        public void InitSwitchSize(float selectedSize, float unselectedSize);
     }
 
 }
