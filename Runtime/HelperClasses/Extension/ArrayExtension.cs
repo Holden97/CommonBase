@@ -84,6 +84,13 @@ namespace CommonBase
             return -1;
         }
 
+        public static T Random<T>(this T[,] array) where T : class
+        {
+            var x = UnityEngine.Random.Range(0, array.GetLength(0));
+            var y = UnityEngine.Random.Range(0, array.GetLength(1));
+            return array[x, y];
+        }
+
         public static bool IsFull<T>(this T[] array) where T : class
         {
             for (int i = 0; i < array.Length; i++)
