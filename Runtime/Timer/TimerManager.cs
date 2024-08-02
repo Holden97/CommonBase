@@ -43,6 +43,7 @@ namespace CommonBase
 
         private void Update()
         {
+            if (timerDic == null) return;
             //foreach在MoveNext还在执行的过程中不能够修改每个item中的值，比如这里就不能修改每个timerList中的值
             foreach (var timerList in timerDic.ToList())
             {

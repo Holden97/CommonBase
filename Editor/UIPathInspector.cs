@@ -16,18 +16,18 @@ namespace CommonBase.Editor
 
                 SO_UIPath uiInfo = target as SO_UIPath;
 
-                foreach (UIInfo ui in uiInfo.uIInfos)
-                {
-                    if (ui.uiPrefab != null)
-                    {
-                        var uiComponent = ui.uiPrefab.GetComponent<BaseUI>();
-                        uiComponent.uiLayer = ui.uiType;
-                        uiComponent.fadeType = ui.fadeType;
-                        uiComponent.escRemovable = ui.ecsRemovable;
-                        uiComponent.orderInLayer = ui.orderInLayer;
-                        EditorUtility.SetDirty(ui.uiPrefab);
-                    }
-                }
+                //foreach (UIInfo ui in uiInfo.uIInfos)
+                //{
+                //    if (ui.uiPrefab != null)
+                //    {
+                //        var uiComponent = ui.uiPrefab.GetComponent<BaseUI>();
+                //        uiComponent.uiLayer = ui.uiType;
+                //        uiComponent.fadeType = ui.fadeType;
+                //        uiComponent.escRemovable = ui.ecsRemovable;
+                //        uiComponent.orderInLayer = ui.orderInLayer;
+                //        EditorUtility.SetDirty(ui.uiPrefab);
+                //    }
+                //}
 
                 // 保存并刷新资源数据库
                 EditorUtility.SetDirty(uiInfo);

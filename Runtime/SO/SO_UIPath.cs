@@ -19,7 +19,7 @@ namespace CommonBase
     {
         public string name;
         public string resPath;
-        public GameObject uiPrefab;
+        //public GameObject uiPrefab;
         public UIType uiType;
         public PanelFadeType fadeType;
         public int orderInLayer;
@@ -29,7 +29,7 @@ namespace CommonBase
         {
             this.name = name;
             this.resPath = resPath;
-            this.uiPrefab = uiPrefab;
+            //this.uiPrefab = uiPrefab;
             this.uiType = uiPrefab.GetComponent<BaseUI>().uiLayer;
             this.orderInLayer = uiPrefab.GetComponent<BaseUI>().orderInLayer;
             this.fadeType = uiPrefab.GetComponent<BaseUI>().fadeType;

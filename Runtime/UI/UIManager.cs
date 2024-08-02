@@ -1,9 +1,14 @@
-﻿using DG.Tweening;
+﻿using Cysharp.Threading.Tasks;
+using DG.Tweening;
+using SimpleLocalization;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.EventSystems;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
 
 namespace CommonBase
@@ -20,6 +25,9 @@ namespace CommonBase
         public GameObject panelParent;
         public GameObject floatWindowParent;
         private GameObject tip;
+        public static string UiPrefix;
+
+        public Dictionary<string, GameObject> UIPrefabsInCurrentLanguageContext;
         public GameObject UICanvas { get; protected set; }
 
         private int showingPanelCount;
@@ -37,6 +45,7 @@ namespace CommonBase
             uiDic.Add(UIType.CANVAS, new UIStack());
             uiDic.Add(UIType.PANEL, new UIStack());
             uiDic.Add(UIType.FLOAT_WINDOW, new UIStack());
+            UIPrefabsInCurrentLanguageContext = new Dictionary<string, GameObject>();
         }
 
         protected override void Awake()
@@ -63,6 +72,50 @@ namespace CommonBase
                 Debug.LogError("在当前场景中并未寻找到EventSystem，请检查");
             }
             Debug.Log("uiManager 初始化结束");
+        }
+
+        public async Task LoadUIAssetAsync()
+        {
+            var languageSetting = PlayerPrefs.GetInt("Language");
+            switch (languageSetting)
+            {
+                case (int)LanguageEnum.English:
+                    await LoadUIPrefabsInCurrentContext("Assets/UI/English/", "UI_English");
+                    break;
+                case (int)LanguageEnum.ChineseSimplified:
+                    await LoadUIPrefabsInCurrentContext("Assets/UI/Chinese/", "UI_Chinese");
+                    break;
+                default:
+                    await LoadUIPrefabsInCurrentContext("Assets/UI/English/", "UI_English");
+                    break;
+            }
+        }
+
+        private async Task LoadUIPrefabsInCurrentContext(string prefix, string assetPath)
+        {
+            UiPrefix = prefix;
+            var handle = Addressables.LoadResourceLocationsAsync(assetPath);
+            await handle;
+            if (handle.Status == AsyncOperationStatus.Succeeded)
+            {
+                if (handle.Result.Count > 0)
+                {
+                    foreach (var item in handle.Result)
+                    {
+                        AsyncOperationHandle<GameObject> resourceHandle = Addressables.LoadAssetAsync<GameObject>(item);
+                        await resourceHandle;
+                        if (resourceHandle.Status == AsyncOperationStatus.Succeeded)
+                        {
+                            GameObject resource = resourceHandle.Result;
+                            UIPrefabsInCurrentLanguageContext.TryAdd(resource.name, resource);
+                        }
+                        else
+                        {
+                            Debug.LogError($"Failed to load resource at location: {item}");
+                        }
+                    }
+                }
+            }
         }
 
         private void OnSceneChange(string arg0)
@@ -166,7 +219,12 @@ namespace CommonBase
             }
         }
 
-        private T Get<T>(UIType uiType, GameObject go, Action<T> beforeShow) where T : BaseUI, new()
+        public async UniTask<GameObject> GetUIPrefab(string prefabName)
+        {
+            return await Addressables.LoadAssetAsync<GameObject>(UiPrefix + $"{prefabName}.prefab");
+        }
+
+        private T Get<T>(UIType uiType, Action<T> beforeShow) where T : BaseUI, new()
         {
             if (!panelParent)
             {
@@ -187,7 +245,8 @@ namespace CommonBase
             //如果没有，则创建
             if (uiToShow == null)
             {
-                GameObject uiObject = GameObject.Instantiate(go, panelParent.transform);
+                GameObject g = UIPrefabsInCurrentLanguageContext[typeof(T).Name];
+                var uiObject = GameObject.Instantiate(g, panelParent.transform);
                 uiToShow = uiObject.GetComponent<T>();
                 beforeShow?.Invoke(uiToShow as T);
                 if (uiToShow == null)
@@ -243,13 +302,14 @@ namespace CommonBase
 
         private T Show<T>(Action<T> OnShow, Action<T> onCreate = null) where T : BaseUI, new()
         {
+
             UIInfo realPath = uiPath.uIInfos.Find(x => x.name == $"{typeof(T).Name}");
             if (realPath == null)
             {
                 Debug.LogError($"{typeof(T).Name} 在UI_PATH配置中未找到");
                 return null;
             }
-            var uiToShow = Get<T>(realPath.uiType, realPath.uiPrefab, onCreate);
+            var uiToShow = Get<T>(realPath.uiType, onCreate);
             ShowInside(uiToShow, OnShow);
             return uiToShow as T;
         }
