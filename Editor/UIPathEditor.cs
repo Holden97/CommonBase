@@ -31,6 +31,7 @@ namespace CommonBase.Editor
                 return;
             }
 
+            //TODO:UI的层级不再在预设中修改
             // 使用过滤条件来搜索带有特定脚本的预设
             string[] guids = AssetDatabase.FindAssets("t:Prefab");
 
@@ -41,7 +42,7 @@ namespace CommonBase.Editor
 
                 if (prefab != null && prefab.TryGetComponent<BaseUI>(out var comp))
                 {
-                    uiPath.uIInfos.Add(new UIInfo(comp.name, assetPath, prefab));
+                    uiPath.uIInfos.Add(new UIInfo(comp.name, prefab));
                 }
             }
 

@@ -18,17 +18,15 @@ namespace CommonBase
     public class UIInfo
     {
         public string name;
-        public string resPath;
         //public GameObject uiPrefab;
         public UIType uiType;
         public PanelFadeType fadeType;
         public int orderInLayer;
         public bool ecsRemovable;
 
-        public UIInfo(string name, string resPath, GameObject uiPrefab)
+        public UIInfo(string name, GameObject uiPrefab)
         {
             this.name = name;
-            this.resPath = resPath;
             //this.uiPrefab = uiPrefab;
             this.uiType = uiPrefab.GetComponent<BaseUI>().uiLayer;
             this.orderInLayer = uiPrefab.GetComponent<BaseUI>().orderInLayer;
