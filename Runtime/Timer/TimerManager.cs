@@ -71,7 +71,7 @@ namespace CommonBase
             addTimerTempList = addTimerList.ToList();
             foreach (var timer in addTimerTempList)
             {
-                Add(timer);
+                TryAdd(timer);
             }
             addTimerList?.RemoveAll(x => addTimerTempList.Contains(x));
             //Debug.Log($"正在计时的计时器个数:{GetAllTimersCout()}");
@@ -87,56 +87,24 @@ namespace CommonBase
         /// 添加计时器，并执行开始的回调
         /// </summary>
         /// <param name="curTimer"></param>
-        private void Add(BaseTimer timer)
-        {
-            TryAddAsLoopTimer(timer);
-            TryAddAsOnceTimer(timer);
-        }
 
-        private void TryAddAsLoopTimer(BaseTimer timer)
+        private void TryAdd(BaseTimer timer)
         {
-            if (timer is LoopTimer loopTimer)
+            if (timerDic.TryGetValue(timer.owner, out var timers))
             {
-                if (timerDic.TryGetValue(loopTimer.owner, out var timers))
+                //已有，那么不执行
+                if (timers.Contains(timer)) return;
+                //周期大于0的计时器才放入列表中，否则就执行一次
+                if (timer.interval > 0)
                 {
-                    //已有，那么不执行
-                    if (timers.Contains(loopTimer)) return;
-                    //周期大于0的计时器才放入列表中，否则就执行一次
-                    if (loopTimer.interval > 0)
-                    {
-                        timers.Add(loopTimer);
-                    }
-                }
-                else
-                {
-                    if (loopTimer.interval > 0)
-                    {
-                        this.timerDic.Add(loopTimer.owner, new List<BaseTimer>() { loopTimer });
-                    }
+                    timers.Add(timer);
                 }
             }
-        }
-
-        private void TryAddAsOnceTimer(BaseTimer timer)
-        {
-            if (timer is OnceTimer onceTimer)
+            else
             {
-                if (timerDic.TryGetValue(onceTimer.owner, out var timers))
+                if (timer.interval > 0)
                 {
-                    //已有，那么不执行
-                    if (timers.Contains(onceTimer)) return;
-                    //周期大于0的计时器才放入列表中，否则就执行一次
-                    if (onceTimer.interval > 0)
-                    {
-                        timers.Add(onceTimer);
-                    }
-                }
-                else
-                {
-                    if (onceTimer.interval > 0)
-                    {
-                        this.timerDic.Add(onceTimer.owner, new List<BaseTimer>() { onceTimer });
-                    }
+                    this.timerDic.Add(timer.owner, new List<BaseTimer>() { timer });
                 }
             }
         }

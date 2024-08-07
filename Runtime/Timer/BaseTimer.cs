@@ -43,12 +43,11 @@ namespace CommonBase
 
                 isStopped = false;
                 isCompleted = false;
-
-                this.OnStart?.Invoke();
-                if (this.triggerOnStart)
-                {
-                    this.OnTrigger?.Invoke();
-                }
+            }
+            this.OnStart?.Invoke();
+            if (this.triggerOnStart)
+            {
+                this.OnTrigger?.Invoke();
             }
         }
 

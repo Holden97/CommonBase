@@ -9,17 +9,35 @@ namespace CommonBase
     public class Fan
     {
         public Vector3 center;
+        /// <summary>
+        /// 扇形半径长度
+        /// </summary>
         public float radius;
+        /// <summary>
+        /// 扇形弧度
+        /// </summary>
+        public float radian;
         /// <summary>
         /// 扇形中线角度（角度制）
         /// </summary>
         public float centerlineDegree;
 
-        public Fan(Vector3 center, float radius, float centerlineDegree)
+        public Fan(Vector3 center, float radian, float radius, float centerlineDegree)
         {
             this.center = center;
             this.radius = radius;
+            this.radian = radian;
             this.centerlineDegree = centerlineDegree;
+        }
+
+        public Fan(Vector3 center, float radian, float radius, Vector3 targetInCenterLine)
+        {
+            this.center = center;
+            this.radius = radius;
+            this.radian = radian;
+            var rawDir = (targetInCenterLine - center);
+            var dirXY = new Vector2(rawDir.x, rawDir.y);
+            this.centerlineDegree = Mathf.Atan2(dirXY.y, dirXY.x);
         }
 
         /// <summary>
@@ -34,7 +52,7 @@ namespace CommonBase
             if (target == center) return true;
             var shorter = Vector3.Distance(target, center) < radius;
             var dot = Vector3.Dot((target - center).normalized, new Vector3(Mathf.Cos(Mathf.Deg2Rad * centerlineDegree), Mathf.Sin(Mathf.Deg2Rad * centerlineDegree)));
-            var lessThanHalfRadius = Mathf.Acos(dot) < radius / 2;
+            var lessThanHalfRadius = Mathf.Acos(dot) < radian / 2;
             return shorter && lessThanHalfRadius;
         }
     }
