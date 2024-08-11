@@ -50,7 +50,8 @@ namespace CommonBase
         {
             if (target == center) return true;
             var shorter = Vector3.Distance(target, center) < radius;
-            var dot = Vector3.Dot((target - center).normalized, new Vector3(Mathf.Cos(Mathf.Rad2Deg * centerlineDegree), Mathf.Sin(Mathf.Rad2Deg * centerlineDegree)));
+            var targetAngleNormalized = new Vector3(Mathf.Cos(centerlineDegree), Mathf.Sin(centerlineDegree)).normalized;
+            var dot = Vector2.Dot((target - center).normalized, targetAngleNormalized);
             var lessThanHalfRadius = Mathf.Acos(dot) < radian / 2;
             return shorter && lessThanHalfRadius;
         }
