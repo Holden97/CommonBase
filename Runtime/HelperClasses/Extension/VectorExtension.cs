@@ -162,6 +162,12 @@ namespace CommonBase
             return rotation * originalVector;
         }
 
+        public static Vector3 RotateByQuaternion(this Vector3 originalVector, float rotationAngleDegrees)
+        {
+            Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, rotationAngleDegrees);
+            return rotation * originalVector;
+        }
+
         public static Vector2 Lerp(Vector2 a, Vector2 b, float amount)
         {
             return a + (b - a) * amount;
