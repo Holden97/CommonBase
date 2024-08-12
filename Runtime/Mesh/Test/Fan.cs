@@ -30,12 +30,12 @@ namespace CommonBase
             this.centerlineDegree = centerlineDegree;
         }
 
-        public Fan(Vector3 center, float radian, float radius, Vector3 targetInCenterLine)
+        public Fan(Vector3 center, float radian, float radius, Vector3 centerLineDir)
         {
             this.center = center;
             this.radius = radius;
             this.radian = radian;
-            var rawDir = (targetInCenterLine - center);
+            var rawDir = centerLineDir;
             this.centerlineDegree = Mathf.Atan2(rawDir.y, rawDir.x);
         }
 
