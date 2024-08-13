@@ -34,6 +34,58 @@ namespace CommonBase
             return str;
         }
 
+        public static string ToBuffRemarkColor(this float v, float reference)
+        {
+            if (reference > v)
+            {
+                return v.ToString().ToRed();
+            }
+            else if (v > reference)
+            {
+                return v.ToString().ToGreen();
+            }
+            return v.ToString();
+        }
+
+        public static string ToDebuffRemarkColor(this float v, float reference)
+        {
+            if (reference < v)
+            {
+                return v.ToString().ToRed();
+            }
+            else if (v < reference)
+            {
+                return v.ToString().ToGreen();
+            }
+            return v.ToString();
+        }
+
+        public static string ToBuffRemarkColor(this int v, float reference)
+        {
+            if (reference > v)
+            {
+                return v.ToString().ToRed();
+            }
+            else if (v > reference)
+            {
+                return v.ToString().ToGreen();
+            }
+            return v.ToString();
+        }
+
+        public static string ToDebuffRemarkColor(this int v, float reference)
+        {
+            if (reference < v)
+            {
+                return v.ToString().ToRed();
+            }
+            else if (v < reference)
+            {
+                return v.ToString().ToGreen();
+            }
+            return v.ToString();
+        }
+
         public static string ToGrey(this string str)
         {
             return "<color=#8C8C8C>" + str + "</color>";
