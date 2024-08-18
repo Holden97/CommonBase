@@ -15,50 +15,42 @@ namespace CommonBase.Editor
             foreach (Texture2D texture in textures)
             {
                 string selectionPath = AssetDatabase.GetAssetPath(texture);
-
-                // 必须最上级是"Assets/Resources/"
-                if (selectionPath.StartsWith(resourcesPath))
+                string selectionExt = System.IO.Path.GetExtension(selectionPath);
+                if (selectionExt.Length == 0)
                 {
-                    string selectionExt = System.IO.Path.GetExtension(selectionPath);
-                    if (selectionExt.Length == 0)
+                    continue;
+                }
+
+                // 从路径"Assets/Resources/UI/testUI.png"得到路径"UI/testUI"
+                string loadPath = selectionPath.Remove(selectionPath.Length - selectionExt.Length);
+                loadPath = loadPath.Substring(resourcesPath.Length);
+
+                // 加载此文件下的所有资源
+                Object[] sprites = AssetDatabase.LoadAllAssetsAtPath(selectionPath);
+                if (sprites.Length > 0)
+                {
+                    // 创建导出文件夹
+                    string outPath = selectionPath + "_split";
+                    System.IO.Directory.CreateDirectory(outPath);
+
+                    foreach (Object o in sprites)
                     {
-                        continue;
+                        if (o is not Sprite sprite) continue;
+                        // 创建单独的纹理
+                        Texture2D tex = new Texture2D((int)sprite.rect.width, (int)sprite.rect.height);
+                        tex.SetPixels(sprite.texture.GetPixels((int)sprite.rect.xMin, (int)sprite.rect.yMin,
+                            (int)sprite.rect.width, (int)sprite.rect.height));
+                        tex.Apply();
+
+                        // 写入成PNG文件
+                        System.IO.File.WriteAllBytes(outPath + "/" + sprite.name + ".png", tex.EncodeToPNG());
                     }
-
-                    // 从路径"Assets/Resources/UI/testUI.png"得到路径"UI/testUI"
-                    string loadPath = selectionPath.Remove(selectionPath.Length - selectionExt.Length);
-                    loadPath = loadPath.Substring(resourcesPath.Length);
-
-                    // 加载此文件下的所有资源
-                    Sprite[] sprites = Resources.LoadAll<Sprite>(loadPath);
-                    if (sprites.Length > 0)
-                    {
-                        // 创建导出文件夹
-                        string outPath = Application.dataPath + "/Resources/" + loadPath;
-                        System.IO.Directory.CreateDirectory(outPath);
-
-                        foreach (Sprite sprite in sprites)
-                        {
-                            // 创建单独的纹理
-                            Texture2D tex = new Texture2D((int)sprite.rect.width, (int)sprite.rect.height);
-                            tex.SetPixels(sprite.texture.GetPixels((int)sprite.rect.xMin, (int)sprite.rect.yMin,
-                                (int)sprite.rect.width, (int)sprite.rect.height));
-                            tex.Apply();
-
-                            // 写入成PNG文件
-                            System.IO.File.WriteAllBytes(outPath + "/" + sprite.name + ".png", tex.EncodeToPNG());
-                        }
-                        Debug.Log("SaveSprite to " + outPath);
-                        AssetDatabase.Refresh();
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"No Sprites existed in {loadPath},do you forget to generate?");
-                    }
+                    Debug.Log("SaveSprite to " + outPath);
+                    AssetDatabase.Refresh();
                 }
                 else
                 {
-                    Debug.LogWarning($"根目录不是{resourcesPath}，无法解析");
+                    Debug.LogWarning($"No Sprites existed in {loadPath},do you forget to generate?");
                 }
             }
             Debug.Log("SaveSprite Finished");
