@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using static DG.DemiEditor.DeEditorUtils;
 
 namespace CommonBase
 {
@@ -18,6 +19,16 @@ namespace CommonBase
         public static bool IsNullOrEmpty(this IList list)
         {
             return list == null || list.Count == 0;
+        }
+
+        public static List<T> CustomClone<T>(this List<T> originalLists)
+        {
+            var list = new List<T>();
+            foreach (var item in originalLists)
+            {
+                list.Add(item);
+            }
+            return list;
         }
 
         public static bool NotLastIndex(this int index, IList list)
