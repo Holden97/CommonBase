@@ -31,6 +31,16 @@ namespace CommonBase
             EventCenter.Instance.Trigger(eventName);
         }
 
+        /// <summary>
+        /// 只会触发自身GameObject及其子节点下的事件回调
+        /// </summary>
+        /// <param name="trigger"></param>
+        /// <param name="eventName"></param>
+        public static void LocalEventTrigger(this object trigger, string eventName)
+        {
+            //EventCenter.Instance.LocalTrigger(trigger, eventName);
+        }
+
         public static void EventTrigger<T>(this object trigger, string eventName, T param)
         {
             EventCenter.Instance.Trigger(eventName, param);
