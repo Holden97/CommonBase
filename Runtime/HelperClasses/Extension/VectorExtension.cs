@@ -13,7 +13,7 @@ namespace CommonBase
 
         private static readonly Vector3 flipOneVectorY = new Vector3(1f, -1f, 1f);
         /// <summary>
-        /// Shorthand for writing Vector3(-1, 1, 1).
+        /// Shorthand for writing Vector3(1, -1, 1).
         /// </summary>
         public static Vector3 flipOneY => flipOneVectorY;
         public static Vector2Int undefinedV2Int = new Vector2Int(-1, -1);
