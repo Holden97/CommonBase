@@ -22,6 +22,17 @@ namespace CommonBase
             this.itemParent = this.transform;
         }
 
+        public void Clean()
+        {
+            for (int i = 0; i < existedList.Count; i++)
+            {
+                if (existedList[i] is MonoBehaviour m)
+                {
+                    m.gameObject.SetActive(false);
+                }
+            }
+        }
+
         public void BindData<T>(IList<T> data)
         {
             if (data == null) { return; }
