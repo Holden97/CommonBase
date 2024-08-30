@@ -24,6 +24,7 @@ namespace CommonBase
 
         public void Clean()
         {
+            if (existedList == null) return;
             for (int i = 0; i < existedList.Count; i++)
             {
                 if (existedList[i] is MonoBehaviour m)
