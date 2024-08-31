@@ -59,7 +59,7 @@ namespace CommonBase
             }
             if (duration <= curTime)
             {
-                this.Complete();
+                this.Stop();
             }
         }
     }

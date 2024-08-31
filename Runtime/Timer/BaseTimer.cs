@@ -104,9 +104,9 @@ namespace CommonBase
         }
 
         /// <summary>
-        /// 完成，随时可以丢弃
+        /// 结束，随时可以丢弃
         /// </summary>
-        public void Complete()
+        public void Stop()
         {
             isStopped = true;
             isCompleted = true;
