@@ -663,6 +663,7 @@ namespace CommonBase
             float yDistance = canvasRect.rect.height;
 
             // 限制 UI 坐标最大最小值
+            //TODO:后面改成适应所有锚点位置的写法
             float x = Mathf.Clamp(pos.x, floatTransform.pivot.x * size.x, xDistance - (1 - floatTransform.pivot.x) * size.x);
             float y = Mathf.Clamp(pos.y, floatTransform.pivot.y * size.y, yDistance - (1 - floatTransform.pivot.y) * size.y);
 
