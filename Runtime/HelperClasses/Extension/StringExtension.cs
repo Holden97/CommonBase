@@ -73,6 +73,19 @@ namespace CommonBase
             return v.ToString();
         }
 
+        public static string ToReverseBuffRemarkColor(this int v, float reference)
+        {
+            if (reference < v)
+            {
+                return v.ToString().ToRed();
+            }
+            else if (v < reference)
+            {
+                return v.ToString().ToGreen();
+            }
+            return v.ToString();
+        }
+
         public static string ToDebuffRemarkColor(this int v, float reference)
         {
             if (reference < v)
