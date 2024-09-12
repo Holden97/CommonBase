@@ -149,13 +149,13 @@ namespace CommonBase
                 }
                 else
                 {
-                    Debug.LogError($"未创建键值为{key}的对象池");
+                    Debug.LogWarning($"未创建键值为{key}的对象池");
                     return null;
                 }
             }
             else
             {
-                Debug.LogError($"未找到键值为{key}的对象池信息配置!");
+                Debug.LogWarning($"未找到键值为{key}的对象池信息配置!");
                 return null;
             }
         }
