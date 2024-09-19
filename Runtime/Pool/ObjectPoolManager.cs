@@ -312,6 +312,11 @@ namespace CommonBase
                 poolQueue.Remove(curPool.prefabId);
             }
         }
+
+        public bool ContainsPool(string key)
+        {
+            return poolInfo.ContainsKey(key);
+        }
     }
 
 }
