@@ -43,14 +43,14 @@ namespace CommonBase
         /// <param name="parent"></param>
         /// <param name="transformName"></param>
         /// <returns></returns>
-        public static Transform FindDeepChildBreadthFirst(this Transform parent, string transformName)
+        public static Transform FindDeepChildBreadthFirst(this Transform parent, string transformName, bool includeInactive = true)
         {
             Queue<Transform> queue = new Queue<Transform>();
             queue.Enqueue(parent);
             while (queue.Count > 0)
             {
                 Transform child = queue.Dequeue();
-                if (child.name == transformName)
+                if (child.name == transformName && (includeInactive || (!includeInactive && child.gameObject.activeInHierarchy)))
                 {
                     return child;
                 }
@@ -62,17 +62,45 @@ namespace CommonBase
             return null;
         }
 
+        public static List<Transform> FindAllChildrenByName(this Transform parent, string name)
+        {
+            List<Transform> foundNodes = new List<Transform>();
+            foreach (Transform child in parent)
+            {
+                if (child.name == name)
+                {
+                    foundNodes.Add(child);
+                }
+                foundNodes.AddRange(FindAllChildrenByName(child, name));
+            }
+            return foundNodes;
+        }
+
+        public static List<Transform> FindAllChildrenByTag(this Transform parent, string tag, bool includeInactive = true)
+        {
+            List<Transform> foundNodes = new List<Transform>();
+            foreach (Transform child in parent)
+            {
+                if (child.CompareTag(tag) && (includeInactive || (!includeInactive && child.gameObject.activeInHierarchy)))
+                {
+                    foundNodes.Add(child);
+                }
+                foundNodes.AddRange(FindAllChildrenByTag(child, tag));
+            }
+            return foundNodes;
+        }
+
         /// <summary>
         /// Finds children by name, depth first
         /// </summary>
         /// <param name="parent"></param>
         /// <param name="transformName"></param>
         /// <returns></returns>
-        public static Transform FindDeepChildDepthFirst(this Transform parent, string transformName)
+        public static Transform FindDeepChildDepthFirst(this Transform parent, string transformName, bool includeInactive = true)
         {
             foreach (Transform child in parent)
             {
-                if (child.name == transformName)
+                if (child.name == transformName && (includeInactive || (!includeInactive && child.gameObject.activeInHierarchy)))
                 {
                     return child;
                 }
