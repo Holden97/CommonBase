@@ -62,6 +62,18 @@ namespace CommonBase
                 this.Stop();
             }
         }
+
+        public override void Start()
+        {
+            base.Start();
+            curTime = 0;
+        }
+
+        public override void Stop()
+        {
+            base.Stop();
+            curTime = 0;
+        }
     }
 
 }

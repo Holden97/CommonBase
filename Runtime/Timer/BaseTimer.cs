@@ -106,7 +106,7 @@ namespace CommonBase
         /// <summary>
         /// 结束，随时可以丢弃
         /// </summary>
-        public void Stop()
+        public virtual void Stop()
         {
             isStopped = true;
             isCompleted = true;
@@ -116,13 +116,13 @@ namespace CommonBase
         /// <summary>
         /// 暂停，保持引用，不能随意丢弃
         /// </summary>
-        public void Paused()
+        public virtual void Paused()
         {
             isStopped = true;
             OnStop?.Invoke();
         }
 
-        public void Resume()
+        public virtual void Resume()
         {
             isStopped = false;
             OnResume?.Invoke();
