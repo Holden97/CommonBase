@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CommonBase
 {
@@ -51,6 +52,15 @@ namespace CommonBase
                 return default;
             }
             return list[UnityEngine.Random.Range(0, list.Count)];
+        }
+
+        public static T Random<T>(this HashSet<T> hashSet)
+        {
+            if (hashSet == null || hashSet.Count == 0)
+            {
+                return default;
+            }
+            return hashSet.ToList().Random();
         }
 
         public static List<T> Random<T>(this IList<T> list, int count)
