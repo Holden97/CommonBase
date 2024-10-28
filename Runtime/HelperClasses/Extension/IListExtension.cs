@@ -66,7 +66,6 @@ namespace CommonBase
         public static void Shuffle<T>(this IList<T> list)
         {
             T temp = default;
-            T switchItem = default;
             int switchItemIndex = 0;
             int listCount = list.Count;
 
@@ -74,8 +73,7 @@ namespace CommonBase
             {
                 temp = list[i];
                 switchItemIndex = UnityEngine.Random.Range(0, listCount);
-                switchItem = list.Random();
-                list[i] = switchItem;
+                list[i] = list[switchItemIndex];
                 list[switchItemIndex] = temp;
             }
         }
