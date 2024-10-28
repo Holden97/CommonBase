@@ -63,6 +63,23 @@ namespace CommonBase
             return hashSet.ToList().Random();
         }
 
+        public static void Shuffle<T>(this IList<T> list)
+        {
+            T temp = default;
+            T switchItem = default;
+            int switchItemIndex = 0;
+            int listCount = list.Count;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                temp = list[i];
+                switchItemIndex = UnityEngine.Random.Range(0, listCount);
+                switchItem = list.Random();
+                list[i] = switchItem;
+                list[switchItemIndex] = temp;
+            }
+        }
+
         public static List<T> Random<T>(this IList<T> list, int count)
         {
             var result = new List<T>();
