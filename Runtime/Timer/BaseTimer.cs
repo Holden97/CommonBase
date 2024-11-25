@@ -39,7 +39,7 @@ namespace CommonBase
         {
             if (isStopped || isCompleted)
             {
-                Reset();
+                ResetTime();
 
                 isStopped = false;
                 isCompleted = false;
@@ -54,7 +54,7 @@ namespace CommonBase
         /// <summary>
         /// 强制重置
         /// </summary>
-        public virtual void Reset()
+        protected virtual void ResetTime()
         {
             this._startTime = GetWorldTime();
             this._lastUpdateTime = GetWorldTime();
