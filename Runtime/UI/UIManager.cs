@@ -20,6 +20,8 @@ namespace CommonBase
         private Stack<UIShowInfoList> uiInfoStack;
         public SO_UIPath uiPath;
 
+        public bool isShowingLoading;
+
         public EventSystem uiEventSystem;
 
         public GameObject panelParent;
