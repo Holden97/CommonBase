@@ -137,5 +137,17 @@ namespace CommonBase
             }
             return tempList.Random();
         }
+
+        public static int LoopNext<T>(this int curIndex, IList<T> list)
+        {
+            if (curIndex < list.Count - 1)
+            {
+                return curIndex + 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
     }
 }
