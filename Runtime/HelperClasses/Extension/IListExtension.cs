@@ -21,14 +21,14 @@ namespace CommonBase
             return list == null || list.Count == 0;
         }
 
-        public static List<T> CustomClone<T>(this List<T> originalLists)
+        public static List<T> DeepClone<T>(this List<T> desList, List<T> originalLists)
         {
-            var list = new List<T>();
+            desList.Clear();
             foreach (var item in originalLists)
             {
-                list.Add(item);
+                desList.Add(item);
             }
-            return list;
+            return desList;
         }
 
         public static bool NotLastIndex(this int index, IList list)

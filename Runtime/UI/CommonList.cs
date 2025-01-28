@@ -1,4 +1,5 @@
 ﻿//使用utf-8
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -20,6 +21,22 @@ namespace CommonBase
         private void Reset()
         {
             this.itemParent = this.transform;
+        }
+
+        public IEnumerator<IListItem> GetEnumerator()
+        {
+
+            foreach (var item in existedList)
+            {
+                if (item.InUse)
+                {
+                    yield return item;
+                }
+                else
+                {
+                    continue;
+                }
+            }
         }
 
         public void Clean()
@@ -54,6 +71,7 @@ namespace CommonBase
                     if (existedList[i] is MonoBehaviour m)
                     {
                         m.gameObject.SetActive(true);
+                        existedList[i].InUse = true;
                     }
                 }
                 else if (!onlyUseExisted)
@@ -63,6 +81,7 @@ namespace CommonBase
                     {
                         curGo.SetActive(true);
                         var curItem = curGo.GetComponent<IListItem>();
+                        curItem.InUse = true;
                         curItem.BindData(data[i]);
                         existedList.Add(curItem);
                     }
@@ -76,6 +95,7 @@ namespace CommonBase
                     if (existedList[i] is MonoBehaviour m)
                     {
                         m.gameObject.SetActive(false);
+                        existedList[i].InUse = false;
                     }
                 }
             }

@@ -9,6 +9,8 @@ namespace CommonBase
     public interface IListItem
     {
         void BindData(object data);
+        bool InUse { get; set; }
+
     }
 
     public interface IToggle
