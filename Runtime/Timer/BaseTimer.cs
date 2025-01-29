@@ -14,7 +14,7 @@ namespace CommonBase
         public Action OnTrigger;
         private Action OnStop;
         private Action OnResume;
-        public Action<float> OnUpdate;
+        internal Action<float> OnUpdate;
         public bool triggerOnStart;
 
         protected float _startTime;
@@ -39,7 +39,7 @@ namespace CommonBase
         {
             if (isStopped || isCompleted)
             {
-                ResetTime();
+                ResetInternalTime();
 
                 isStopped = false;
                 isCompleted = false;
@@ -52,13 +52,29 @@ namespace CommonBase
         }
 
         /// <summary>
-        /// 强制重置
+        /// 强制重置计时器内部的时间
         /// </summary>
-        protected virtual void ResetTime()
+        protected virtual void ResetInternalTime()
         {
             this._startTime = GetWorldTime();
             this._lastUpdateTime = GetWorldTime();
             this._nextTriggerTime = GetNextTriggerTime();
+        }
+
+        /// <summary>
+        /// 提供给外部的强制重置计时器时间的接口
+        /// </summary>
+        public virtual void ResetTime()
+        {
+            ResetInternalTime();
+            isStopped = false;
+            isCompleted = false;
+
+            this.OnStart?.Invoke();
+            if (this.triggerOnStart)
+            {
+                this.OnTrigger?.Invoke();
+            }
         }
 
         public float CurProgress
