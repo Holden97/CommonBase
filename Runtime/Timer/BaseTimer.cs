@@ -11,6 +11,7 @@ namespace CommonBase
         public bool isCompleted;
         public float interval;
         public Action OnStart;
+        public Action OnReset;
         public Action OnTrigger;
         private Action OnStop;
         private Action OnResume;
@@ -70,11 +71,7 @@ namespace CommonBase
             isStopped = false;
             isCompleted = false;
 
-            this.OnStart?.Invoke();
-            if (this.triggerOnStart)
-            {
-                this.OnTrigger?.Invoke();
-            }
+            this.OnReset?.Invoke();
         }
 
         public float CurProgress
