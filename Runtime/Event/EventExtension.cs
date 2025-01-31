@@ -32,13 +32,22 @@ namespace CommonBase
         }
 
         /// <summary>
-        /// 只会触发自身GameObject及其子节点下的事件回调
+        /// 只会触发特定监听者的回调
         /// </summary>
         /// <param name="trigger"></param>
         /// <param name="eventName"></param>
-        public static void LocalEventTrigger(this object trigger, string eventName)
+        public static void SpecificEventTrigger(this object trigger, string eventName, object listener)
         {
-            //EventCenter.Instance.LocalTrigger(trigger, eventName);
+            EventCenter.Instance.Trigger(eventName, listener);
+        }
+        public static void SpecificEventTrigger<T>(this object trigger, string eventName, T param, object listener)
+        {
+            EventCenter.Instance.Trigger(eventName, param, listener);
+        }
+
+        public static void SpecificEventTrigger<T1, T2>(this object trigger, string eventName, T1 p1, T2 p2, object listener)
+        {
+            EventCenter.Instance.Trigger(eventName, p1, p2, listener);
         }
 
         public static void EventTrigger<T>(this object trigger, string eventName, T param)

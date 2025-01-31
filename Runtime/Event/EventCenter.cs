@@ -214,6 +214,48 @@ namespace CommonBase
             }
         }
 
+        public void Trigger<T>(string name, T info, object obj)
+        {
+            if (eventDic.ContainsKey(name))
+            {
+                if (eventDic[name] is not EventInfo<T>)
+                {
+                    Debug.LogError($"trigger is {typeof(EventInfo<T>)},but register is {eventDic[name].GetType()}");
+                    return;
+                }
+                if ((eventDic[name] as EventInfo<T>).objectEventDic.ContainsKey(obj))
+                {
+                    (eventDic[name] as EventInfo<T>).objectEventDic[obj]?.Invoke(info);
+                }
+            }
+        }
+
+        public void Trigger<T1, T2>(string name, T1 Param1, T2 Param2, object obj)
+        {
+            if (eventDic.ContainsKey(name))
+            {
+                if ((eventDic[name] as EventInfo<T1, T2>) == null)
+                {
+                    Debug.LogError($"{eventDic[name].GetType()}回调，未对应事件类型{typeof(T1)},{typeof(T2)}");
+                }
+                if ((eventDic[name] as EventInfo<T1, T2>).objectEventDic.ContainsKey(obj))
+                {
+                    (eventDic[name] as EventInfo<T1, T2>).objectEventDic[obj]?.Invoke(Param1, Param2);
+                }
+            }
+        }
+
+        public void Trigger(string name, object obj)
+        {
+            if (eventDic.ContainsKey(name))
+            {
+                if ((eventDic[name] as EventInfo).objectEventDic.ContainsKey(obj))
+                {
+                    (eventDic[name] as EventInfo).objectEventDic[obj]?.Invoke();
+                }
+            }
+        }
+
         public void Clear()
         {
             eventDic.Clear();
