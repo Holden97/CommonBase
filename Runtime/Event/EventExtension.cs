@@ -38,16 +38,16 @@ namespace CommonBase
         /// <param name="eventName"></param>
         public static void SpecificEventTrigger(this object trigger, string eventName, object listener)
         {
-            EventCenter.Instance.Trigger(eventName, listener);
+            EventCenter.Instance.SpecificTrigger(eventName, listener);
         }
         public static void SpecificEventTrigger<T>(this object trigger, string eventName, T param, object listener)
         {
-            EventCenter.Instance.Trigger(eventName, param, listener);
+            EventCenter.Instance.SpecificTrigger(eventName, param, listener);
         }
 
         public static void SpecificEventTrigger<T1, T2>(this object trigger, string eventName, T1 p1, T2 p2, object listener)
         {
-            EventCenter.Instance.Trigger(eventName, p1, p2, listener);
+            EventCenter.Instance.SpecificTrigger(eventName, p1, p2, listener);
         }
 
         public static void EventTrigger<T>(this object trigger, string eventName, T param)

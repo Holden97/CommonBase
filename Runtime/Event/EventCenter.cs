@@ -214,7 +214,7 @@ namespace CommonBase
             }
         }
 
-        public void Trigger<T>(string name, T info, object obj)
+        public void SpecificTrigger<T>(string name, T info, object obj)
         {
             if (eventDic.ContainsKey(name))
             {
@@ -230,7 +230,7 @@ namespace CommonBase
             }
         }
 
-        public void Trigger<T1, T2>(string name, T1 Param1, T2 Param2, object obj)
+        public void SpecificTrigger<T1, T2>(string name, T1 Param1, T2 Param2, object obj)
         {
             if (eventDic.ContainsKey(name))
             {
@@ -245,7 +245,7 @@ namespace CommonBase
             }
         }
 
-        public void Trigger(string name, object obj)
+        public void SpecificTrigger(string name, object obj)
         {
             if (eventDic.ContainsKey(name))
             {
