@@ -54,6 +54,17 @@ namespace CommonBase
             return list[UnityEngine.Random.Range(0, list.Count)];
         }
 
+        public static T Random<T>(this IList<T> list, out int resultIndex)
+        {
+            if (list == null || list.Count == 0)
+            {
+                resultIndex = -1;
+                return default;
+            }
+            resultIndex = UnityEngine.Random.Range(0, list.Count);
+            return list[resultIndex];
+        }
+
         public static T Random<T>(this HashSet<T> hashSet)
         {
             if (hashSet == null || hashSet.Count == 0)
