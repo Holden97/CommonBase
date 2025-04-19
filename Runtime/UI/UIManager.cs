@@ -78,7 +78,7 @@ namespace CommonBase
 
         public async Task LoadUIAssetAsync()
         {
-            var languageSetting = PlayerPrefs.GetInt("Language");
+            var languageSetting = PlayerPrefs.GetInt("Language", (int)LanguageEnum.ChineseSimplified);
             switch (languageSetting)
             {
                 case (int)LanguageEnum.English:
