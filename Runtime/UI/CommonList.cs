@@ -61,7 +61,15 @@ namespace CommonBase
             }
             if (existedList == null)
             {
-                existedList = itemParent.GetComponentsInChildren<IListItem>().ToList();
+                existedList = new List<IListItem>();
+                //避免嵌套的列表，即一个节点下有多重CommonList，所以只遍历自己的直接子节点
+                for (int i = 0; i < itemParent.childCount; i++)
+                {
+                    Transform childTransform = itemParent.GetChild(i);
+                    existedList.Add(childTransform.GetComponent<IListItem>());
+                }
+
+                // existedList = itemParent.GetComponentsInChildren<IListItem>().ToList();
             }
             for (int i = 0; i < data.Count; i++)
             {
