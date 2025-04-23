@@ -23,7 +23,6 @@ namespace CommonBase.Editor
         public string type;
         public string name;
         public string annotation;
-
         public CSMemberInfo(string type, string name, string annotation)
         {
             this.type = type.Trim();
@@ -41,20 +40,30 @@ namespace CommonBase.Editor
     public class DataConvertMenu : ScriptableObject
     {
         private int FirstDataRow = 4;
-        public string nameSpaceOfData = "OfficeWar";
         private void OnEnable()
         {
             excelPath = PlayerPrefs.GetString("xlsxPath");
+            nameSpaceOfData = PlayerPrefs.GetString("nameSpaceOfData");
         }
 
         public static string m_InputProtoDirectoryPath;
+
+        [LabelText("命名空间名称")]
+        public string nameSpaceOfData;
+
+        [Button("更新命名空间", ButtonSizes.Medium, Stretch = false)]
+        public void UpdateNameSpace()
+        {
+            // 将命名空间名称保存到 PlayerPrefs 中
+            Debug.Log("nameSpaceOfData:" + nameSpaceOfData);
+            PlayerPrefs.SetString("nameSpaceOfData", nameSpaceOfData);
+        }
 
         [BoxGroup("Titles", ShowLabel = true, LabelText = "Excel转ScriptableObject")]
 
         [HorizontalGroup("Titles/ButtonGroup", 600f)]
         [LabelText("Excel路径")]
         public string excelPath;
-
 
         [Button("浏览Excel文件夹", ButtonSizes.Medium, Stretch = false)]
         [HorizontalGroup("Titles/ButtonGroup", PaddingLeft = 0)]
@@ -680,8 +689,10 @@ namespace CommonBase.Editor
         private void CreateSOByName(string typeName, List<Dictionary<string, object>> data)
         {
             // 通过字符串获取类型
-            Type soType = Type.GetType(nameSpaceOfData + "." + typeName + "SO");
-            Type infoType = Type.GetType(nameSpaceOfData + "." + typeName);
+            //这里不能用Assembly.Load加载nameSpaceOfData，而是得通过Assembly-CSharp加载，不清楚为什么，Assembly-CSharp包含了nameSpaceOfData？
+            var assembly = Assembly.Load("Assembly-CSharp");
+            Type soType = assembly.GetType(nameSpaceOfData + "." + typeName + "SO");
+            Type infoType = assembly.GetType(nameSpaceOfData + "." + typeName);
 
             var result = Activator.CreateInstance(soType);
             // 获取类型的属性信息
@@ -756,12 +767,13 @@ namespace CommonBase.Editor
             myDataInstance = data;
 
             // 在Assets目录下创建ScriptableObject文件
+            //TODO:这里需要根据类型来创建文件夹，目前是直接在SOConfigs文件夹下创建
             string path = $"Assets/Resources/SOConfigs/{data.GetType().Name}Data.asset";
             AssetDatabase.CreateAsset(myDataInstance, path);
             //AssetDatabase.SaveAssets();
             //AssetDatabase.Refresh();
 
-            Debug.Log("MyData created at: " + path);
+            Debug.Log("data created at: " + path);
         }
 
         private CSMemberInfo[] GenerateCSMemberInfo(DataTable dataTable)
