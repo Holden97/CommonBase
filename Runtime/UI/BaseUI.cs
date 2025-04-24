@@ -52,6 +52,9 @@ namespace CommonBase
             IsShowing = false;
         }
 
+        /// <summary>
+        /// 创建时回调，只调用一次
+        /// </summary>
         public virtual void Initialize()
         {
         }

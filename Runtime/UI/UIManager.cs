@@ -148,18 +148,18 @@ namespace CommonBase
             }
             else
             {
-                ShowPanel(OnShow, data);
+                ShowPanel(data, OnShow);
             }
         }
 
-        public T ShowPanel<T>(Action<T> OnShow = null, object data = null) where T : BaseUI, new()
+        public T ShowPanel<T>(object data = null, Action<T> OnShow = null) where T : BaseUI, new()
         {
             var p = Show(OnShow);
             p.UpdateView(data);
             return p;
         }
 
-        public T ShowFloatWindow<T>(Vector3 pos, Action<T> OnShow = null, object data = null, Action<T> onCreate = null) where T : BaseUI, IFloatWindow, new()
+        public T ShowFloatWindow<T>(Vector3 pos, object data = null, Action<T> OnShow = null, Action<T> onCreate = null) where T : BaseUI, IFloatWindow, new()
         {
             var p = Show(OnShow, onCreate);
             var floatWindow = p as IFloatWindow;
