@@ -810,7 +810,8 @@ namespace CommonBase.Editor
             string baseClassDescription = baseClassName != null ? ": " + baseClassName : null;
             if (baseClassName != null)
             {
-                baseClassType = Type.GetType(baseClassName + "," + nameSpaceOfData);
+                var assembly = Assembly.Load("Assembly-CSharp");
+                baseClassType = assembly.GetType(baseClassName);
                 baseFields = baseClassType.GetFields();
             }
             // 生成 C# 文件内容
