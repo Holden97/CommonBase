@@ -8,8 +8,10 @@ namespace CommonBase
 {
     public interface IListItem
     {
+        void Initialize(object data);
         void BindData(object data);
         bool InUse { get; set; }
+        bool Initialized { get; set; }
 
     }
 

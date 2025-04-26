@@ -76,6 +76,11 @@ namespace CommonBase
                 if (existedList.Count > i)
                 {
                     existedList[i].BindData(data[i]);
+                    if (!existedList[i].Initialized)
+                    {
+                        existedList[i].Initialized = true;
+                        existedList[i].Initialize(data[i]);
+                    }
                     if (existedList[i] is MonoBehaviour m)
                     {
                         m.gameObject.SetActive(true);
@@ -91,6 +96,11 @@ namespace CommonBase
                         var curItem = curGo.GetComponent<IListItem>();
                         curItem.InUse = true;
                         curItem.BindData(data[i]);
+                        if (!curItem.Initialized)
+                        {
+                            curItem.Initialized = true;
+                            curItem.Initialize(data[i]);
+                        }
                         existedList.Add(curItem);
                     }
                 }
