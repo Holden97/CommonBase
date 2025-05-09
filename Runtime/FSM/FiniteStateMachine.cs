@@ -33,10 +33,11 @@ namespace CommonBase
         {
             statesDic = new List<BaseState>();
             this.fsmData = fsmData;
+            // var assembly = Assembly.Load("Assembly-CSharp");
             var assembly = Assembly.Load(fsmData.assemblyName);
             foreach (var item in fsmData.states)
             {
-                var type = assembly.GetType(item.stateClass);
+                var type = assembly.GetType(fsmData.assemblyName + "." + item.stateClass);
                 ConstructorInfo constructor = type.GetConstructor(new[] { typeof(string), typeof(FiniteStateMachine) });
 
                 if (constructor != null)

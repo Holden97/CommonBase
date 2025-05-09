@@ -15,39 +15,39 @@ MonoBehaviour:
   assemblyName: LogicLayer
   states:
   - stateName: "\u5F85\u673A"
-    stateClass: LogicLayer.PreparingState
+    stateClass: PreparingState
     isDefaultState: 1
   - stateName: "\u6E38\u620F\u4E2D\u6218\u6597"
-    stateClass: LogicLayer.PlayingBattlingState
+    stateClass: PlayingBattlingState
     isDefaultState: 0
   - stateName: "\u6E38\u620F\u4E2D\u8D2D\u4E70"
-    stateClass: LogicLayer.PlayingShoppingState
+    stateClass: PlayingShoppingState
     isDefaultState: 0
   - stateName: "\u6E38\u620F\u5931\u8D25"
-    stateClass: LogicLayer.GameDefeatedState
+    stateClass: GameDefeatedState
     isDefaultState: 0
   - stateName: "\u6E38\u620F\u80DC\u5229"
-    stateClass: LogicLayer.GameVictoryState
+    stateClass: GameVictoryState
     isDefaultState: 0
   transfers:
   - startState: "\u5F85\u673A"
-    trransition: "\u6E38\u620F\u5F00\u59CB"
+    transition: "\u6E38\u620F\u5F00\u59CB"
     endState: "\u6E38\u620F\u4E2D\u6218\u6597"
   - startState: "\u6E38\u620F\u4E2D\u6218\u6597"
-    trransition: "\u8FDB\u5165\u8D2D\u4E70"
+    transition: "\u8FDB\u5165\u8D2D\u4E70"
     endState: "\u6E38\u620F\u4E2D\u8D2D\u4E70"
   - startState: "\u6E38\u620F\u4E2D\u8D2D\u4E70"
-    trransition: "\u5B8C\u6210\u8D2D\u4E70"
+    transition: "\u5B8C\u6210\u8D2D\u4E70"
     endState: "\u6E38\u620F\u4E2D\u6218\u6597"
   - startState: "\u6E38\u620F\u4E2D\u6218\u6597"
-    trransition: "\u80DC\u5229"
+    transition: "\u80DC\u5229"
     endState: "\u6E38\u620F\u80DC\u5229"
   - startState: "\u6E38\u620F\u4E2D\u6218\u6597"
-    trransition: "\u73A9\u5BB6\u57FA\u5730\u88AB\u6467\u6BC1"
+    transition: "\u73A9\u5BB6\u57FA\u5730\u88AB\u6467\u6BC1"
     endState: "\u6E38\u620F\u5931\u8D25"
   - startState: "\u6E38\u620F\u5931\u8D25"
-    trransition: "\u786E\u8BA4"
+    transition: "\u786E\u8BA4"
     endState: "\u5F85\u673A"
   - startState: "\u6E38\u620F\u80DC\u5229"
-    trransition: "\u786E\u8BA4"
+    transition: "\u786E\u8BA4"
     endState: "\u5F85\u673A"
