@@ -81,7 +81,7 @@ namespace CommonBase
 
         private void OnTransistionReq(string arg0)
         {
-            this.Transfer(arg0);
+            this.TransferBy(arg0);
         }
 
         private void OnStateCheck(string transferName)
@@ -132,7 +132,7 @@ namespace CommonBase
             }
         }
 
-        private void Transfer(string transition)
+        private void TransferBy(string transition)
         {
             foreach (var transfer in this.FSMData.transfers)
             {
