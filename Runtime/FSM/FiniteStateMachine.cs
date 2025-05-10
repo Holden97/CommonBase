@@ -133,7 +133,7 @@ namespace CommonBase
             }
         }
 
-        private void TransferBy(string transition)
+        public void TransferBy(string transition)
         {
             foreach (var transfer in this.FSMData.transfers)
             {
