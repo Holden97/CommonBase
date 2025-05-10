@@ -28,6 +28,14 @@ namespace CommonBase
             // 获取鼠标位置并转换为世界坐标
             Vector2 mousePos = e.mousePosition;
             mousePos.y = SceneView.currentDrawingSceneView.camera.pixelHeight - mousePos.y; // 处理y轴反转
+
+            // 检查鼠标位置是否在相机视口内
+            Vector3 viewportPos = SceneView.currentDrawingSceneView.camera.ScreenToViewportPoint(mousePos);
+            if (viewportPos.x < 0 || viewportPos.x > 1 || viewportPos.y < 0 || viewportPos.y > 1 || viewportPos.z < 0)
+            {
+                return;
+            }
+
             Vector3 worldPos = SceneView.currentDrawingSceneView.camera.ScreenToWorldPoint(mousePos);
             worldPos.z = 0;
 
