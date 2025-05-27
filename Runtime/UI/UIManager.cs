@@ -69,7 +69,7 @@ namespace CommonBase
             DontDestroyOnLoad(uiEventSystem);
             UICanvas.GetComponent<Canvas>().sortingOrder = 1;
             //检查是否创建了EventSystem
-            if (GameObject.FindObjectOfType<EventSystem>() == null)
+            if (GameObject.FindFirstObjectByType<EventSystem>() == null)
             {
                 Debug.LogError("在当前场景中并未寻找到EventSystem，请检查");
             }
