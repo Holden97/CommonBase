@@ -6,41 +6,60 @@ using UnityEngine.UI;
 using TMPro;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
-using System;
+using System.Reflection;
+using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 namespace CommonBase
 {
     [InitializeOnLoad]
     public class AutoGeneratePanelScript : UnityEditor.Editor
     {
+
+        const string PendingScriptKey = "ScriptCreator_PendingScriptPath";
+        const string PendingGOInstanceIDKey = "ScriptCreator_PendingGOInstanceID";
+
+        static AutoGeneratePanelScript()
+        {
+            // 始终监听 update
+            EditorApplication.update += OnEditorUpdate;
+        }
         // 用于记录已使用的变量名及其出现次数
         private static Dictionary<string, int> usedFieldNames = new Dictionary<string, int>();
         // 用于记录已定义的字段名
         private static Dictionary<string, string> definedFieldNames = new Dictionary<string, string>();
 
-        private static GameObject pendingGameObject;
-        private static string pendingScriptName;
-
-        static AutoGeneratePanelScript()
+        static void OnEditorUpdate()
         {
-            // 延迟一帧后执行，确保所有脚本已经重新加载完成
-            EditorApplication.delayCall += OnScriptsCompiled;
-        }
+            if (EditorApplication.isCompiling) return;
+            string path = SessionState.GetString(PendingScriptKey, "");
+            int instanceID = SessionState.GetInt(PendingGOInstanceIDKey, 0);
 
-        static void OnScriptsCompiled()
-        {
-            Debug.Log("编译完成");
-            if (pendingGameObject != null && !string.IsNullOrEmpty(pendingScriptName))
+            if (!string.IsNullOrEmpty(path) && instanceID != 0)
             {
-                // 自动挂载与 Panel 名称一致的脚本到选中的游戏物体上
-                Component derivedComponent = pendingGameObject.AddComponent(Type.GetType($"Traingeon.{pendingScriptName}"));
-                if (derivedComponent == null)
+                GameObject targetGO = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
+                MonoScript monoScript = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
+
+                if (monoScript != null)
                 {
-                    Debug.LogError($"无法将 {pendingScriptName} 脚本挂载到 {pendingGameObject.name} 游戏对象上，请检查脚本命名空间和类名。");
+                    System.Type scriptType = monoScript.GetClass();
+                    if (scriptType != null && scriptType.IsSubclassOf(typeof(MonoBehaviour)))
+                    {
+                        if (targetGO != null)
+                        {
+                            Undo.AddComponent(targetGO, scriptType);
+                            Debug.Log($"✅ 脚本 {scriptType.Name} 已挂载到 {targetGO.name}");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("⚠ 脚本已创建但未能正确识别类型。可能 Unity 还未完全识别该类。");
+                    }
                 }
-                // 清空待处理信息
-                pendingGameObject = null;
-                pendingScriptName = string.Empty;
+
+                // 清理状态
+                SessionState.EraseString(PendingScriptKey);
+                SessionState.EraseInt(PendingGOInstanceIDKey);
             }
         }
 
@@ -79,12 +98,9 @@ namespace CommonBase
 
             AssetDatabase.Refresh();
 
-            // 记录待处理的游戏对象和脚本名
-            pendingGameObject = selectedObject;
-            pendingScriptName = derivedScriptName;
-
-            // 等待编译完成
-            // EditorApplication.update += WaitForScriptCompilation;
+            // 使用 SessionState 持久化信息
+            SessionState.SetString(PendingScriptKey, derivedScriptPath);
+            SessionState.SetInt(PendingGOInstanceIDKey, selectedObject.GetInstanceID());
         }
 
         private static bool IsChildOfCanvas(GameObject obj)
