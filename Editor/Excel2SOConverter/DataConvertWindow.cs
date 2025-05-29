@@ -810,7 +810,7 @@ namespace CommonBase.Editor
             string baseClassDescription = baseClassName != null ? ": " + baseClassName : null;
             if (baseClassName != null)
             {
-                var assembly = Assembly.Load("Assembly-CSharp");
+                var assembly = Assembly.Load("Traingeon");
                 baseClassType = assembly.GetType(baseClassName);
                 baseFields = baseClassType.GetFields();
             }
