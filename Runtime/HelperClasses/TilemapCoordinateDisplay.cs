@@ -7,6 +7,9 @@ namespace CommonBase
     [InitializeOnLoad]
     public class TilemapCoordinateDisplay
     {
+        private static Tilemap activeTilemap;
+        static Grid grid = null;
+        static Vector3Int cellPosition = default;
         static TilemapCoordinateDisplay()
         {
             SceneView.duringSceneGui += OnSceneGUI;
@@ -14,45 +17,44 @@ namespace CommonBase
 
         static void OnSceneGUI(SceneView sceneView)
         {
-            // 检查当前选中的 GameObject 是否包含 Grid 或 Tilemap 组件
+            Event currentEvent = Event.current;
             GameObject selectedObject = Selection.activeGameObject;
-            if (selectedObject == null || (!selectedObject.TryGetComponent<Grid>(out _) && !selectedObject.TryGetComponent<Tilemap>(out _)))
+            if (currentEvent.type == EventType.MouseMove || currentEvent.type == EventType.MouseDown)
             {
-                return;
+                Vector2 mouseWorldPosition = HandleUtility.GUIPointToWorldRay(currentEvent.mousePosition).origin;
+
+                // Assuming you have a Tilemap component assigned or you can find it by tag, layer, etc.
+                // Tilemap tilemap = GameObject.FindObjectOfType<Tilemap>();
+                if (selectedObject != null)
+                {
+                    // 优先从选中对象获取 Tilemap 组件
+                    if (selectedObject.TryGetComponent<Tilemap>(out activeTilemap))
+                    {
+                        // 若选中对象有 Tilemap 组件，获取其关联的 Grid 组件
+                        grid = activeTilemap.layoutGrid;
+                    }
+                    else if (selectedObject.TryGetComponent<Grid>(out grid))
+                    {
+                        // 若选中对象只有 Grid 组件，尝试获取其下第一个激活的 Tilemap
+                        activeTilemap = selectedObject.GetComponentInChildren<Tilemap>(true);
+                    }
+                }
+                if (activeTilemap != null)
+                {
+                    cellPosition = activeTilemap.WorldToCell(mouseWorldPosition);
+                    Debug.Log("Mouse Tilemap Position: " + cellPosition);
+                }
             }
-            if (Camera.current == null) return;
 
-            Event e = Event.current;
-            if (e == null) return;
-
-            // 获取鼠标位置并转换为世界坐标
-            Vector2 mousePos = e.mousePosition;
-            mousePos.y = SceneView.currentDrawingSceneView.camera.pixelHeight - mousePos.y; // 处理y轴反转
-
-            // 检查鼠标位置是否在相机视口内
-            Vector3 viewportPos = SceneView.currentDrawingSceneView.camera.ScreenToViewportPoint(mousePos);
-            if (viewportPos.x < 0 || viewportPos.x > 1 || viewportPos.y < 0 || viewportPos.y > 1 || viewportPos.z < 0)
-            {
-                return;
-            }
-
-            Vector3 worldPos = SceneView.currentDrawingSceneView.camera.ScreenToWorldPoint(mousePos);
-            worldPos.z = 0;
-
-            // 获取Tile坐标
-            Grid grid = GameObject.FindFirstObjectByType<Grid>();
-            if (grid == null) return;
-
-            Vector3Int cellPosition = grid.WorldToCell(worldPos);
-
-            // 在Scene视图中绘制坐标文本
+            // 在 Scene 视图中绘制坐标文本
             Handles.BeginGUI();
-            GUI.Label(new Rect(10, 10, 200, 20), $"Tile坐标: {cellPosition}");
+            // 使用括号包裹条件表达式，避免冒号提前结束插值
+            GUI.Label(new Rect(10, 10, 300, 20), $"当前活跃 Tilemap: {(activeTilemap != null ? activeTilemap.name : null)}, Tile 坐标: {cellPosition}");
             Handles.EndGUI();
 
-            // 可选：在世界中标出当前格子位置
-            Handles.color = Color.red;
-            Handles.DrawWireCube(grid.CellToWorld(cellPosition) + grid.cellSize / 2, grid.cellSize);
+            // // 可选：在世界中标出当前格子位置
+            // Handles.color = Color.red;
+            // Handles.DrawWireCube(grid.CellToWorld(cellPosition) + grid.cellSize / 2, grid.cellSize);
         }
     }
 }
