@@ -102,18 +102,26 @@ namespace CommonBase
             {
                 if (handle.Result.Count > 0)
                 {
+                    // 创建一个任务列表，用于存储所有异步加载任务
+                    var loadTasks = new List<UniTask<GameObject>>();
                     foreach (var item in handle.Result)
                     {
-                        AsyncOperationHandle<GameObject> resourceHandle = Addressables.LoadAssetAsync<GameObject>(item);
-                        await resourceHandle;
-                        if (resourceHandle.Status == AsyncOperationStatus.Succeeded)
+                        // 发起异步加载请求并将任务添加到列表中
+                        var resourceHandleTask = Addressables.LoadAssetAsync<GameObject>(item).ToUniTask();
+                        loadTasks.Add(resourceHandleTask);
+                    }
+
+                    // 等待所有加载任务完成
+                    var results = await UniTask.WhenAll(loadTasks);
+                    foreach (var result in results)
+                    {
+                        if (result != null)
                         {
-                            GameObject resource = resourceHandle.Result;
-                            UIPrefabsInCurrentLanguageContext.TryAdd(resource.name, resource);
+                            UIPrefabsInCurrentLanguageContext.TryAdd(result.name, result);
                         }
                         else
                         {
-                            Debug.LogError($"Failed to load resource at location: {item}");
+                            Debug.LogError($"Failed to load ui resource,please check out the path:{assetPath}");
                         }
                     }
                 }
@@ -404,6 +412,11 @@ namespace CommonBase
             destroyIt,
             false
             });
+        }
+
+        public void HidePanel<T>(bool destroyIt = false, bool recover = false) where T : BaseUI
+        {
+            Hide<T>(destroyIt, recover);
         }
 
         public void Hide<T>(bool destroyIt = false, bool recover = false)
