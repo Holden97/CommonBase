@@ -46,6 +46,11 @@ namespace CommonBase
             instance = null;
             this.EventUnregisterAll();
         }
+
+        public virtual void Initialize()
+        {
+
+        }
     }
 
 }

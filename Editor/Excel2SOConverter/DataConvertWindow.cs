@@ -49,15 +49,24 @@ namespace CommonBase.Editor
         public static string m_InputProtoDirectoryPath;
 
         [LabelText("命名空间名称")]
+        [OnValueChanged("OnNameSpaceValueChanged")] // 当值改变时调用 OnNameSpaceValueChanged 方法
         public string nameSpaceOfData;
 
-        [Button("更新命名空间", ButtonSizes.Medium, Stretch = false)]
-        public void UpdateNameSpace()
+        // 命名空间值改变时调用的方法
+        private void OnNameSpaceValueChanged()
         {
             // 将命名空间名称保存到 PlayerPrefs 中
             Debug.Log("nameSpaceOfData:" + nameSpaceOfData);
             PlayerPrefs.SetString("nameSpaceOfData", nameSpaceOfData);
         }
+
+        // [Button("更新命名空间", ButtonSizes.Medium, Stretch = false)]
+        // public void UpdateNameSpace()
+        // {
+        //     // 保持原有的更新逻辑，可通过按钮手动触发
+        //     Debug.Log("nameSpaceOfData:" + nameSpaceOfData);
+        //     PlayerPrefs.SetString("nameSpaceOfData", nameSpaceOfData);
+        // }
 
         [BoxGroup("Titles", ShowLabel = true, LabelText = "Excel转ScriptableObject")]
 
@@ -90,6 +99,8 @@ namespace CommonBase.Editor
                 Debug.LogError("Excel字段为空，请检查！");
                 return;
             }
+            // 清空 Assets/Scripts/Configs 路径下的所有 C# 文件
+            DeleteOldFiles("Assets/Scripts/Configs");
             //几个规定
             //1.第一行写SO名称
             //2.第二行写字段名称
@@ -114,7 +125,7 @@ namespace CommonBase.Editor
                         // 获取工作表
                         foreach (DataTable sheet in dataSet.Tables)
                         {
-                            GetSingleSheet(sheet);
+                            HandleSingleSheet(sheet);
                         }
                         // 关闭 Excel 读取器
                         excelReader.Close();
@@ -129,6 +140,32 @@ namespace CommonBase.Editor
 
             }
 
+        }
+
+        private static void DeleteOldFiles(string path)
+        {
+            string configPath = path;
+            if (Directory.Exists(configPath))
+            {
+                // 获取指定目录下的所有类型文件
+                string[] allFiles = Directory.GetFiles(configPath, "*.*", SearchOption.AllDirectories);
+                foreach (string file in allFiles)
+                {
+                    try
+                    {
+                        File.Delete(file);
+                        Debug.Log($"已删除文件: {file}");
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"删除文件 {file} 时出错: {e.Message}");
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogError($"目录 {configPath} 不存在");
+            }
         }
 
         private string[] GetAllExcelFiles(string path)
@@ -154,7 +191,7 @@ namespace CommonBase.Editor
 
         }
 
-        private void GetSingleSheet(DataTable dataTable)
+        private void HandleSingleSheet(DataTable dataTable)
         {
             // 获取行数和列数
             int numRows = dataTable.Rows.Count;
@@ -192,6 +229,8 @@ namespace CommonBase.Editor
                 Debug.LogError("Excel字段为空，请检查！");
                 return;
             }
+            DeleteOldFiles("Assets/Resources/SOConfigs");
+
             //几个规定
             //1.第一行写SO名称
             //2.第二行写字段名称
@@ -243,6 +282,8 @@ namespace CommonBase.Editor
                     throw e;
                 }
             }
+            // AssetDatabase.Refresh();
+
         }
 
         [BoxGroup("Buff", ShowLabel = true, LabelText = "Buff相关")]
@@ -690,7 +731,7 @@ namespace CommonBase.Editor
         {
             // 通过字符串获取类型
             //这里不能用Assembly.Load加载nameSpaceOfData，而是得通过Assembly-CSharp加载，不清楚为什么，Assembly-CSharp包含了nameSpaceOfData？
-            var assembly = Assembly.Load("Assembly-CSharp");
+            var assembly = Assembly.Load(nameSpaceOfData);
             Type soType = assembly.GetType(nameSpaceOfData + "." + typeName + "SO");
             Type infoType = assembly.GetType(nameSpaceOfData + "." + typeName);
 
@@ -810,7 +851,7 @@ namespace CommonBase.Editor
             string baseClassDescription = baseClassName != null ? ": " + baseClassName : null;
             if (baseClassName != null)
             {
-                var assembly = Assembly.Load("Traingeon");
+                var assembly = Assembly.Load(nameSpaceOfData);
                 baseClassType = assembly.GetType(baseClassName);
                 baseFields = baseClassType.GetFields();
             }
