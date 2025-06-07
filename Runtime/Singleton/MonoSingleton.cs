@@ -47,7 +47,7 @@ namespace CommonBase
         {
             if (instance == null)
             {
-                instance = FindObjectOfType<T>();
+                instance = FindFirstObjectByType<T>();
                 if (instance == null)
                 {
                     var go = new GameObject($"[MonoSingleton]{typeof(T).Name}");
