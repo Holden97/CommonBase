@@ -251,7 +251,8 @@ namespace CommonBase
             sb.AppendLine("{");
             sb.AppendLine($"    public class {derivedScriptName} : {baseScriptName}");
             sb.AppendLine("    {");
-            sb.AppendLine("        // 可在此处重写基类方法");
+            // sb.AppendLine("        // 可在此处重写基类方法");
+            sb.AppendLine("");
             sb.AppendLine("    }");
             sb.AppendLine("}");
 
