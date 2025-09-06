@@ -1,6 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
 using DG.Tweening;
-using SimpleLocalization;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -78,13 +77,13 @@ namespace CommonBase
 
         public async Task LoadUIAssetAsync()
         {
-            var languageSetting = PlayerPrefs.GetInt("Language", (int)LanguageEnum.ChineseSimplified);
+            var languageSetting = PlayerPrefs.GetInt("Language", (int)LanguageEnum.zh_CN);
             switch (languageSetting)
             {
-                case (int)LanguageEnum.English:
+                case (int)LanguageEnum.en_US:
                     await LoadUIPrefabsInCurrentContext("Assets/UI/English/", "UI_English");
                     break;
-                case (int)LanguageEnum.ChineseSimplified:
+                case (int)LanguageEnum.zh_CN:
                     await LoadUIPrefabsInCurrentContext("Assets/UI/Chinese/", "UI_Chinese");
                     break;
                 default:
