@@ -148,6 +148,7 @@ namespace CommonBase
             sb.AppendLine("using TMPro;");
             sb.AppendLine("using CommonBase;");
             sb.AppendLine();
+            //这里后续应该修改，不能固定死名称
             sb.AppendLine($"namespace Traingeon");
             sb.AppendLine("{");
             sb.AppendLine($"    public class {baseScriptName} : BaseUI");

@@ -19,8 +19,6 @@ namespace CommonBase
         private Stack<UIShowInfoList> uiInfoStack;
         public SO_UIPath uiPath;
 
-        public bool isShowingLoading;
-
         public EventSystem uiEventSystem;
 
         public GameObject panelParent;
@@ -73,6 +71,8 @@ namespace CommonBase
                 Debug.LogError("在当前场景中并未寻找到EventSystem，请检查");
             }
             Debug.Log("uiManager 初始化结束");
+            //异步加载所有当前语言环境下的ui资源
+            LoadUIAssetAsync();
         }
 
         public async Task LoadUIAssetAsync()
