@@ -30,6 +30,7 @@ namespace CommonBase
         public GameObject UICanvas { get; protected set; }
 
         private int showingPanelCount;
+
         /// <summary>
         /// 正在显示panel，不响应游戏中的事件。
         /// </summary>
@@ -37,7 +38,6 @@ namespace CommonBase
 
         public UIManager()
         {
-
             uiDic = new Dictionary<UIType, UIStack>();
             uiInfoStack = new Stack<UIShowInfoList>();
 
@@ -60,6 +60,7 @@ namespace CommonBase
                 UICanvas = GameObject.Instantiate(Resources.Load<GameObject>("UICanvas"));
                 tip.SetActive(false);
             }
+
             UICanvas.transform.SetParent(null);
             //this.EventRegister<string>(EventName.CHANGE_SCENE, OnSceneChange);
             DontDestroyOnLoad(UICanvas);
@@ -70,6 +71,7 @@ namespace CommonBase
             {
                 Debug.LogError("在当前场景中并未寻找到EventSystem，请检查");
             }
+
             Debug.Log("uiManager 初始化结束");
             //异步加载所有当前语言环境下的ui资源
             LoadUIAssetAsync();
@@ -144,18 +146,22 @@ namespace CommonBase
                     }
                 }
             }
+
             return null;
         }
 
-        public void SwitchPanel<T>(Action<T> OnShow = null, object data = null, bool recover = false) where T : BaseUI, new()
+        public bool SwitchPanel<T>(Action<T> OnShow = null, object data = null, bool recover = false)
+            where T : BaseUI, new()
         {
             if (IsShowing<T>())
             {
                 HideInside<T>(recover: recover);
+                return false;
             }
             else
             {
                 ShowPanel(data, OnShow);
+                return true;
             }
         }
 
@@ -166,7 +172,8 @@ namespace CommonBase
             return p;
         }
 
-        public T ShowFloatWindow<T>(Vector3 pos, object data = null, Action<T> OnShow = null, Action<T> onCreate = null) where T : BaseUI, IFloatWindow, new()
+        public T ShowFloatWindow<T>(Vector3 pos, object data = null, Action<T> OnShow = null, Action<T> onCreate = null)
+            where T : BaseUI, IFloatWindow, new()
         {
             var p = Show(OnShow, onCreate);
             var floatWindow = p as IFloatWindow;
@@ -186,11 +193,8 @@ namespace CommonBase
             cg.transform.DOMoveY(startPoint + 50, 0.5f).OnComplete(() =>
             {
                 DOTween.To(() => cg.alpha, value => cg.alpha = value, 0, 1)
-                .SetEase(Ease.Linear)
-                .OnComplete(() =>
-                {
-                    Destroy(go);
-                }).SetUpdate(true);
+                    .SetEase(Ease.Linear)
+                    .OnComplete(() => { Destroy(go); }).SetUpdate(true);
             }).SetUpdate(true);
         }
 
@@ -201,6 +205,7 @@ namespace CommonBase
                 Debug.LogError("Canvas is null!");
                 return null;
             }
+
             foreach (var uiType in uiDic)
             {
                 foreach (var item in uiType.Value)
@@ -211,8 +216,8 @@ namespace CommonBase
                     }
                 }
             }
-            return null;
 
+            return null;
         }
 
         public void UpdatePanel<T>(object data) where T : BaseUI, new()
@@ -251,6 +256,7 @@ namespace CommonBase
                     break;
                 }
             }
+
             //如果没有，则创建
             if (uiToShow == null)
             {
@@ -266,6 +272,7 @@ namespace CommonBase
                 {
                     uiObject.name = uiToShow.UiName;
                 }
+
                 uiDic[uiType].Push(uiToShow);
                 uiToShow.Initialize();
                 uiObject.SetActive(false);
@@ -286,7 +293,6 @@ namespace CommonBase
             }
 
             return uiToShow as T;
-
         }
 
         public T Get<T>() where T : BaseUI, new()
@@ -304,20 +310,20 @@ namespace CommonBase
                     }
                 }
             }
-            return uiToShow as T;
 
+            return uiToShow as T;
         }
 
 
         private T Show<T>(Action<T> OnShow, Action<T> onCreate = null) where T : BaseUI, new()
         {
-
             UIInfo realPath = uiPath.uIInfos.Find(x => x.name == $"{typeof(T).Name}");
             if (realPath == null)
             {
                 Debug.LogError($"{typeof(T).Name} 在UI_PATH配置中未找到");
                 return null;
             }
+
             var uiToShow = Get<T>(realPath.uiType, onCreate);
             ShowInside(uiToShow, OnShow);
             return uiToShow as T;
@@ -335,6 +341,7 @@ namespace CommonBase
                 {
                     continue;
                 }
+
                 if (curUI.orderInLayer <= uiToShow.orderInLayer && curUI != uiToShow)
                 {
                     var curIndex = uiToShow.transform.GetSiblingIndex();
@@ -346,13 +353,16 @@ namespace CommonBase
                     {
                         uiToShow.transform.SetSiblingIndex(i + 1);
                     }
+
                     break;
                 }
             }
+
             if (i < 0)
             {
                 uiToShow.transform.SetAsFirstSibling();
             }
+
             switch (uiToShow.fadeType)
             {
                 case PanelFadeType.None:
@@ -366,9 +376,9 @@ namespace CommonBase
                     uiToShow.transform.DOScale(0.8f, 0).SetUpdate(true).OnComplete(() =>
                     {
                         uiToShow.transform.DOScale(1.2f, 0.2f).SetUpdate(true).OnComplete(() =>
-                       {
-                           uiToShow.transform.DOScale(1f, 0.1f).SetUpdate(true);
-                       });
+                        {
+                            uiToShow.transform.DOScale(1f, 0.1f).SetUpdate(true);
+                        });
                     });
                     break;
                 case PanelFadeType.DONW_RIGHT:
@@ -378,6 +388,7 @@ namespace CommonBase
                     uiToShow.gameObject.SetActive(true);
                     break;
             }
+
             uiToShow.OnEnter();
             onShow?.Invoke(uiToShow as T);
             SetManagerProperty(uiToShow.uiLayer);
@@ -398,6 +409,7 @@ namespace CommonBase
                             showingPanelCount++;
                         }
                     }
+
                     break;
                 default:
                     break;
@@ -408,8 +420,8 @@ namespace CommonBase
         {
             this.GetType().GetMethod("HideInside").MakeGenericMethod(type).Invoke(this, new object[]
             {
-            destroyIt,
-            false
+                destroyIt,
+                false
             });
         }
 
@@ -448,7 +460,9 @@ namespace CommonBase
                 if (ui.isShowing)
                 {
                     var curUI = Find(ui.instanceId);
-                    MethodInfo method = typeof(UIManager).GetMethod("ShowInside", BindingFlags.Instance | BindingFlags.NonPublic).MakeGenericMethod(curUI.GetType());
+                    MethodInfo method = typeof(UIManager)
+                        .GetMethod("ShowInside", BindingFlags.Instance | BindingFlags.NonPublic)
+                        .MakeGenericMethod(curUI.GetType());
                     method.Invoke(this, new object[] { curUI, null });
                 }
             }
@@ -502,6 +516,7 @@ namespace CommonBase
                             {
                                 item.gameObject.SetActive(false);
                             }
+
                             SetManagerProperty(item.uiLayer);
                             return;
                         });
@@ -524,6 +539,7 @@ namespace CommonBase
             {
                 item.gameObject.SetActive(false);
             }
+
             //执行一次目前type最上面一个正在showing的UI的OnEnter方法
             //parent.GetChild(lastChildIndex).GetComponent<BaseUI>().OnEnter();
             SetManagerProperty(item.uiLayer);
@@ -555,7 +571,6 @@ namespace CommonBase
                         HideSingle(uiType, destroyIt, item);
                     }
                 }
-
             }
         }
 
@@ -572,6 +587,7 @@ namespace CommonBase
             {
                 item.gameObject.SetActive(false);
             }
+
             SetManagerProperty(uiType);
         }
 
@@ -593,7 +609,6 @@ namespace CommonBase
 
         public void Switch<T>(Action<T> OnShow = null, bool recover = false) where T : BaseUI, new()
         {
-
             if (IsShowing<T>())
             {
                 HideInside<T>(recover: recover);
@@ -615,12 +630,12 @@ namespace CommonBase
                     return item.IsShowing;
                 }
             }
+
             return false;
         }
 
         public bool CloseCurrent(UIType uIType = UIType.PANEL, bool destroyIt = false)
         {
-
             var curUI = uiDic[uIType].PeekFirstActive();
             if (curUI != null)
             {
@@ -655,8 +670,10 @@ namespace CommonBase
             float yDistance = Screen.height;
 
             // 限制 UI 坐标最大最小值
-            float x = Mathf.Clamp(pos.x, floatTransform.pivot.x * size.x, xDistance - (1 - floatTransform.pivot.x) * size.x);
-            float y = Mathf.Clamp(pos.y, floatTransform.pivot.y * size.y, yDistance - (1 - floatTransform.pivot.y) * size.y);
+            float x = Mathf.Clamp(pos.x, floatTransform.pivot.x * size.x,
+                xDistance - (1 - floatTransform.pivot.x) * size.x);
+            float y = Mathf.Clamp(pos.y, floatTransform.pivot.y * size.y,
+                yDistance - (1 - floatTransform.pivot.y) * size.y);
 
             // 调整 UI 坐标
             floatTransform.position = new Vector2(x, y);
@@ -678,30 +695,32 @@ namespace CommonBase
 
             // 限制 UI 坐标最大最小值
             //TODO:后面改成适应所有锚点位置的写法
-            float x = Mathf.Clamp(pos.x, floatTransform.pivot.x * size.x, xDistance - (1 - floatTransform.pivot.x) * size.x);
-            float y = Mathf.Clamp(pos.y, floatTransform.pivot.y * size.y, yDistance - (1 - floatTransform.pivot.y) * size.y);
+            float x = Mathf.Clamp(pos.x, floatTransform.pivot.x * size.x,
+                xDistance - (1 - floatTransform.pivot.x) * size.x);
+            float y = Mathf.Clamp(pos.y, floatTransform.pivot.y * size.y,
+                yDistance - (1 - floatTransform.pivot.y) * size.y);
 
             // 调整 UI 坐标
             floatTransform.position = new Vector2(x, y);
         }
-
-
     }
+
     public enum UIType
     {
         /// <summary>
         /// 画布
         /// </summary>
         CANVAS,
+
         /// <summary>
         /// 面板，一种面板只允许出现一个，但同一时间可以出现多种面板
         /// </summary>
         PANEL,
+
         /// <summary>
         /// 浮窗
         /// </summary>
         FLOAT_WINDOW,
-
     }
 
     public enum RectTransformAnchor
@@ -710,4 +729,3 @@ namespace CommonBase
         BOTTOM_LEFT,
     }
 }
-
