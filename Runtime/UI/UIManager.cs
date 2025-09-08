@@ -73,8 +73,6 @@ namespace CommonBase
             }
 
             Debug.Log("uiManager 初始化结束");
-            //异步加载所有当前语言环境下的ui资源
-            LoadUIAssetAsync();
         }
 
         public async Task LoadUIAssetAsync()
