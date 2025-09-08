@@ -16,6 +16,7 @@ namespace CommonBase
                     return array[i];
                 }
             }
+
             return default;
         }
 
@@ -27,11 +28,13 @@ namespace CommonBase
                 {
                     continue;
                 }
+
                 if (assertion(array[i]))
                 {
                     return array[i];
                 }
             }
+
             return default;
         }
 
@@ -45,6 +48,7 @@ namespace CommonBase
                     list.Add(array[i]);
                 }
             }
+
             return list;
         }
 
@@ -81,6 +85,7 @@ namespace CommonBase
                     return i;
                 }
             }
+
             return -1;
         }
 
@@ -106,6 +111,7 @@ namespace CommonBase
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -118,6 +124,7 @@ namespace CommonBase
                     return i;
                 }
             }
+
             return -1;
         }
 
@@ -134,6 +141,7 @@ namespace CommonBase
                     }
                 }
             }
+
             return list;
         }
 
@@ -149,6 +157,7 @@ namespace CommonBase
                     }
                 }
             }
+
             return default;
         }
 
@@ -165,6 +174,23 @@ namespace CommonBase
                 result = array[x, y];
                 return true;
             }
+        }
+
+        public static int[,] CopyArray(int[,] source)
+        {
+            int rows = source.GetLength(0);
+            int cols = source.GetLength(1);
+            int[,] newArray = new int[rows, cols];
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    newArray[r, c] = source[r, c];
+                }
+            }
+
+            return newArray;
         }
     }
 }
