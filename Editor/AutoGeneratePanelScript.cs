@@ -159,7 +159,7 @@ namespace CommonBase
 
             sb.AppendLine();
             // 去掉 override 关键字
-            sb.AppendLine("        public void Start()");
+            sb.AppendLine("        public override void Initialize()");
             sb.AppendLine("        {");
             // 赋值UI控件
             AssignUIFields(sb, rootObject.transform);
