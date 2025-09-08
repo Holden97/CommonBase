@@ -12,7 +12,6 @@ namespace CommonBase
     [InitializeOnLoad]
     public class AutoGeneratePanelScript : UnityEditor.Editor
     {
-
         const string PendingScriptKey = "ScriptCreator_PendingScriptPath";
         const string PendingGOInstanceIDKey = "ScriptCreator_PendingGOInstanceID";
 
@@ -21,8 +20,10 @@ namespace CommonBase
             // 始终监听 update
             EditorApplication.update += OnEditorUpdate;
         }
+
         // 用于记录已使用的变量名及其出现次数
         private static Dictionary<string, int> usedFieldNames = new Dictionary<string, int>();
+
         // 用于记录已定义的字段名
         private static Dictionary<string, string> definedFieldNames = new Dictionary<string, string>();
 
@@ -109,8 +110,10 @@ namespace CommonBase
                 {
                     return true;
                 }
+
                 parent = parent.parent;
             }
+
             return false;
         }
 
@@ -199,6 +202,12 @@ namespace CommonBase
                     sb.AppendLine($"        public TextMeshProUGUI {fieldName};");
                     definedFieldNames.Add(fieldName, path);
                 }
+                else if (child.GetComponent<ScrollRect>() != null)
+                {
+                    string fieldName = GetFieldName(child.name);
+                    sb.AppendLine($"        public ScrollRect {fieldName};");
+                    definedFieldNames.Add(fieldName, path);
+                }
                 // 可根据需要添加更多UI控件类型
             }
         }
@@ -216,7 +225,8 @@ namespace CommonBase
                     if (child.GetComponent<Button>() != null)
                     {
                         sb.AppendLine($"            {fieldName} = transform.Find(\"{path}\").GetComponent<Button>();");
-                        sb.AppendLine($"            {fieldName}.onClick.AddListener(On{GetMethodName(fieldName)}Clicked);");
+                        sb.AppendLine(
+                            $"            {fieldName}.onClick.AddListener(On{GetMethodName(fieldName)}Clicked);");
                     }
                     else if (child.GetComponent<Image>() != null)
                     {
@@ -224,7 +234,8 @@ namespace CommonBase
                     }
                     else if (child.GetComponent<TextMeshProUGUI>() != null)
                     {
-                        sb.AppendLine($"            {fieldName} = transform.Find(\"{path}\").GetComponent<TextMeshProUGUI>();");
+                        sb.AppendLine(
+                            $"            {fieldName} = transform.Find(\"{path}\").GetComponent<TextMeshProUGUI>();");
                     }
                 }
             }
@@ -239,6 +250,7 @@ namespace CommonBase
                 path = current.name + "/" + path;
                 current = current.parent;
             }
+
             return path;
         }
 
