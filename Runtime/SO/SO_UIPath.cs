@@ -8,9 +8,10 @@ namespace CommonBase
     /// <summary>
     /// 扫描项目中所有的带BaseUI的预制体，
     /// </summary>
-    [CreateAssetMenu(fileName = "SO_UIPath", menuName = "Scriptable Objects/UIPath")]
+    [CreateAssetMenu(fileName = "SO_UIPath", menuName = "CommonBase/UIPath")]
     public class SO_UIPath : ScriptableObject
     {
+        public string uiNamespace;
         public List<UIInfo> uIInfos;
     }
 

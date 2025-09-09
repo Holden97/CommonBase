@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace CommonBase
 {
@@ -43,7 +44,8 @@ namespace CommonBase
                     System.Type scriptType = monoScript.GetClass();
                     if (scriptType != null && scriptType.IsSubclassOf(typeof(MonoBehaviour)))
                     {
-                        if (targetGO != null)
+                        //UI脚本挂一次就OK
+                        if (targetGO != null && targetGO.GetComponent(scriptType) == null)
                         {
                             Undo.AddComponent(targetGO, scriptType);
                             Debug.Log($"✅ 脚本 {scriptType.Name} 已挂载到 {targetGO.name}");
@@ -151,8 +153,7 @@ namespace CommonBase
             sb.AppendLine("using TMPro;");
             sb.AppendLine("using CommonBase;");
             sb.AppendLine();
-            //这里后续应该修改，不能固定死名称
-            sb.AppendLine($"namespace Traingeon");
+            sb.AppendLine($"namespace {GetUISettingNamespace()}");
             sb.AppendLine("{");
             sb.AppendLine($"    public class {baseScriptName} : BaseUI");
             sb.AppendLine("    {");
@@ -254,13 +255,20 @@ namespace CommonBase
             return path;
         }
 
+        public static string GetUISettingNamespace()
+        {
+            SO_UIPath uiPath = Resources.Load<SO_UIPath>("SO/UIPath");
+            return uiPath.uiNamespace;
+        }
+
+
         private static string GenerateDerivedScriptContent(string derivedScriptName, string baseScriptName)
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("using UnityEngine;");
             sb.AppendLine("using CommonBase;");
             sb.AppendLine();
-            sb.AppendLine($"namespace Traingeon");
+            sb.AppendLine($"namespace {GetUISettingNamespace()}");
             sb.AppendLine("{");
             sb.AppendLine($"    public class {derivedScriptName} : {baseScriptName}");
             sb.AppendLine("    {");
