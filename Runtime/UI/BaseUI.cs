@@ -1,4 +1,5 @@
 ﻿using System;
+using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,13 +16,18 @@ namespace CommonBase
     public abstract class BaseUI : MonoBehaviour, IListener, IView
     {
         public bool IsShowing { get; private set; }
+        [LabelText("UI层级")]
         public UIType uiLayer = UIType.PANEL;
+        [LabelText("层级中次序")]
         public int orderInLayer = 0;
+        [LabelText("可用Esc关闭")]
         public bool escRemovable = false;
         /// <summary>
         /// 打开时隐藏其余底层级/同层级
         /// </summary>
+        [LabelText("打开时隐藏其余底层级/同层级")]
         public bool coverOthersWhenShow = false;
+        [LabelText("转换动效")]
         public PanelFadeType fadeType;
         public string UiName => GetType().Name;
 

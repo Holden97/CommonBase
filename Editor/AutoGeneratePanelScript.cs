@@ -75,8 +75,8 @@ namespace CommonBase
             }
 
             string objectName = selectedObject.name;
-            string baseScriptName = $"{objectName}Base";
-            string derivedScriptName = objectName;
+            string generatedBaseFileName = $"{objectName}Gen";
+            string customScriptName = objectName;
 
             // 创建与 panel 名称一致的文件夹
             string scriptsFolder = "Assets/Scripts/UIPanel";
@@ -87,14 +87,18 @@ namespace CommonBase
             }
 
             // 生成基类脚本
-            string baseScriptContent = GenerateBaseScriptContent(baseScriptName, objectName, selectedObject);
-            string baseScriptPath = Path.Combine(panelSpecificFolder, $"{baseScriptName}.cs");
-            File.WriteAllText(baseScriptPath, baseScriptContent);
+            string generateBaseScriptContent =
+                GenerateAutoScriptContent(customScriptName, objectName, selectedObject);
+            string baseScriptPath = Path.Combine(panelSpecificFolder, $"{generatedBaseFileName}.cs");
+            File.WriteAllText(baseScriptPath, generateBaseScriptContent);
 
-            // 生成派生类脚本
-            string derivedScriptContent = GenerateDerivedScriptContent(derivedScriptName, baseScriptName);
-            string derivedScriptPath = Path.Combine(panelSpecificFolder, $"{derivedScriptName}.cs");
-            File.WriteAllText(derivedScriptPath, derivedScriptContent);
+            // 生成自定义脚本
+            string derivedScriptContent = GenerateCustomScriptContent(customScriptName, generatedBaseFileName);
+            string derivedScriptPath = Path.Combine(panelSpecificFolder, $"{customScriptName}.cs");
+            if (!File.Exists(derivedScriptPath))
+            {
+                File.WriteAllText(derivedScriptPath, derivedScriptContent);
+            }
 
             AssetDatabase.Refresh();
 
@@ -142,7 +146,7 @@ namespace CommonBase
             return char.ToUpperInvariant(objectName[0]) + objectName.Substring(1);
         }
 
-        private static string GenerateBaseScriptContent(string baseScriptName, string objectName, GameObject rootObject)
+        private static string GenerateAutoScriptContent(string scriptName, string objectName, GameObject rootObject)
         {
             // 每次生成脚本前清空已使用的变量名记录
             usedFieldNames.Clear();
@@ -155,15 +159,14 @@ namespace CommonBase
             sb.AppendLine();
             sb.AppendLine($"namespace {GetUISettingNamespace()}");
             sb.AppendLine("{");
-            sb.AppendLine($"    public class {baseScriptName} : BaseUI");
+            sb.AppendLine($"    public partial class {scriptName} : BaseUI");
             sb.AppendLine("    {");
 
             // 查找并添加UI控件字段
             FindAndAddUIFields(sb, rootObject.transform);
 
             sb.AppendLine();
-            // 去掉 override 关键字
-            sb.AppendLine("        public override void Initialize()");
+            sb.AppendLine("        private void Reset()");
             sb.AppendLine("        {");
             // 赋值UI控件
             AssignUIFields(sb, rootObject.transform);
@@ -262,7 +265,7 @@ namespace CommonBase
         }
 
 
-        private static string GenerateDerivedScriptContent(string derivedScriptName, string baseScriptName)
+        private static string GenerateCustomScriptContent(string customScriptName, string baseScriptName)
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("using UnityEngine;");
@@ -270,7 +273,7 @@ namespace CommonBase
             sb.AppendLine();
             sb.AppendLine($"namespace {GetUISettingNamespace()}");
             sb.AppendLine("{");
-            sb.AppendLine($"    public class {derivedScriptName} : {baseScriptName}");
+            sb.AppendLine($"    public partial class {customScriptName} : BaseUI");
             sb.AppendLine("    {");
             // sb.AppendLine("        // 可在此处重写基类方法");
             sb.AppendLine("");
