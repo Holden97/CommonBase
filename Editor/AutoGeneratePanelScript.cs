@@ -17,10 +17,10 @@ namespace CommonBase
         private const string PendingGOInstanceIDKey = "ScriptCreator_PendingGOInstanceID";
 
         // 用于记录已使用的变量名及其出现次数
-        private static readonly Dictionary<string, int> usedFieldNames = new();
+        private static readonly Dictionary<string, int> UsedFieldNames = new();
 
         // 用于记录已定义的字段名
-        private static readonly Dictionary<string, UIComponentInfo> fieldInfo = new();
+        private static readonly Dictionary<string, UIComponentInfo> FieldInfo = new();
 
         static AutoGeneratePanelScript()
         {
@@ -119,14 +119,14 @@ namespace CommonBase
             // 使用正则表达式替换不符合命名规则的字符为下划线，并修剪空格
             var baseName = Regex.Replace(objectName.Trim(), @"[^\w]", "_");
 
-            if (usedFieldNames.ContainsKey(baseName))
+            if (UsedFieldNames.ContainsKey(baseName))
             {
-                var count = usedFieldNames[baseName] + 1;
-                usedFieldNames[baseName] = count;
+                var count = UsedFieldNames[baseName] + 1;
+                UsedFieldNames[baseName] = count;
                 return $"{baseName}_{count}";
             }
 
-            usedFieldNames[baseName] = 1;
+            UsedFieldNames[baseName] = 1;
             return baseName;
         }
 
@@ -138,7 +138,7 @@ namespace CommonBase
         private static string GenerateAutoScriptContent(string scriptName, string objectName, GameObject rootObject)
         {
             // 每次生成脚本前清空已使用的变量名记录
-            usedFieldNames.Clear();
+            UsedFieldNames.Clear();
 
             var sb = new StringBuilder();
             sb.AppendLine("using UnityEngine;");
@@ -169,7 +169,7 @@ namespace CommonBase
 
         private static void FindAndAddUIFields(StringBuilder sb, Transform root)
         {
-            fieldInfo.Clear();
+            FieldInfo.Clear();
             // 遍历所有子节点，包括根节点自身
             foreach (var child in root.GetComponentsInChildren<Transform>(true))
             {
@@ -180,25 +180,25 @@ namespace CommonBase
                     var fieldName = $"Btn{GetFieldName(child.name)}";
                     sb.AppendLine($"        public Button {fieldName};");
                     // sb.AppendLine($"        public void On{fieldName}Clicked() {{ }}");
-                    fieldInfo.Add(fieldName, new UIComponentInfo(button, path, fieldName));
+                    FieldInfo.Add(fieldName, new UIComponentInfo(button, path, fieldName));
                 }
                 else if (child.TryGetComponent<Image>(out var img))
                 {
                     var fieldName = $"Img{GetFieldName(child.name)}";
                     sb.AppendLine($"        public Image {fieldName};");
-                    fieldInfo.Add(fieldName, new UIComponentInfo(img, path, fieldName));
+                    FieldInfo.Add(fieldName, new UIComponentInfo(img, path, fieldName));
                 }
                 else if (child.TryGetComponent<TextMeshProUGUI>(out var tmp))
                 {
                     var fieldName = $"TMP{GetFieldName(child.name)}";
                     sb.AppendLine($"        public TextMeshProUGUI {fieldName};");
-                    fieldInfo.Add(fieldName, new UIComponentInfo(tmp, path, fieldName));
+                    FieldInfo.Add(fieldName, new UIComponentInfo(tmp, path, fieldName));
                 }
                 else if (child.TryGetComponent<ScrollRect>(out var rect))
                 {
                     var fieldName = $"ScrollRect{GetFieldName(child.name)}";
                     sb.AppendLine($"        public ScrollRect {fieldName};");
-                    fieldInfo.Add(fieldName, new UIComponentInfo(rect, path, fieldName));
+                    FieldInfo.Add(fieldName, new UIComponentInfo(rect, path, fieldName));
                 }
                 // 可根据需要添加更多UI控件类型
             }
@@ -206,7 +206,7 @@ namespace CommonBase
 
         private static void AssignUIFields(StringBuilder sb, Transform root)
         {
-            foreach (var keyValuePair in fieldInfo)
+            foreach (var keyValuePair in FieldInfo)
             {
                 var fieldName = keyValuePair.Key;
                 // 只处理已定义的字段
@@ -271,7 +271,7 @@ namespace CommonBase
             sb.AppendLine("{");
             sb.AppendLine($"    public partial class {customScriptName} : BaseUI");
             sb.AppendLine("    {");
-            foreach (var child in fieldInfo)
+            foreach (var child in FieldInfo)
                 if (child.Value.component is Button)
                     sb.AppendLine($"        public void On{child.Value.name}Clicked() {{ }}");
 
