@@ -15,6 +15,10 @@ namespace CommonBase
         /// 是否只使用列表中已存在的预设
         /// </summary>
         public bool onlyUseExisted;
+        /// <summary>
+        /// 运行时是否删除预制体中已有的 item（而不是仅仅隐藏它们）
+        /// </summary>
+        public bool destroyExistedItemsOnRuntime;
 
         private List<IListItem> existedList;
 
@@ -66,7 +70,24 @@ namespace CommonBase
                 for (int i = 0; i < itemParent.childCount; i++)
                 {
                     Transform childTransform = itemParent.GetChild(i);
-                    existedList.Add(childTransform.GetComponent<IListItem>());
+                    var listItem = childTransform.GetComponent<IListItem>();
+                    if (listItem != null)
+                    {
+                        existedList.Add(listItem);
+                    }
+                }
+
+                // 如果开启了运行时删除选项，删除预制体中已有的 item
+                if (destroyExistedItemsOnRuntime && Application.isPlaying)
+                {
+                    for (int i = existedList.Count - 1; i >= 0; i--)
+                    {
+                        if (existedList[i] is MonoBehaviour m)
+                        {
+                            Destroy(m.gameObject);
+                        }
+                    }
+                    existedList.Clear();
                 }
 
                 // existedList = itemParent.GetComponentsInChildren<IListItem>().ToList();

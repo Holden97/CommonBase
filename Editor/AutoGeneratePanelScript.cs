@@ -64,13 +64,44 @@ namespace CommonBase
         }
 
         [MenuItem("GameObject/自动生成Panel脚本", false, 10)]
-        private static void GeneratePanelScripts(MenuCommand menuCommand)
+        public static void GeneratePanelScripts(MenuCommand menuCommand)
         {
             // 优先使用 menuCommand.context，若为 null 则使用 Selection.activeGameObject
             var selectedObject = menuCommand.context as GameObject ?? Selection.activeGameObject;
-            if (selectedObject == null || !IsChildOfCanvas(selectedObject))
+            if (selectedObject == null)
             {
-                Debug.LogError("所选对象必须是带有Canvas组件的物体的子物体");
+                Debug.LogError("请选择一个GameObject");
+                return;
+            }
+
+            // 检查是否有 ReferenceCollector 组件
+            var referenceCollector = selectedObject.GetComponent<ReferenceCollector>();
+            UIGenerationType generationType = UIGenerationType.Panel;
+
+            if (referenceCollector != null)
+            {
+                generationType = referenceCollector.generationType;
+            }
+
+            // 根据类型生成不同的脚本
+            if (generationType == UIGenerationType.Widget)
+            {
+                GenerateWidgetScript(selectedObject, referenceCollector);
+            }
+            else
+            {
+                GeneratePanelScript(selectedObject, referenceCollector);
+            }
+        }
+
+        /// <summary>
+        /// 生成 Panel 类型的脚本
+        /// </summary>
+        private static void GeneratePanelScript(GameObject selectedObject, ReferenceCollector referenceCollector)
+        {
+            if (!IsChildOfCanvas(selectedObject))
+            {
+                Debug.LogError("Panel 类型的对象必须是带有Canvas组件的物体的子物体");
                 return;
             }
 
@@ -85,7 +116,7 @@ namespace CommonBase
 
             // 生成基类脚本
             var generateBaseScriptContent =
-                GenerateAutoScriptContent(customScriptName, objectName, selectedObject);
+                GenerateAutoScriptContent(customScriptName, objectName, selectedObject, UIGenerationType.Panel);
             var baseScriptPath = Path.Combine(panelSpecificFolder, $"{generatedBaseFileName}.cs");
             File.WriteAllText(baseScriptPath, generateBaseScriptContent);
 
@@ -99,6 +130,32 @@ namespace CommonBase
             // 使用 SessionState 持久化信息
             SessionState.SetString(PendingScriptKey, derivedScriptPath);
             SessionState.SetInt(PendingGOInstanceIDKey, selectedObject.GetInstanceID());
+        }
+
+        /// <summary>
+        /// 生成 Widget 类型的脚本
+        /// </summary>
+        private static void GenerateWidgetScript(GameObject selectedObject, ReferenceCollector referenceCollector)
+        {
+            var objectName = selectedObject.name;
+            var scriptName = objectName;
+
+            // 创建 Widget 文件夹
+            var scriptsFolder = "Assets/Scripts/UIWidget";
+            if (!Directory.Exists(scriptsFolder)) Directory.CreateDirectory(scriptsFolder);
+
+            // 生成 Widget 脚本
+            var scriptContent = GenerateWidgetScriptContent(scriptName, selectedObject);
+            var scriptPath = Path.Combine(scriptsFolder, $"{scriptName}.cs");
+            File.WriteAllText(scriptPath, scriptContent);
+
+            AssetDatabase.Refresh();
+
+            // 直接挂载到当前对象上
+            SessionState.SetString(PendingScriptKey, scriptPath);
+            SessionState.SetInt(PendingGOInstanceIDKey, selectedObject.GetInstanceID());
+
+            Debug.Log($"✅ 已生成 Widget 脚本: {scriptName}");
         }
 
         private static bool IsChildOfCanvas(GameObject obj)
@@ -135,7 +192,7 @@ namespace CommonBase
             return char.ToUpperInvariant(objectName[0]) + objectName.Substring(1);
         }
 
-        private static string GenerateAutoScriptContent(string scriptName, string objectName, GameObject rootObject)
+        private static string GenerateAutoScriptContent(string scriptName, string objectName, GameObject rootObject, UIGenerationType generationType)
         {
             // 每次生成脚本前清空已使用的变量名记录
             UsedFieldNames.Clear();
@@ -151,14 +208,24 @@ namespace CommonBase
             sb.AppendLine($"    public partial class {scriptName} : BaseUI");
             sb.AppendLine("    {");
 
+            // 检查是否有 ReferenceCollector 组件
+            var referenceCollector = rootObject.GetComponent<ReferenceCollector>();
+            var useReferenceCollector = referenceCollector != null && referenceCollector.data.Count > 0;
+
+            // 如果使用 ReferenceCollector，添加字段
+            if (useReferenceCollector)
+            {
+                sb.AppendLine("        private ReferenceCollector referenceCollector;");
+            }
+
             // 查找并添加UI控件字段
-            FindAndAddUIFields(sb, rootObject.transform);
+            FindAndAddUIFields(sb, rootObject.transform, referenceCollector);
 
             sb.AppendLine();
             sb.AppendLine("        private void Reset()");
             sb.AppendLine("        {");
             // 赋值UI控件
-            AssignUIFields(sb, rootObject.transform);
+            AssignUIFields(sb, rootObject.transform, referenceCollector);
             sb.AppendLine("        }");
 
             sb.AppendLine("    }");
@@ -167,78 +234,232 @@ namespace CommonBase
             return sb.ToString();
         }
 
-        private static void FindAndAddUIFields(StringBuilder sb, Transform root)
+        /// <summary>
+        /// 生成 Widget 脚本内容
+        /// </summary>
+        private static string GenerateWidgetScriptContent(string scriptName, GameObject rootObject)
+        {
+            // 每次生成脚本前清空已使用的变量名记录
+            UsedFieldNames.Clear();
+
+            var sb = new StringBuilder();
+            sb.AppendLine("using UnityEngine;");
+            sb.AppendLine("using UnityEngine.UI;");
+            sb.AppendLine("using TMPro;");
+            sb.AppendLine("using CommonBase;");
+            sb.AppendLine();
+            sb.AppendLine($"namespace {GetUISettingNamespace()}");
+            sb.AppendLine("{");
+            sb.AppendLine($"    public class {scriptName} : MonoBehaviour, IUIWidget");
+            sb.AppendLine("    {");
+
+            // 检查是否有 ReferenceCollector 组件
+            var referenceCollector = rootObject.GetComponent<ReferenceCollector>();
+            var useReferenceCollector = referenceCollector != null && referenceCollector.data.Count > 0;
+
+            // 如果使用 ReferenceCollector，添加字段
+            if (useReferenceCollector)
+            {
+                sb.AppendLine("        private ReferenceCollector referenceCollector;");
+            }
+
+            // 查找并添加UI控件字段
+            FindAndAddUIFields(sb, rootObject.transform, referenceCollector);
+
+            sb.AppendLine();
+            sb.AppendLine("        private void Reset()");
+            sb.AppendLine("        {");
+            // 赋值UI控件
+            AssignUIFields(sb, rootObject.transform, referenceCollector);
+            sb.AppendLine("        }");
+
+            sb.AppendLine();
+            sb.AppendLine("        private void Awake()");
+            sb.AppendLine("        {");
+            // 赋值UI控件
+            AssignUIFields(sb, rootObject.transform, referenceCollector);
+            sb.AppendLine("        }");
+
+            sb.AppendLine();
+            sb.AppendLine("        public void Initialize()");
+            sb.AppendLine("        {");
+            sb.AppendLine("            // TODO: 初始化 Widget");
+            sb.AppendLine("        }");
+
+            sb.AppendLine();
+            sb.AppendLine("        public void Show()");
+            sb.AppendLine("        {");
+            sb.AppendLine("            gameObject.SetActive(true);");
+            sb.AppendLine("        }");
+
+            sb.AppendLine();
+            sb.AppendLine("        public void Hide()");
+            sb.AppendLine("        {");
+            sb.AppendLine("            gameObject.SetActive(false);");
+            sb.AppendLine("        }");
+
+            // 为按钮生成事件方法
+            foreach (var child in FieldInfo)
+            {
+                if (child.Value.component is Button)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine($"        private void On{child.Value.name}Clicked()");
+                    sb.AppendLine("        {");
+                    sb.AppendLine("            // TODO: 处理按钮点击");
+                    sb.AppendLine("        }");
+                }
+            }
+
+            sb.AppendLine("    }");
+            sb.AppendLine("}");
+
+            return sb.ToString();
+        }
+
+        private static void FindAndAddUIFields(StringBuilder sb, Transform root, ReferenceCollector referenceCollector)
         {
             FieldInfo.Clear();
-            // 遍历所有子节点，包括根节点自身
-            foreach (var child in root.GetComponentsInChildren<Transform>(true))
+
+            // 如果有 ReferenceCollector，则从中读取引用
+            if (referenceCollector != null && referenceCollector.data.Count > 0)
             {
-                var path = child == root ? null : GetPathFromRoot(root, child);
-                var button = child.GetComponent<Button>();
-                if (button != null)
+                foreach (var refData in referenceCollector.data)
                 {
-                    var fieldName = $"Btn{GetFieldName(child.name)}";
-                    sb.AppendLine($"        public Button {fieldName};");
-                    // sb.AppendLine($"        public void On{fieldName}Clicked() {{ }}");
-                    FieldInfo.Add(fieldName, new UIComponentInfo(button, path, fieldName));
+                    if (refData.gameObject == null) continue;
+
+                    var fieldName = GetFieldName(refData.key);
+                    UnityEngine.Object targetObj = refData.gameObject;
+                    string typeString = "";
+
+                    // 检测引用的类型
+                    if (targetObj is GameObject go)
+                    {
+                        typeString = "GameObject";
+                    }
+                    else if (targetObj is Component component)
+                    {
+                        typeString = component.GetType().Name;
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"未知的对象类型: {targetObj.GetType().Name}");
+                        continue;
+                    }
+
+                    // 生成字段
+                    sb.AppendLine($"        public {typeString} {fieldName};");
+                    FieldInfo.Add(fieldName, new UIComponentInfo(targetObj, refData.key, fieldName, typeString));
                 }
-                else if (child.TryGetComponent<Image>(out var img))
+            }
+            else
+            {
+                // 使用原来的逻辑：遍历所有子节点，包括根节点自身
+                foreach (var child in root.GetComponentsInChildren<Transform>(true))
                 {
-                    var fieldName = $"Img{GetFieldName(child.name)}";
-                    sb.AppendLine($"        public Image {fieldName};");
-                    FieldInfo.Add(fieldName, new UIComponentInfo(img, path, fieldName));
+                    var path = child == root ? null : GetPathFromRoot(root, child);
+                    var button = child.GetComponent<Button>();
+                    if (button != null)
+                    {
+                        var fieldName = $"Btn{GetFieldName(child.name)}";
+                        sb.AppendLine($"        public Button {fieldName};");
+                        FieldInfo.Add(fieldName, new UIComponentInfo(button, path, fieldName));
+                    }
+                    else if (child.TryGetComponent<Image>(out var img))
+                    {
+                        var fieldName = $"Img{GetFieldName(child.name)}";
+                        sb.AppendLine($"        public Image {fieldName};");
+                        FieldInfo.Add(fieldName, new UIComponentInfo(img, path, fieldName));
+                    }
+                    else if (child.TryGetComponent<TextMeshProUGUI>(out var tmp))
+                    {
+                        var fieldName = $"TMP{GetFieldName(child.name)}";
+                        sb.AppendLine($"        public TextMeshProUGUI {fieldName};");
+                        FieldInfo.Add(fieldName, new UIComponentInfo(tmp, path, fieldName));
+                    }
+                    else if (child.TryGetComponent<ScrollRect>(out var rect))
+                    {
+                        var fieldName = $"ScrollRect{GetFieldName(child.name)}";
+                        sb.AppendLine($"        public ScrollRect {fieldName};");
+                        FieldInfo.Add(fieldName, new UIComponentInfo(rect, path, fieldName));
+                    }
+                    // 可根据需要添加更多UI控件类型
                 }
-                else if (child.TryGetComponent<TextMeshProUGUI>(out var tmp))
-                {
-                    var fieldName = $"TMP{GetFieldName(child.name)}";
-                    sb.AppendLine($"        public TextMeshProUGUI {fieldName};");
-                    FieldInfo.Add(fieldName, new UIComponentInfo(tmp, path, fieldName));
-                }
-                else if (child.TryGetComponent<ScrollRect>(out var rect))
-                {
-                    var fieldName = $"ScrollRect{GetFieldName(child.name)}";
-                    sb.AppendLine($"        public ScrollRect {fieldName};");
-                    FieldInfo.Add(fieldName, new UIComponentInfo(rect, path, fieldName));
-                }
-                // 可根据需要添加更多UI控件类型
             }
         }
 
-        private static void AssignUIFields(StringBuilder sb, Transform root)
+        private static void AssignUIFields(StringBuilder sb, Transform root, ReferenceCollector referenceCollector)
         {
+            // 如果使用 ReferenceCollector，先初始化它
+            if (referenceCollector != null && referenceCollector.data.Count > 0)
+            {
+                sb.AppendLine("            referenceCollector = GetComponent<ReferenceCollector>();");
+                sb.AppendLine();
+            }
+
             foreach (var keyValuePair in FieldInfo)
             {
                 var fieldName = keyValuePair.Key;
-                // 只处理已定义的字段
                 var info = keyValuePair.Value;
                 var child = keyValuePair.Value.component;
-                if (child != null)
+
+                // 判断是否使用 ReferenceCollector
+                bool useReferenceCollector = referenceCollector != null && referenceCollector.data.Count > 0;
+
+                // 获取类型字符串
+                string typeString = string.IsNullOrEmpty(info.typeString) ? GetComponentTypeName(child) : info.typeString;
+
+                if (typeString == "GameObject")
                 {
-                    if (child.GetComponent<Button>() != null)
+                    // GameObject 类型特殊处理
+                    if (useReferenceCollector)
                     {
-                        sb.AppendLine(info.path.IsNullOrEmpty()
-                            ? $"            {fieldName} = transform.GetComponent<Button>();"
-                            : $"            {fieldName} = transform.Find(\"{info.path}\").GetComponent<Button>();"
-                        );
-                        sb.AppendLine(
-                            $"            {fieldName}.onClick.AddListener(On{GetMethodName(fieldName)}Clicked);");
+                        sb.AppendLine($"            {fieldName} = referenceCollector.Get<GameObject>(\"{info.path}\");");
                     }
-                    else if (child.GetComponent<Image>() != null)
+                    else
                     {
                         sb.AppendLine(info.path.IsNullOrEmpty()
-                            ? $"            {fieldName} = transform.GetComponent<Image>();"
-                            : $"            {fieldName} = transform.Find(\"{info.path}\").GetComponent<Image>();"
-                        );
-                    }
-                    else if (child.GetComponent<TextMeshProUGUI>() != null)
-                    {
-                        sb.AppendLine(info.path.IsNullOrEmpty()
-                            ? $"            {fieldName} = transform.GetComponent<TextMeshProUGUI>();"
-                            : $"            {fieldName} = transform.Find(\"{info.path}\").GetComponent<TextMeshProUGUI>();"
+                            ? $"            {fieldName} = gameObject;"
+                            : $"            {fieldName} = transform.Find(\"{info.path}\").gameObject;"
                         );
                     }
                 }
+                else
+                {
+                    // 其他组件类型
+                    if (useReferenceCollector)
+                    {
+                        sb.AppendLine($"            {fieldName} = referenceCollector.Get<{typeString}>(\"{info.path}\");");
+                    }
+                    else
+                    {
+                        sb.AppendLine(info.path.IsNullOrEmpty()
+                            ? $"            {fieldName} = transform.GetComponent<{typeString}>();"
+                            : $"            {fieldName} = transform.Find(\"{info.path}\").GetComponent<{typeString}>();"
+                        );
+                    }
+
+                    // 如果是 Button，添加事件监听
+                    if (typeString == "Button")
+                    {
+                        sb.AppendLine($"            {fieldName}.onClick.AddListener(On{GetMethodName(fieldName)}Clicked);");
+                    }
+                }
             }
+        }
+
+        /// <summary>
+        /// 获取组件的类型名称
+        /// </summary>
+        private static string GetComponentTypeName(Component component)
+        {
+            if (component == null) return "Transform";
+            if (component is Button) return "Button";
+            if (component is Image) return "Image";
+            if (component is TextMeshProUGUI) return "TextMeshProUGUI";
+            if (component is ScrollRect) return "ScrollRect";
+            if (component is Text) return "Text";
+            return "Transform";
         }
 
         private static string GetPathFromRoot(Transform root, Transform child)
