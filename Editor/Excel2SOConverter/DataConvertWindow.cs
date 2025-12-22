@@ -44,6 +44,8 @@ namespace CommonBase.Editor
         {
             excelPath = PlayerPrefs.GetString("xlsxPath");
             nameSpaceOfData = PlayerPrefs.GetString("nameSpaceOfData");
+            csFilePath = PlayerPrefs.GetString("csFilePath", "Assets/Scripts/Configs");
+            soFilePath = PlayerPrefs.GetString("soFilePath", "Assets/Resources/SOConfigs");
         }
 
         public static string m_InputProtoDirectoryPath;
@@ -52,12 +54,36 @@ namespace CommonBase.Editor
         [OnValueChanged("OnNameSpaceValueChanged")] // 当值改变时调用 OnNameSpaceValueChanged 方法
         public string nameSpaceOfData;
 
+        [LabelText("C#文件输出路径")]
+        [FolderPath]
+        [OnValueChanged("OnCsFilePathChanged")]
+        public string csFilePath = "Assets/Scripts/Configs";
+
+        [LabelText("SO文件输出路径")]
+        [FolderPath]
+        [OnValueChanged("OnSoFilePathChanged")]
+        public string soFilePath = "Assets/Resources/SOConfigs";
+
         // 命名空间值改变时调用的方法
         private void OnNameSpaceValueChanged()
         {
             // 将命名空间名称保存到 PlayerPrefs 中
             Debug.Log("nameSpaceOfData:" + nameSpaceOfData);
             PlayerPrefs.SetString("nameSpaceOfData", nameSpaceOfData);
+        }
+
+        // C#文件路径改变时调用的方法
+        private void OnCsFilePathChanged()
+        {
+            PlayerPrefs.SetString("csFilePath", csFilePath);
+            Debug.Log("C#文件输出路径:" + csFilePath);
+        }
+
+        // SO文件路径改变时调用的方法
+        private void OnSoFilePathChanged()
+        {
+            PlayerPrefs.SetString("soFilePath", soFilePath);
+            Debug.Log("SO文件输出路径:" + soFilePath);
         }
 
         // [Button("更新命名空间", ButtonSizes.Medium, Stretch = false)]
@@ -68,17 +94,17 @@ namespace CommonBase.Editor
         //     PlayerPrefs.SetString("nameSpaceOfData", nameSpaceOfData);
         // }
 
-        [BoxGroup("Titles", ShowLabel = true, LabelText = "Excel转ScriptableObject")]
+        [BoxGroup("Titles", ShowLabel = true, LabelText = "数据表转ScriptableObject")]
 
         [HorizontalGroup("Titles/ButtonGroup", 600f)]
-        [LabelText("Excel路径")]
+        [LabelText("数据表路径")]
         public string excelPath;
 
-        [Button("浏览Excel文件夹", ButtonSizes.Medium, Stretch = false)]
+        [Button("浏览数据表文件夹", ButtonSizes.Medium, Stretch = false)]
         [HorizontalGroup("Titles/ButtonGroup", PaddingLeft = 0)]
         private void BrowseProtoDirectory()
         {
-            string directory = EditorUtility.OpenFolderPanel("Select xlsx folder", m_InputProtoDirectoryPath,
+            string directory = EditorUtility.OpenFolderPanel("Select data files folder", m_InputProtoDirectoryPath,
                 string.Empty);
             if (!string.IsNullOrEmpty(directory))
             {
@@ -91,7 +117,7 @@ namespace CommonBase.Editor
 
         [PropertyOrder(2)]
         [ButtonGroup("Titles/BG1")]
-        [Button("Excel生成C#文件")]
+        [Button("生成C#文件")]
         public void ExcelConvertToCSharpFile()
         {
             if (excelPath == null)
@@ -99,8 +125,8 @@ namespace CommonBase.Editor
                 Debug.LogError("Excel字段为空，请检查！");
                 return;
             }
-            // 清空 Assets/Scripts/Configs 路径下的所有 C# 文件
-            DeleteOldFiles("Assets/Scripts/Configs");
+            // 清空 C# 文件输出路径下的所有文件
+            DeleteOldFiles(csFilePath);
             //几个规定
             //1.第一行写SO名称
             //2.第二行写字段名称
@@ -109,35 +135,53 @@ namespace CommonBase.Editor
             //1.根据字段生成对应类型
             //2.根据数据生成SO文件
 
-            // 打开 Excel 文件
+            // 打开数据文件
             string assetPath = excelPath.Substring(excelPath.IndexOf("Assets"));
-            var allExcels = GetAllExcelFiles(assetPath);
-            foreach (var path in allExcels)
+            var allDataFiles = GetAllExcelFiles(assetPath);
+            foreach (var path in allDataFiles)
             {
-                using (FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                try
                 {
-                    IExcelDataReader excelReader = ExcelReaderFactory.CreateOpenXmlReader(stream);
-                    try
+                    // 判断文件类型
+                    if (path.EndsWith(".csv"))
                     {
-
-                        // 读取整张工作表
-                        DataSet dataSet = excelReader.AsDataSet();
-                        // 获取工作表
-                        foreach (DataTable sheet in dataSet.Tables)
-                        {
-                            HandleSingleSheet(sheet);
-                        }
-                        // 关闭 Excel 读取器
-                        excelReader.Close();
+                        // CSV文件处理
+                        DataTable csvTable = ReadCsvToDataTable(path);
+                        csvTable.TableName = Path.GetFileNameWithoutExtension(path);
+                        HandleSingleSheet(csvTable);
                     }
-                    catch (Exception e)
+                    else
                     {
-                        Debug.LogError("生成失败:" + e.ToString());
-                        excelReader.Close();
-                        throw;
+                        // Excel文件处理
+                        using (FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        {
+                            IExcelDataReader excelReader = ExcelReaderFactory.CreateOpenXmlReader(stream);
+                            try
+                            {
+                                // 读取整张工作表
+                                DataSet dataSet = excelReader.AsDataSet();
+                                // 获取工作表
+                                foreach (DataTable sheet in dataSet.Tables)
+                                {
+                                    HandleSingleSheet(sheet);
+                                }
+                                // 关闭 Excel 读取器
+                                excelReader.Close();
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.LogError("生成失败:" + e.ToString());
+                                excelReader.Close();
+                                throw;
+                            }
+                        }
                     }
                 }
-
+                catch (Exception e)
+                {
+                    Debug.LogError($"处理文件 {path} 时出错: {e}");
+                    throw;
+                }
             }
 
         }
@@ -145,26 +189,44 @@ namespace CommonBase.Editor
         private static void DeleteOldFiles(string path)
         {
             string configPath = path;
-            if (Directory.Exists(configPath))
+
+            // 如果目录不存在，则创建它
+            if (!Directory.Exists(configPath))
             {
-                // 获取指定目录下的所有类型文件
-                string[] allFiles = Directory.GetFiles(configPath, "*.*", SearchOption.AllDirectories);
-                foreach (string file in allFiles)
+                try
                 {
-                    try
-                    {
-                        File.Delete(file);
-                        Debug.Log($"已删除文件: {file}");
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError($"删除文件 {file} 时出错: {e.Message}");
-                    }
+                    Directory.CreateDirectory(configPath);
+                    Debug.Log($"创建目录: {configPath}");
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"创建目录 {configPath} 时出错: {e.Message}");
+                    return;
                 }
             }
             else
             {
-                Debug.LogError($"目录 {configPath} 不存在");
+                // 目录存在，删除其中的所有文件
+                string[] allFiles = Directory.GetFiles(configPath, "*.*", SearchOption.AllDirectories);
+                if (allFiles.Length > 0)
+                {
+                    foreach (string file in allFiles)
+                    {
+                        try
+                        {
+                            File.Delete(file);
+                            Debug.Log($"已删除文件: {file}");
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogError($"删除文件 {file} 时出错: {e.Message}");
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.Log($"目录 {configPath} 已存在且为空");
+                }
             }
         }
 
@@ -173,15 +235,17 @@ namespace CommonBase.Editor
             // 检查目录是否存在
             if (Directory.Exists(path))
             {
-                // 获取目录下所有的.xlsx和.xls文件
+                // 获取目录下所有的.xlsx、.xls和.csv文件
                 string[] excelFiles = Directory.GetFiles(path, "*.xlsx").FindAll(x => !x.Contains("~")).ToArray();
                 string[] oldExcelFiles = Directory.GetFiles(path, "*.xls").FindAll(x => !x.Contains("~")).ToArray();
+                string[] csvFiles = Directory.GetFiles(path, "*.csv").FindAll(x => !x.Contains("~")).ToArray();
 
-                // 合并两个数组
-                string[] allExcelFiles = new string[excelFiles.Length + oldExcelFiles.Length];
-                excelFiles.CopyTo(allExcelFiles, 0);
-                oldExcelFiles.CopyTo(allExcelFiles, excelFiles.Length);
-                return allExcelFiles;
+                // 合并三个数组
+                string[] allDataFiles = new string[excelFiles.Length + oldExcelFiles.Length + csvFiles.Length];
+                excelFiles.CopyTo(allDataFiles, 0);
+                oldExcelFiles.CopyTo(allDataFiles, excelFiles.Length);
+                csvFiles.CopyTo(allDataFiles, excelFiles.Length + oldExcelFiles.Length);
+                return allDataFiles;
             }
             else
             {
@@ -189,6 +253,78 @@ namespace CommonBase.Editor
                 return null;
             }
 
+        }
+
+        // CSV文件读取并转换为DataTable
+        private DataTable ReadCsvToDataTable(string filePath)
+        {
+            DataTable dataTable = new DataTable();
+
+            try
+            {
+                using (StreamReader sr = new StreamReader(filePath, Encoding.UTF8))
+                {
+                    string[] headers = sr.ReadLine()?.Split(',');
+                    if (headers != null)
+                    {
+                        foreach (string header in headers)
+                        {
+                            dataTable.Columns.Add(header.Trim());
+                        }
+                    }
+
+                    while (!sr.EndOfStream)
+                    {
+                        string[] rows = ParseCsvLine(sr.ReadLine());
+                        DataRow dr = dataTable.NewRow();
+                        for (int i = 0; i < headers.Length && i < rows.Length; i++)
+                        {
+                            dr[i] = rows[i].Trim();
+                        }
+                        dataTable.Rows.Add(dr);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"读取CSV文件失败: {filePath}, 错误: {e}");
+                throw;
+            }
+
+            return dataTable;
+        }
+
+        // 解析CSV行，处理引号内的逗号
+        private string[] ParseCsvLine(string line)
+        {
+            if (string.IsNullOrEmpty(line))
+                return new string[0];
+
+            List<string> result = new List<string>();
+            StringBuilder currentField = new StringBuilder();
+            bool inQuotes = false;
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                char c = line[i];
+
+                if (c == '"')
+                {
+                    inQuotes = !inQuotes;
+                }
+                else if (c == ',' && !inQuotes)
+                {
+                    result.Add(currentField.ToString());
+                    currentField.Clear();
+                }
+                else
+                {
+                    currentField.Append(c);
+                }
+            }
+
+            result.Add(currentField.ToString());
+            return result.ToArray();
         }
 
         private void HandleSingleSheet(DataTable dataTable)
@@ -214,14 +350,69 @@ namespace CommonBase.Editor
 
             //生成cs文件
             var info = GenerateCSMemberInfo(dataTable);
-            GenerateSingleItemCsFile(configTypeInfo, info, $"Assets/Scripts/Configs/{configTypeInfo}.cs", baseClassInfo);
-            GenerateSOItemCsFile(configTypeInfo, configTypeInfo, $"Assets/Scripts/Configs/{configTypeInfo}SO.cs");
+            GenerateSingleItemCsFile(configTypeInfo, info, $"{csFilePath}/{configTypeInfo}.cs", baseClassInfo);
+            GenerateSOItemCsFile(configTypeInfo, configTypeInfo, $"{csFilePath}/{configTypeInfo}SO.cs");
+        }
+
+        [PropertyOrder(2)]
+        [ButtonGroup("Titles/BG1")]
+        [Button("生成样例CSV")]
+        public void GenerateSampleCSV()
+        {
+            if (excelPath.IsNullOrEmpty())
+            {
+                Debug.LogError("请先选择数据表路径！");
+                return;
+            }
+
+            string targetPath = excelPath;
+            // 如果路径包含 "Assets"，则提取Assets后的路径
+            if (excelPath.Contains("Assets"))
+            {
+                targetPath = excelPath.Substring(excelPath.IndexOf("Assets"));
+            }
+
+            // 确保目录存在
+            if (!Directory.Exists(targetPath))
+            {
+                Directory.CreateDirectory(targetPath);
+            }
+
+            // 生成简单示例CSV
+            string simpleExamplePath = Path.Combine(targetPath, "ExampleData.csv");
+            StringBuilder simpleCsv = new StringBuilder();
+            simpleCsv.AppendLine("type=ExampleData|base=,,,");
+            simpleCsv.AppendLine("数据ID,数据名称,数据值,描述信息");
+            simpleCsv.AppendLine("id,name,value,description");
+            simpleCsv.AppendLine("int,string,float,string");
+            simpleCsv.AppendLine("1,示例数据1,100.5,这是第一条示例数据");
+            simpleCsv.AppendLine("2,示例数据2,200.8,这是第二条示例数据");
+            simpleCsv.AppendLine("3,示例数据3,300.3,这是第三条示例数据");
+            File.WriteAllText(simpleExamplePath, simpleCsv.ToString(), Encoding.UTF8);
+            Debug.Log($"简单示例CSV已生成: {simpleExamplePath}");
+
+            // 生成复杂示例CSV
+            string complexExamplePath = Path.Combine(targetPath, "ComplexExampleData.csv");
+            StringBuilder complexCsv = new StringBuilder();
+            complexCsv.AppendLine("type=ItemData|base=,,,,,,,");
+            complexCsv.AppendLine("物品ID,物品名称,物品价格,是否可堆叠,最大堆叠数,物品等级,标签列表,属性加成列表");
+            complexCsv.AppendLine("itemId,itemName,price,stackable,maxStack,level,tags,bonuses");
+            complexCsv.AppendLine("int,string,float,bool,int,int,List<string>,List<int>");
+            complexCsv.AppendLine("1001,生命药水,50.5,1,99,1,药水;消耗品,10;0;0");
+            complexCsv.AppendLine("1002,魔法药水,75.8,1,99,1,药水;消耗品,0;20;0");
+            complexCsv.AppendLine("1003,钢铁剑,500.0,0,1,5,武器;近战,50;0;10");
+            complexCsv.AppendLine("1004,木质盾牌,200.0,0,1,3,防具;盾牌,0;30;5");
+            File.WriteAllText(complexExamplePath, complexCsv.ToString(), Encoding.UTF8);
+            Debug.Log($"复杂示例CSV已生成: {complexExamplePath}");
+
+            AssetDatabase.Refresh();
+            Debug.Log($"样例CSV文件已生成在: {targetPath}");
         }
 
         [PropertyOrder(2)]
         [ButtonGroup("Titles/BG1")]
         [GUIColor(0f, 1f, 0f, 1f)]
-        [Button("Excel生成SO")]
+        [Button("生成SO")]
         public void ExcelConvertToSO()
         {
             if (excelPath.IsNullOrEmpty())
@@ -229,7 +420,7 @@ namespace CommonBase.Editor
                 Debug.LogError("Excel字段为空，请检查！");
                 return;
             }
-            DeleteOldFiles("Assets/Resources/SOConfigs");
+            DeleteOldFiles(soFilePath);
 
             //几个规定
             //1.第一行写SO名称
@@ -239,46 +430,66 @@ namespace CommonBase.Editor
             //1.根据字段生成对应类型
             //2.根据数据生成SO文件
 
-            // 打开 Excel 文件
+            // 打开数据文件
             string assetPath = excelPath.Substring(excelPath.IndexOf("Assets"));
-            var allExcels = GetAllExcelFiles(assetPath);
-            foreach (var excel in allExcels)
+            var allDataFiles = GetAllExcelFiles(assetPath);
+            foreach (var dataFile in allDataFiles)
             {
                 try
                 {
-                    using (FileStream stream = File.Open(excel, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    // 判断文件类型
+                    if (dataFile.EndsWith(".csv"))
                     {
-                        IExcelDataReader excelReader = ExcelReaderFactory.CreateOpenXmlReader(stream);
-                        // 读取整张工作表
-                        DataSet dataSet = excelReader.AsDataSet();
+                        // CSV文件处理
+                        DataTable csvTable = ReadCsvToDataTable(dataFile);
+                        csvTable.TableName = Path.GetFileNameWithoutExtension(dataFile);
                         try
                         {
-                            foreach (DataTable sheet in dataSet.Tables)
-                            {
-                                try
-                                {
-                                    GenerateSOBySingleSheet(sheet);
-                                }
-                                catch (Exception e)
-                                {
-                                    Debug.LogError($"Excel表{sheet.TableName}生成数据时出错，错误{e}");
-                                    throw;
-                                }
-                            }
-                            // 关闭 Excel 读取器
-                            excelReader.Close();
+                            GenerateSOBySingleSheet(csvTable);
                         }
                         catch (Exception e)
                         {
-                            Debug.LogError("生成失败:" + e.ToString());
-                            excelReader.Close();
-                            throw e;
+                            Debug.LogError($"CSV表{csvTable.TableName}生成数据时出错，错误{e}");
+                            throw;
+                        }
+                    }
+                    else
+                    {
+                        // Excel文件处理
+                        using (FileStream stream = File.Open(dataFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        {
+                            IExcelDataReader excelReader = ExcelReaderFactory.CreateOpenXmlReader(stream);
+                            // 读取整张工作表
+                            DataSet dataSet = excelReader.AsDataSet();
+                            try
+                            {
+                                foreach (DataTable sheet in dataSet.Tables)
+                                {
+                                    try
+                                    {
+                                        GenerateSOBySingleSheet(sheet);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Debug.LogError($"Excel表{sheet.TableName}生成数据时出错，错误{e}");
+                                        throw;
+                                    }
+                                }
+                                // 关闭 Excel 读取器
+                                excelReader.Close();
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.LogError("生成失败:" + e.ToString());
+                                excelReader.Close();
+                                throw e;
+                            }
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError("Excel生成SO失败");
+                    Debug.LogError($"数据文件生成SO失败: {dataFile}");
                     throw e;
                 }
             }
@@ -498,17 +709,6 @@ namespace CommonBase.Editor
                 }
             }
             return null;
-        }
-
-        [Button("导出对局数据", ButtonSizes.Medium, Stretch = false)]
-        public void ExportGameRecord()
-        {
-        }
-
-        [Button("清除成就", ButtonSizes.Medium, Stretch = false)]
-        public void CleanAchievements()
-        {
-            // LocalDataManager.Instance.CleanAchievements();
         }
 
         private static void CreateBuffPrefab(Type type)
@@ -807,9 +1007,8 @@ namespace CommonBase.Editor
             // 设置ScriptableObject的字段值
             myDataInstance = data;
 
-            // 在Assets目录下创建ScriptableObject文件
-            //TODO:这里需要根据类型来创建文件夹，目前是直接在SOConfigs文件夹下创建
-            string path = $"Assets/Resources/SOConfigs/{data.GetType().Name}Data.asset";
+            // 在指定目录下创建ScriptableObject文件
+            string path = $"{soFilePath}/{data.GetType().Name}Data.asset";
             AssetDatabase.CreateAsset(myDataInstance, path);
             //AssetDatabase.SaveAssets();
             //AssetDatabase.Refresh();
@@ -930,9 +1129,30 @@ namespace CommonBase.Editor
         }
     }
 
+    public class SteamDebugMenu : ScriptableObject
+    {
+        [BoxGroup("Steam", ShowLabel = true, LabelText = "Steam调试工具")]
+        [Button("导出对局数据", ButtonSizes.Medium, Stretch = false)]
+        [HorizontalGroup("Steam/ButtonGroup", PaddingLeft = 0)]
+        public void ExportGameRecord()
+        {
+            Debug.Log("导出对局数据功能待实现");
+        }
+
+        [Button("清除成就", ButtonSizes.Medium, Stretch = false)]
+        [HorizontalGroup("Steam/ButtonGroup", PaddingLeft = 0)]
+        [GUIColor(1f, 0.5f, 0.5f, 1f)]
+        public void CleanAchievements()
+        {
+            // LocalDataManager.Instance.CleanAchievements();
+            Debug.Log("清除成就功能待实现");
+        }
+    }
+
     public class DataConvertWindow : OdinMenuEditorWindow
     {
         public DataConvertMenu dataConvertMenu;
+        public SteamDebugMenu steamDebugMenu;
         // public WaveConfigSO waveConfigSO;
 
         [MenuItem("Tools/数据转换 %t")]
@@ -944,11 +1164,13 @@ namespace CommonBase.Editor
         protected override OdinMenuTree BuildMenuTree()
         {
             dataConvertMenu = ScriptableObject.CreateInstance<DataConvertMenu>();
+            steamDebugMenu = ScriptableObject.CreateInstance<SteamDebugMenu>();
             // waveConfigSO = AssetDatabase.LoadAssetAtPath<WaveConfigSO>("Assets/Resources/SO/WaveConfigSO.asset");
 
             OdinMenuTree tree = new OdinMenuTree(supportsMultiSelect: true)
 {
     { "SO<->Excel",                           dataConvertMenu,                           EditorIcons.Cut       },
+    { "Steam调试",                             steamDebugMenu,                            EditorIcons.SettingsCog  },
     // { "怪物波次配置",                           waveConfigSO,                           EditorIcons.Airplane        },
     //{ "bytes<->Excel",                           dataConvertMenu,                           EditorIcons.Cut       },
     //{ "Odin Settings",                  null,                           SdfIconType.GearFill    },

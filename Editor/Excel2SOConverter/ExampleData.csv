@@ -1,0 +1,7 @@
+type=ExampleData|base=,,,
+数据ID,数据名称,数据值,描述信息
+id,name,value,description
+int,string,float,string
+1,示例数据1,100.5,这是第一条示例数据
+2,示例数据2,200.8,这是第二条示例数据
+3,示例数据3,300.3,这是第三条示例数据
