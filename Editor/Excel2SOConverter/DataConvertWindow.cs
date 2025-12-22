@@ -5,6 +5,7 @@ using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using Sirenix.Utilities.Editor;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -14,6 +15,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.UI;
 
 namespace CommonBase.Editor
@@ -46,6 +48,15 @@ namespace CommonBase.Editor
             nameSpaceOfData = PlayerPrefs.GetString("nameSpaceOfData");
             csFilePath = PlayerPrefs.GetString("csFilePath", "Assets/Scripts/Configs");
             soFilePath = PlayerPrefs.GetString("soFilePath", "Assets/Resources/SOConfigs");
+
+            // 自动加载上次打开的文件（数据表编辑器功能）
+            string lastOpenedFile = PlayerPrefs.GetString("DataEditor_LastFile", "");
+            if (!string.IsNullOrEmpty(lastOpenedFile) && File.Exists(lastOpenedFile))
+            {
+                selectedFile = lastOpenedFile;
+                currentFilePath = lastOpenedFile;
+                LoadFileForEditor(currentFilePath);
+            }
         }
 
         public static string m_InputProtoDirectoryPath;
@@ -264,20 +275,37 @@ namespace CommonBase.Editor
             {
                 using (StreamReader sr = new StreamReader(filePath, Encoding.UTF8))
                 {
-                    string[] headers = sr.ReadLine()?.Split(',');
-                    if (headers != null)
+                    // 先读取第一行以确定列数
+                    string firstLine = sr.ReadLine();
+                    if (string.IsNullOrEmpty(firstLine))
                     {
-                        foreach (string header in headers)
-                        {
-                            dataTable.Columns.Add(header.Trim());
-                        }
+                        Debug.LogError($"CSV文件为空: {filePath}");
+                        return dataTable;
                     }
 
+                    string[] firstLineValues = ParseCsvLine(firstLine);
+                    int columnCount = firstLineValues.Length;
+
+                    // 创建列（使用通用列名，因为真正的列名在第3行）
+                    for (int i = 0; i < columnCount; i++)
+                    {
+                        dataTable.Columns.Add($"Column{i}");
+                    }
+
+                    // 将第一行作为数据行添加
+                    DataRow firstRow = dataTable.NewRow();
+                    for (int i = 0; i < firstLineValues.Length; i++)
+                    {
+                        firstRow[i] = firstLineValues[i].Trim();
+                    }
+                    dataTable.Rows.Add(firstRow);
+
+                    // 继续读取剩余行
                     while (!sr.EndOfStream)
                     {
                         string[] rows = ParseCsvLine(sr.ReadLine());
                         DataRow dr = dataTable.NewRow();
-                        for (int i = 0; i < headers.Length && i < rows.Length; i++)
+                        for (int i = 0; i < columnCount && i < rows.Length; i++)
                         {
                             dr[i] = rows[i].Trim();
                         }
@@ -913,6 +941,30 @@ namespace CommonBase.Editor
                             AudioClip a = AssetDatabase.LoadAssetAtPath<AudioClip>(dataTable.Rows[row][col].ToString());
                             curData.Add(info[col].name, a);
                             break;
+                        case "PathGUID":
+                        case "AssetReference":
+                            // AssetReference类型：使用Addressables的AssetReference
+                            string pathGuid = dataTable.Rows[row][col].ToString();
+                            if (!string.IsNullOrEmpty(pathGuid))
+                            {
+                                // 验证GUID是否有效
+                                string assetPath = AssetDatabase.GUIDToAssetPath(pathGuid);
+                                if (string.IsNullOrEmpty(assetPath))
+                                {
+                                    Debug.LogWarning($"GUID '{pathGuid}' 无效或资源不存在");
+                                }
+
+                                // 使用构造函数创建AssetReference实例
+                                var assetRef = new AssetReference(pathGuid);
+                                curData.Add(info[col].name, assetRef);
+                            }
+                            else
+                            {
+                                // 创建空的AssetReference（使用空字符串构造）
+                                var assetRef = new AssetReference("");
+                                curData.Add(info[col].name, assetRef);
+                            }
+                            break;
                         //string替换掉所有换行符和制表符
                         case "string":
                             curData.Add(info[col].name, dataTable.Rows[row][col].ToString().Replace("\\n", "\n").Replace("\\t", "\t"));
@@ -1054,9 +1106,21 @@ namespace CommonBase.Editor
                 baseClassType = assembly.GetType(baseClassName);
                 baseFields = baseClassType.GetFields();
             }
+
+            // 检查是否需要 Addressables 命名空间（PathGUID会映射为AssetReference）
+            bool needsAddressables = paramsArray.Any(info =>
+                info.type != null && (info.type.Contains("AssetReference") || info.type.Contains("PathGUID")));
+
             // 生成 C# 文件内容
             StringBuilder sb = new StringBuilder();
             sb.AppendLine($"using System;\r\nusing System.Collections;\r\nusing System.Collections.Generic;\r\nusing UnityEngine;\r\n");
+
+            // 如果需要 AssetReference，添加 Addressables 命名空间
+            if (needsAddressables)
+            {
+                sb.AppendLine($"using UnityEngine.AddressableAssets;\r\n");
+            }
+
             sb.AppendLine($"namespace {nameSpaceOfData} {{");
             sb.AppendLine($"[Serializable]\r\n");
             sb.AppendLine($"public partial class {csFileName}{baseClassDescription} {{");
@@ -1076,7 +1140,9 @@ namespace CommonBase.Editor
                             sb.AppendLine($"    ///{curInfo.annotation}");
                             sb.AppendLine($"    ///</summary>");
                         }
-                        sb.AppendLine($"    public {curInfo.type} {curInfo.name};");
+                        // 将PathGUID类型映射为AssetReference
+                        string typeName = curInfo.type == "PathGUID" ? "AssetReference" : curInfo.type;
+                        sb.AppendLine($"    public {typeName} {curInfo.name};");
                     }
                 }
                 else
@@ -1089,7 +1155,9 @@ namespace CommonBase.Editor
                     }
                     if (curInfo.type != null && !string.IsNullOrEmpty(curInfo.type.Trim()))
                     {
-                        sb.AppendLine($"    public {curInfo.type} {curInfo.name};");
+                        // 将PathGUID类型映射为AssetReference
+                        string typeName = curInfo.type == "PathGUID" ? "AssetReference" : curInfo.type;
+                        sb.AppendLine($"    public {typeName} {curInfo.name};");
                     }
                 }
             }
@@ -1126,6 +1194,1103 @@ namespace CommonBase.Editor
 
             Debug.Log($"C# file generated at: {csPath}");
             AssetDatabase.Refresh();
+        }
+
+        // ==================== 数据表编辑器功能 ====================
+
+        [BoxGroup("Editor", ShowLabel = true, LabelText = "数据表编辑器")]
+        [ValueDropdown("GetAvailableFiles")]
+        [LabelText("选择文件")]
+        [OnValueChanged("OnFileSelected")]
+        public string selectedFile;
+
+        [BoxGroup("Editor")]
+        [ShowInInspector]
+        [ReadOnly]
+        [LabelText("当前文件")]
+        private string currentFileName => string.IsNullOrEmpty(currentFilePath) ? "未选择" : Path.GetFileName(currentFilePath);
+
+        [BoxGroup("Editor")]
+        [ShowInInspector]
+        [ReadOnly]
+        [LabelText("数据统计")]
+        private string dataStats => $"{tableData.Count} 行 x {columnCount} 列";
+
+        private string currentFilePath;
+        private int columnCount = 0;
+        private List<List<string>> tableData = new List<List<string>>();
+        private Vector2 scrollPosition = Vector2.zero;
+        private int columnWidth = 150;
+        private int selectedRow = -1;
+        private int selectedCol = -1;
+
+        // 区域选择相关
+        private int selectionStartRow = -1;
+        private int selectionStartCol = -1;
+        private int selectionEndRow = -1;
+        private int selectionEndCol = -1;
+        private bool isDraggingSelection = false;
+
+        private IEnumerable GetAvailableFiles()
+        {
+            if (string.IsNullOrEmpty(excelPath) || !Directory.Exists(excelPath))
+            {
+                return new ValueDropdownList<string>();
+            }
+
+            var files = new ValueDropdownList<string>();
+
+            // 获取所有CSV和Excel文件
+            string[] csvFiles = Directory.GetFiles(excelPath, "*.csv");
+            string[] xlsxFiles = Directory.GetFiles(excelPath, "*.xlsx");
+            string[] xlsFiles = Directory.GetFiles(excelPath, "*.xls");
+
+            foreach (var file in csvFiles.Concat(xlsxFiles).Concat(xlsFiles))
+            {
+                if (!file.Contains("~")) // 排除临时文件
+                {
+                    string fileName = Path.GetFileName(file);
+                    files.Add(fileName, file);
+                }
+            }
+
+            return files;
+        }
+
+        private void OnFileSelected()
+        {
+            if (string.IsNullOrEmpty(selectedFile))
+                return;
+
+            currentFilePath = selectedFile;
+            LoadFileForEditor(currentFilePath);
+        }
+
+        [BoxGroup("Editor")]
+        [HorizontalGroup("Editor/FileOps")]
+        [Button("刷新文件列表", ButtonSizes.Medium)]
+        private void RefreshFileList()
+        {
+            // 触发下拉列表刷新
+            selectedFile = null;
+            currentFilePath = null;
+            tableData.Clear();
+        }
+
+        [BoxGroup("Editor")]
+        [HorizontalGroup("Editor/FileOps")]
+        [Button("重命名文件", ButtonSizes.Medium)]
+        [GUIColor(1f, 1f, 0.5f, 1f)]
+        private void RenameFile()
+        {
+            if (string.IsNullOrEmpty(currentFilePath) || !File.Exists(currentFilePath))
+            {
+                Debug.LogError("没有选择有效的文件！");
+                return;
+            }
+
+            string directory = Path.GetDirectoryName(currentFilePath);
+            string extension = Path.GetExtension(currentFilePath);
+            string oldFileName = Path.GetFileNameWithoutExtension(currentFilePath);
+
+            // 使用EditorUtility.SaveFilePanel获取新文件名
+            string newFilePath = EditorUtility.SaveFilePanel(
+                "重命名文件",
+                directory,
+                oldFileName,
+                extension.TrimStart('.')
+            );
+
+            if (string.IsNullOrEmpty(newFilePath))
+            {
+                Debug.Log("取消重命名操作");
+                return;
+            }
+
+            string newFileName = Path.GetFileNameWithoutExtension(newFilePath);
+
+            if (newFileName == oldFileName && Path.GetDirectoryName(newFilePath) == directory)
+            {
+                Debug.Log("文件名未更改");
+                return;
+            }
+
+            // 检查新文件是否已存在
+            if (File.Exists(newFilePath) && newFilePath != currentFilePath)
+            {
+                if (!EditorUtility.DisplayDialog("文件已存在", $"文件 {Path.GetFileName(newFilePath)} 已存在，是否覆盖？", "是", "否"))
+                {
+                    Debug.Log("取消重命名操作");
+                    return;
+                }
+            }
+
+            try
+            {
+                // 先保存当前更改
+                if (tableData.Count > 0 && currentFilePath.EndsWith(".csv"))
+                {
+                    SaveCSV(currentFilePath);
+                }
+
+                // 重命名/移动文件
+                if (File.Exists(newFilePath) && newFilePath != currentFilePath)
+                {
+                    File.Delete(newFilePath);
+                }
+                File.Move(currentFilePath, newFilePath);
+
+                Debug.Log($"文件已重命名: {Path.GetFileName(currentFilePath)} -> {Path.GetFileName(newFilePath)}");
+
+                // 更新当前文件路径
+                currentFilePath = newFilePath;
+                selectedFile = newFilePath;
+
+                // 保存最后打开的文件路径
+                PlayerPrefs.SetString("DataEditor_LastFile", newFilePath);
+                PlayerPrefs.Save();
+
+                AssetDatabase.Refresh();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"重命名文件失败: {e.Message}");
+            }
+        }
+
+        [BoxGroup("Editor")]
+        [HorizontalGroup("Editor/FileOps")]
+        [Button("清除数据", ButtonSizes.Medium)]
+        [GUIColor(1f, 0.5f, 0.5f, 1f)]
+        private void ClearData()
+        {
+            if (tableData.Count <= 4)
+            {
+                Debug.LogWarning("没有数据可清除（仅有表头）");
+                return;
+            }
+
+            if (!EditorUtility.DisplayDialog("确认清除数据", "此操作将清除所有数据行（保留表头），是否继续？", "确定", "取消"))
+            {
+                return;
+            }
+
+            // 保留前4行表头，删除其余数据
+            while (tableData.Count > 4)
+            {
+                tableData.RemoveAt(4);
+            }
+
+            Debug.Log("数据已清除，保留了表头信息");
+        }
+
+        [BoxGroup("Editor")]
+        [Button("新建CSV文件", ButtonSizes.Large)]
+        [GUIColor(0.5f, 1f, 1f, 1f)]
+        private void CreateNewCSV()
+        {
+            if (excelPath.IsNullOrEmpty())
+            {
+                Debug.LogError("请先选择数据表路径！");
+                return;
+            }
+
+            string targetPath = excelPath;
+            // 如果路径包含 "Assets"，则提取Assets后的路径
+            if (excelPath.Contains("Assets"))
+            {
+                targetPath = excelPath.Substring(excelPath.IndexOf("Assets"));
+            }
+
+            // 确保目录存在
+            if (!Directory.Exists(targetPath))
+            {
+                Directory.CreateDirectory(targetPath);
+            }
+
+            // 生成默认文件名
+            string defaultFileName = "NewData";
+            string filePath = Path.Combine(targetPath, $"{defaultFileName}.csv");
+            int counter = 1;
+            while (File.Exists(filePath))
+            {
+                filePath = Path.Combine(targetPath, $"{defaultFileName}{counter}.csv");
+                counter++;
+            }
+
+            // 创建带元数据的CSV模板
+            StringBuilder csvContent = new StringBuilder();
+            csvContent.AppendLine("type=NewData|base=,,,");
+            csvContent.AppendLine("字段1,字段2,字段3,字段4");
+            csvContent.AppendLine("field1,field2,field3,field4");
+            csvContent.AppendLine("int,string,float,bool");
+
+            File.WriteAllText(filePath, csvContent.ToString(), Encoding.UTF8);
+            Debug.Log($"新CSV文件已创建: {filePath}");
+
+            AssetDatabase.Refresh();
+
+            // 自动加载新创建的文件
+            selectedFile = filePath;
+            currentFilePath = filePath;
+            LoadFileForEditor(currentFilePath);
+        }
+
+        [BoxGroup("Editor")]
+        [Button("保存文件", ButtonSizes.Large)]
+        [GUIColor(0f, 1f, 0f, 1f)]
+        private void SaveFile()
+        {
+            if (string.IsNullOrEmpty(currentFilePath))
+            {
+                Debug.LogError("没有选择文件！");
+                return;
+            }
+
+            if (currentFilePath.EndsWith(".csv"))
+            {
+                SaveCSV(currentFilePath);
+            }
+            else
+            {
+                Debug.LogWarning("目前仅支持保存CSV文件，Excel文件请转换为CSV后编辑");
+            }
+        }
+
+        [BoxGroup("Editor")]
+        [HorizontalGroup("Editor/Row")]
+        [LabelText("行号")]
+        [LabelWidth(40)]
+        public int targetRow = 1;
+
+        [BoxGroup("Editor")]
+        [HorizontalGroup("Editor/Row")]
+        [Button("在此行之前插入", ButtonSizes.Medium)]
+        private void InsertRowBefore()
+        {
+            InsertRowAt(targetRow - 1);
+        }
+
+        [BoxGroup("Editor")]
+        [HorizontalGroup("Editor/Row")]
+        [Button("删除此行", ButtonSizes.Medium)]
+        [GUIColor(1f, 0.5f, 0.5f, 1f)]
+        private void DeleteRow()
+        {
+            DeleteRowAt(targetRow - 1);
+        }
+
+        [BoxGroup("Editor")]
+        [HorizontalGroup("Editor/Row")]
+        [Button("新建一行（末尾）", ButtonSizes.Medium)]
+        [GUIColor(0.5f, 1f, 0.5f, 1f)]
+        private void AddRowAtEnd()
+        {
+            var newRow = new List<string>();
+            for (int i = 0; i < columnCount; i++)
+            {
+                newRow.Add("");
+            }
+            tableData.Add(newRow);
+            Debug.Log($"在末尾添加新行，当前共{tableData.Count}行");
+        }
+
+        [BoxGroup("Editor")]
+        [HorizontalGroup("Editor/Col")]
+        [LabelText("列号")]
+        [LabelWidth(40)]
+        public int targetCol = 1;
+
+        [BoxGroup("Editor")]
+        [HorizontalGroup("Editor/Col")]
+        [Button("在此列之前插入", ButtonSizes.Medium)]
+        private void InsertColumnBefore()
+        {
+            InsertColumnAt(targetCol - 1);
+        }
+
+        [BoxGroup("Editor")]
+        [HorizontalGroup("Editor/Col")]
+        [Button("删除此列", ButtonSizes.Medium)]
+        [GUIColor(1f, 0.5f, 0.5f, 1f)]
+        private void DeleteColumn()
+        {
+            DeleteColumnAt(targetCol - 1);
+        }
+
+        [BoxGroup("Editor")]
+        [HorizontalGroup("Editor/Col")]
+        [Button("新建一列（末尾）", ButtonSizes.Medium)]
+        [GUIColor(0.5f, 1f, 0.5f, 1f)]
+        private void AddColumnAtEnd()
+        {
+            columnCount++;
+            foreach (var row in tableData)
+            {
+                row.Add("");
+            }
+            Debug.Log($"在末尾添加新列，当前共{columnCount}列");
+        }
+
+        // 辅助方法：在指定索引处插入行
+        private void InsertRowAt(int index)
+        {
+            if (index < 0 || index > tableData.Count)
+            {
+                Debug.LogWarning($"行索引超出范围！应在0-{tableData.Count}之间");
+                return;
+            }
+
+            var newRow = new List<string>();
+            for (int i = 0; i < columnCount; i++)
+            {
+                newRow.Add("");
+            }
+            tableData.Insert(index, newRow);
+            Debug.Log($"在第{index + 1}行之前插入新行");
+        }
+
+        // 辅助方法：删除指定索引的行
+        private void DeleteRowAt(int index)
+        {
+            if (index < 0 || index >= tableData.Count)
+            {
+                Debug.LogWarning($"行索引超出范围！应在0-{tableData.Count - 1}之间");
+                return;
+            }
+            if (index < 4)
+            {
+                Debug.LogWarning("不能删除前4行元数据！");
+                return;
+            }
+
+            tableData.RemoveAt(index);
+            Debug.Log($"已删除第{index + 1}行");
+        }
+
+        // 辅助方法：在指定索引处插入列
+        private void InsertColumnAt(int index)
+        {
+            if (index < 0 || index > columnCount)
+            {
+                Debug.LogWarning($"列索引超出范围！应在0-{columnCount}之间");
+                return;
+            }
+
+            columnCount++;
+            foreach (var row in tableData)
+            {
+                row.Insert(index, "");
+            }
+            Debug.Log($"在第{index + 1}列之前插入新列");
+        }
+
+        // 辅助方法：删除指定索引的列
+        private void DeleteColumnAt(int index)
+        {
+            if (index < 0 || index >= columnCount)
+            {
+                Debug.LogWarning($"列索引超出范围！应在0-{columnCount - 1}之间");
+                return;
+            }
+            if (columnCount <= 1)
+            {
+                Debug.LogWarning("至少需要保留一列！");
+                return;
+            }
+
+            columnCount--;
+            foreach (var row in tableData)
+            {
+                if (row.Count > index)
+                {
+                    row.RemoveAt(index);
+                }
+            }
+            Debug.Log($"已删除第{index + 1}列");
+        }
+
+        [BoxGroup("Editor", ShowLabel = true, LabelText = "批量资源导入")]
+        [OnInspectorGUI]
+        private void DrawAssetDropArea()
+        {
+            EditorGUILayout.Space(5);
+
+            // 绘制拖拽区域
+            Rect dropArea = GUILayoutUtility.GetRect(0.0f, 60.0f, GUILayout.ExpandWidth(true));
+            GUI.Box(dropArea, "将Unity资源拖拽到此处\n自动创建/更新PathGUID列", EditorStyles.helpBox);
+
+            // 处理拖拽事件
+            Event evt = Event.current;
+            switch (evt.type)
+            {
+                case EventType.DragUpdated:
+                case EventType.DragPerform:
+                    if (!dropArea.Contains(evt.mousePosition))
+                        break;
+
+                    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+
+                    if (evt.type == EventType.DragPerform)
+                    {
+                        DragAndDrop.AcceptDrag();
+
+                        foreach (UnityEngine.Object draggedObject in DragAndDrop.objectReferences)
+                        {
+                            HandleDroppedAsset(draggedObject);
+                        }
+                    }
+                    Event.current.Use();
+                    break;
+            }
+        }
+
+        private void HandleDroppedAsset(UnityEngine.Object asset)
+        {
+            if (tableData.Count < 4)
+            {
+                Debug.LogError("表格数据不完整！需要至少4行表头数据");
+                return;
+            }
+
+            string assetPath = AssetDatabase.GetAssetPath(asset);
+            if (string.IsNullOrEmpty(assetPath))
+            {
+                Debug.LogWarning($"无法获取资源路径: {asset.name}");
+                return;
+            }
+
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+            string assetName = Path.GetFileNameWithoutExtension(assetPath);
+
+            // 检查key列是否存在（先创建key列）
+            int keyColumnIndex = FindKeyColumn();
+
+            if (keyColumnIndex == -1)
+            {
+                // 创建key列
+                keyColumnIndex = CreateKeyColumn();
+                Debug.Log($"已创建key列（第{keyColumnIndex + 1}列）");
+            }
+
+            // 检查PathGUID列是否存在（后创建PathGUID列）
+            int pathGuidColumnIndex = FindPathGUIDColumn();
+
+            if (pathGuidColumnIndex == -1)
+            {
+                // 创建PathGUID列
+                pathGuidColumnIndex = CreatePathGUIDColumn();
+                Debug.Log($"已创建PathGUID列（第{pathGuidColumnIndex + 1}列）");
+            }
+
+            // 添加新数据行
+            var newRow = new List<string>();
+            for (int i = 0; i < columnCount; i++)
+            {
+                if (i == pathGuidColumnIndex)
+                {
+                    newRow.Add(guid);
+                }
+                else if (i == keyColumnIndex)
+                {
+                    newRow.Add(assetName);
+                }
+                else
+                {
+                    newRow.Add("");
+                }
+            }
+            tableData.Add(newRow);
+
+            Debug.Log($"已添加资源: {assetName} (GUID: {guid})");
+        }
+
+        private int FindPathGUIDColumn()
+        {
+            if (tableData.Count < 3)
+                return -1;
+
+            // 在第3行（字段名）中查找pathGuid列
+            for (int col = 0; col < tableData[2].Count; col++)
+            {
+                if (tableData[2][col].ToLower() == "pathguid")
+                {
+                    return col;
+                }
+            }
+
+            return -1;
+        }
+
+        private int CreatePathGUIDColumn()
+        {
+            // 在末尾添加新列
+            columnCount++;
+
+            // 为每一行添加新列
+            for (int row = 0; row < tableData.Count; row++)
+            {
+                if (row == 1)
+                {
+                    // 第2行：中文标签
+                    tableData[row].Add("资源GUID");
+                }
+                else if (row == 2)
+                {
+                    // 第3行：字段名
+                    tableData[row].Add("pathGuid");
+                }
+                else if (row == 3)
+                {
+                    // 第4行：字段类型
+                    tableData[row].Add("PathGUID");
+                }
+                else
+                {
+                    tableData[row].Add("");
+                }
+            }
+
+            return columnCount - 1;
+        }
+
+        private int FindKeyColumn()
+        {
+            if (tableData.Count < 3)
+                return -1;
+
+            // 在第3行（字段名）中查找key列
+            for (int col = 0; col < tableData[2].Count; col++)
+            {
+                if (tableData[2][col].ToLower() == "key")
+                {
+                    return col;
+                }
+            }
+
+            return -1;
+        }
+
+        private int CreateKeyColumn()
+        {
+            // 在末尾添加新列
+            columnCount++;
+
+            // 为每一行添加新列
+            for (int row = 0; row < tableData.Count; row++)
+            {
+                if (row == 1)
+                {
+                    // 第2行：中文标签
+                    tableData[row].Add("资源名称");
+                }
+                else if (row == 2)
+                {
+                    // 第3行：字段名
+                    tableData[row].Add("key");
+                }
+                else if (row == 3)
+                {
+                    // 第4行：字段类型
+                    tableData[row].Add("string");
+                }
+                else
+                {
+                    tableData[row].Add("");
+                }
+            }
+
+            return columnCount - 1;
+        }
+
+        [BoxGroup("Editor", ShowLabel = true, LabelText = "表格数据")]
+        [OnInspectorGUI]
+        private void DrawExcelTable()
+        {
+            if (tableData.Count == 0)
+            {
+                EditorGUILayout.HelpBox("请选择一个文件以开始编辑", MessageType.Info);
+                return;
+            }
+
+            EditorGUILayout.Space(5);
+
+            // 列宽控制
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("列宽:", GUILayout.Width(50));
+            columnWidth = EditorGUILayout.IntSlider(columnWidth, 80, 400);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space(5);
+
+            // 开始滚动视图
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Height(600));
+
+            // 绘制表头（行号标签和列标签）
+            EditorGUILayout.BeginHorizontal();
+
+            // 左上角空白
+            Rect cornerRect = GUILayoutUtility.GetRect(50, 20, GUILayout.Width(50));
+            EditorGUI.LabelField(cornerRect, "行号", EditorStyles.boldLabel);
+
+            // 列标签（支持右键菜单）
+            for (int col = 0; col < columnCount; col++)
+            {
+                int currentCol = col; // 捕获当前列索引
+                Rect colLabelRect = GUILayoutUtility.GetRect(columnWidth, 20, GUILayout.Width(columnWidth));
+                EditorGUI.LabelField(colLabelRect, $"列{col + 1}", EditorStyles.boldLabel);
+
+                // 检测列标签右键点击
+                if (Event.current.type == EventType.ContextClick && colLabelRect.Contains(Event.current.mousePosition))
+                {
+                    ShowColumnContextMenu(currentCol);
+                    Event.current.Use();
+                }
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            // 绘制分隔线
+            Rect separatorRect = EditorGUILayout.GetControlRect(false, 2);
+            EditorGUI.DrawRect(separatorRect, new Color(0.5f, 0.5f, 0.5f, 1));
+
+            // 绘制数据行
+            for (int row = 0; row < tableData.Count; row++)
+            {
+                int currentRow = row; // 捕获当前行索引
+                EditorGUILayout.BeginHorizontal();
+
+                // 行号（支持右键菜单）
+                Color originalColor = GUI.backgroundColor;
+                if (row < 4)
+                {
+                    // 前4行使用不同的背景色（元数据行）
+                    GUI.backgroundColor = new Color(0.8f, 0.9f, 1f, 1f);
+                }
+
+                Rect rowLabelRect = GUILayoutUtility.GetRect(50, 18, GUILayout.Width(50));
+                EditorGUI.LabelField(rowLabelRect, $"{row + 1}");
+
+                // 检测行号右键点击
+                if (Event.current.type == EventType.ContextClick && rowLabelRect.Contains(Event.current.mousePosition))
+                {
+                    ShowRowContextMenu(currentRow);
+                    Event.current.Use();
+                }
+
+                // 单元格数据
+                for (int col = 0; col < columnCount && col < tableData[row].Count; col++)
+                {
+                    int currentCol = col; // 捕获当前列索引
+
+                    // 检查是否在选择范围内
+                    bool isSelected = IsCellSelected(row, col);
+
+                    // 如果在选择范围内，改变背景色
+                    if (isSelected)
+                    {
+                        GUI.backgroundColor = new Color(0.5f, 0.7f, 1f, 0.5f);
+                    }
+                    else if (row < 4)
+                    {
+                        GUI.backgroundColor = new Color(0.8f, 0.9f, 1f, 1f);
+                    }
+
+                    // 绘制TextField并获取Rect
+                    Rect cellRect = GUILayoutUtility.GetRect(columnWidth, 18, GUILayout.Width(columnWidth));
+                    tableData[row][col] = EditorGUI.TextField(cellRect, tableData[row][col]);
+
+                    // 处理鼠标事件进行选择
+                    HandleCellSelection(cellRect, row, col);
+                }
+
+                GUI.backgroundColor = originalColor;
+                EditorGUILayout.EndHorizontal();
+            }
+
+            // 处理键盘事件（复制粘贴）
+            HandleKeyboardEvents();
+
+            EditorGUILayout.EndScrollView();
+        }
+
+        // 显示行右键菜单
+        private void ShowRowContextMenu(int rowIndex)
+        {
+            GenericMenu menu = new GenericMenu();
+
+            menu.AddItem(new GUIContent($"在第{rowIndex + 1}行之前插入"), false, () => InsertRowAt(rowIndex));
+            menu.AddItem(new GUIContent($"在第{rowIndex + 1}行之后插入"), false, () => InsertRowAt(rowIndex + 1));
+
+            if (rowIndex >= 4) // 只有非元数据行才能删除
+            {
+                menu.AddSeparator("");
+                menu.AddItem(new GUIContent($"删除第{rowIndex + 1}行"), false, () => DeleteRowAt(rowIndex));
+            }
+            else
+            {
+                menu.AddSeparator("");
+                menu.AddDisabledItem(new GUIContent($"删除第{rowIndex + 1}行（元数据行不可删除）"));
+            }
+
+            menu.ShowAsContext();
+        }
+
+        // 显示列右键菜单
+        private void ShowColumnContextMenu(int colIndex)
+        {
+            GenericMenu menu = new GenericMenu();
+
+            menu.AddItem(new GUIContent($"在第{colIndex + 1}列之前插入"), false, () => InsertColumnAt(colIndex));
+            menu.AddItem(new GUIContent($"在第{colIndex + 1}列之后插入"), false, () => InsertColumnAt(colIndex + 1));
+
+            if (columnCount > 1) // 至少保留一列
+            {
+                menu.AddSeparator("");
+                menu.AddItem(new GUIContent($"删除第{colIndex + 1}列"), false, () => DeleteColumnAt(colIndex));
+            }
+            else
+            {
+                menu.AddSeparator("");
+                menu.AddDisabledItem(new GUIContent("删除列（至少保留一列）"));
+            }
+
+            menu.ShowAsContext();
+        }
+
+        private void LoadFileForEditor(string filePath)
+        {
+            try
+            {
+                tableData.Clear();
+
+                if (filePath.EndsWith(".csv"))
+                {
+                    LoadCSVForEditor(filePath);
+                }
+                else if (filePath.EndsWith(".xlsx") || filePath.EndsWith(".xls"))
+                {
+                    LoadExcelForEditor(filePath);
+                }
+
+                // 保存最后打开的文件路径
+                PlayerPrefs.SetString("DataEditor_LastFile", filePath);
+                PlayerPrefs.Save();
+
+                Debug.Log($"已加载文件: {Path.GetFileName(filePath)}, 共 {tableData.Count} 行");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"加载文件失败: {e.Message}");
+            }
+        }
+
+        private void LoadCSVForEditor(string filePath)
+        {
+            using (StreamReader sr = new StreamReader(filePath, Encoding.UTF8))
+            {
+                bool isFirstLine = true;
+                while (!sr.EndOfStream)
+                {
+                    string line = sr.ReadLine();
+                    string[] cells = ParseCsvLineForEditor(line);
+
+                    if (isFirstLine)
+                    {
+                        columnCount = cells.Length;
+                        isFirstLine = false;
+                    }
+
+                    tableData.Add(new List<string>(cells));
+                }
+            }
+        }
+
+        private void LoadExcelForEditor(string filePath)
+        {
+            using (FileStream stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                IExcelDataReader excelReader = ExcelReaderFactory.CreateOpenXmlReader(stream);
+                DataSet dataSet = excelReader.AsDataSet();
+
+                if (dataSet.Tables.Count > 0)
+                {
+                    DataTable sheet = dataSet.Tables[0];
+                    columnCount = sheet.Columns.Count;
+
+                    for (int rowIndex = 0; rowIndex < sheet.Rows.Count; rowIndex++)
+                    {
+                        var row = new List<string>();
+                        for (int colIndex = 0; colIndex < sheet.Columns.Count; colIndex++)
+                        {
+                            var cellValue = sheet.Rows[rowIndex][colIndex];
+                            row.Add(cellValue != DBNull.Value ? cellValue.ToString() : "");
+                        }
+                        tableData.Add(row);
+                    }
+                }
+
+                excelReader.Close();
+            }
+        }
+
+        private void SaveCSV(string filePath)
+        {
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+
+                foreach (var row in tableData)
+                {
+                    List<string> escapedCells = new List<string>();
+                    foreach (var cell in row)
+                    {
+                        // 如果单元格包含逗号、引号或换行符，需要用引号包裹
+                        if (cell.Contains(",") || cell.Contains("\"") || cell.Contains("\n"))
+                        {
+                            escapedCells.Add("\"" + cell.Replace("\"", "\"\"") + "\"");
+                        }
+                        else
+                        {
+                            escapedCells.Add(cell);
+                        }
+                    }
+                    sb.AppendLine(string.Join(",", escapedCells));
+                }
+
+                File.WriteAllText(filePath, sb.ToString(), Encoding.UTF8);
+                Debug.Log($"文件已保存: {Path.GetFileName(filePath)}");
+                AssetDatabase.Refresh();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"保存文件失败: {e.Message}");
+            }
+        }
+
+        private string[] ParseCsvLineForEditor(string line)
+        {
+            if (string.IsNullOrEmpty(line))
+                return new string[0];
+
+            List<string> result = new List<string>();
+            StringBuilder currentField = new StringBuilder();
+            bool inQuotes = false;
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                char c = line[i];
+
+                if (c == '"')
+                {
+                    if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
+                    {
+                        // 双引号转义
+                        currentField.Append('"');
+                        i++;
+                    }
+                    else
+                    {
+                        inQuotes = !inQuotes;
+                    }
+                }
+                else if (c == ',' && !inQuotes)
+                {
+                    result.Add(currentField.ToString());
+                    currentField.Clear();
+                }
+                else
+                {
+                    currentField.Append(c);
+                }
+            }
+
+            result.Add(currentField.ToString());
+            return result.ToArray();
+        }
+
+        // 区域选择相关方法
+        private bool IsCellSelected(int row, int col)
+        {
+            if (selectionStartRow == -1 || selectionEndRow == -1)
+                return false;
+
+            int minRow = Mathf.Min(selectionStartRow, selectionEndRow);
+            int maxRow = Mathf.Max(selectionStartRow, selectionEndRow);
+            int minCol = Mathf.Min(selectionStartCol, selectionEndCol);
+            int maxCol = Mathf.Max(selectionStartCol, selectionEndCol);
+
+            return row >= minRow && row <= maxRow && col >= minCol && col <= maxCol;
+        }
+
+        private void HandleCellSelection(Rect cellRect, int row, int col)
+        {
+            Event evt = Event.current;
+
+            switch (evt.type)
+            {
+                case EventType.MouseDown:
+                    if (cellRect.Contains(evt.mousePosition) && evt.button == 0)
+                    {
+                        selectionStartRow = row;
+                        selectionStartCol = col;
+                        selectionEndRow = row;
+                        selectionEndCol = col;
+                        isDraggingSelection = true;
+                        evt.Use();
+                    }
+                    break;
+
+                case EventType.MouseDrag:
+                    if (isDraggingSelection && cellRect.Contains(evt.mousePosition))
+                    {
+                        selectionEndRow = row;
+                        selectionEndCol = col;
+                        evt.Use();
+                    }
+                    break;
+
+                case EventType.MouseUp:
+                    if (evt.button == 0)
+                    {
+                        isDraggingSelection = false;
+                    }
+                    break;
+            }
+        }
+
+        private void HandleKeyboardEvents()
+        {
+            Event evt = Event.current;
+
+            if (evt.type == EventType.KeyDown)
+            {
+                // Ctrl+C 复制
+                if (evt.control && evt.keyCode == KeyCode.C)
+                {
+                    CopySelection();
+                    evt.Use();
+                }
+                // Ctrl+V 粘贴
+                else if (evt.control && evt.keyCode == KeyCode.V)
+                {
+                    PasteSelection();
+                    evt.Use();
+                }
+                // Ctrl+S 保存
+                else if (evt.control && evt.keyCode == KeyCode.S)
+                {
+                    SaveFile();
+                    evt.Use();
+                }
+            }
+        }
+
+        private void CopySelection()
+        {
+            if (selectionStartRow == -1 || selectionEndRow == -1)
+            {
+                Debug.LogWarning("没有选中任何单元格！");
+                return;
+            }
+
+            int minRow = Mathf.Min(selectionStartRow, selectionEndRow);
+            int maxRow = Mathf.Max(selectionStartRow, selectionEndRow);
+            int minCol = Mathf.Min(selectionStartCol, selectionEndCol);
+            int maxCol = Mathf.Max(selectionStartCol, selectionEndCol);
+
+            StringBuilder sb = new StringBuilder();
+
+            for (int row = minRow; row <= maxRow; row++)
+            {
+                for (int col = minCol; col <= maxCol; col++)
+                {
+                    if (row < tableData.Count && col < tableData[row].Count)
+                    {
+                        sb.Append(tableData[row][col]);
+                    }
+
+                    if (col < maxCol)
+                    {
+                        sb.Append("\t");
+                    }
+                }
+                if (row < maxRow)
+                {
+                    sb.AppendLine();
+                }
+            }
+
+            EditorGUIUtility.systemCopyBuffer = sb.ToString();
+            Debug.Log($"已复制 {maxRow - minRow + 1} 行 x {maxCol - minCol + 1} 列");
+        }
+
+        private void PasteSelection()
+        {
+            string clipboardText = EditorGUIUtility.systemCopyBuffer;
+
+            if (string.IsNullOrEmpty(clipboardText))
+            {
+                Debug.LogWarning("剪贴板为空！");
+                return;
+            }
+
+            if (selectionStartRow == -1)
+            {
+                Debug.LogWarning("请先选择一个起始单元格！");
+                return;
+            }
+
+            // 解析剪贴板内容
+            string[] lines = clipboardText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            int startRow = Mathf.Min(selectionStartRow, selectionEndRow);
+            int startCol = Mathf.Min(selectionStartCol, selectionEndCol);
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                int targetRow = startRow + i;
+
+                // 如果目标行不存在，自动添加新行
+                while (targetRow >= tableData.Count)
+                {
+                    var newRow = new List<string>();
+                    for (int c = 0; c < columnCount; c++)
+                    {
+                        newRow.Add("");
+                    }
+                    tableData.Add(newRow);
+                }
+
+                string[] cells = lines[i].Split('\t');
+
+                for (int j = 0; j < cells.Length; j++)
+                {
+                    int targetCol = startCol + j;
+
+                    // 如果目标列不存在，自动添加新列
+                    if (targetCol >= columnCount)
+                    {
+                        columnCount = targetCol + 1;
+                        foreach (var row in tableData)
+                        {
+                            while (row.Count < columnCount)
+                            {
+                                row.Add("");
+                            }
+                        }
+                    }
+
+                    // 确保当前行有足够的列
+                    while (tableData[targetRow].Count <= targetCol)
+                    {
+                        tableData[targetRow].Add("");
+                    }
+
+                    tableData[targetRow][targetCol] = cells[j];
+                }
+            }
+
+            Debug.Log($"已粘贴 {lines.Length} 行数据");
         }
     }
 
@@ -1169,7 +2334,7 @@ namespace CommonBase.Editor
 
             OdinMenuTree tree = new OdinMenuTree(supportsMultiSelect: true)
 {
-    { "SO<->Excel",                           dataConvertMenu,                           EditorIcons.Cut       },
+    { "数据表管理",                             dataConvertMenu,                           EditorIcons.GridBlocks  },
     { "Steam调试",                             steamDebugMenu,                            EditorIcons.SettingsCog  },
     // { "怪物波次配置",                           waveConfigSO,                           EditorIcons.Airplane        },
     //{ "bytes<->Excel",                           dataConvertMenu,                           EditorIcons.Cut       },
