@@ -8,7 +8,15 @@ namespace CommonBase
 {
     public interface IListItem
     {
+        /// <summary>
+        /// 只初始化一次
+        /// </summary>
+        /// <param name="data"></param>
         void Initialize(object data);
+        /// <summary>
+        /// 可以被绑定多次
+        /// </summary>
+        /// <param name="data"></param>
         void BindData(object data);
         bool InUse { get; set; }
         bool Initialized { get; set; }

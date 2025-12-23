@@ -2312,6 +2312,79 @@ namespace CommonBase.Editor
             // LocalDataManager.Instance.CleanAchievements();
             Debug.Log("清除成就功能待实现");
         }
+
+        [BoxGroup("Steam", ShowLabel = true, LabelText = "存档管理")]
+        [Button("打开存档文件夹", ButtonSizes.Medium, Stretch = false)]
+        [HorizontalGroup("Steam/SaveGroup", PaddingLeft = 0)]
+        [GUIColor(0.5f, 1f, 0.5f, 1f)]
+        public void OpenSaveFolder()
+        {
+#if UNITY_EDITOR
+            string folderPath = UnityEngine.Application.persistentDataPath;
+
+            if (System.IO.Directory.Exists(folderPath))
+            {
+                // Windows平台
+                System.Diagnostics.Process.Start("explorer.exe", folderPath.Replace("/", "\\"));
+                Debug.Log($"已打开存档文件夹: {folderPath}");
+            }
+            else
+            {
+                Debug.LogError($"存档文件夹不存在: {folderPath}");
+            }
+#else
+            Debug.LogWarning("此功能仅在编辑器模式下可用");
+#endif
+        }
+
+        [Button("打印存档路径", ButtonSizes.Medium, Stretch = false)]
+        [HorizontalGroup("Steam/SaveGroup", PaddingLeft = 0)]
+        public void PrintSavePath()
+        {
+            string savePath = UnityEngine.Application.persistentDataPath;
+            Debug.Log($"=== 存档路径信息 ===");
+            Debug.Log($"PersistentDataPath: {savePath}");
+            Debug.Log($"DataPath: {UnityEngine.Application.dataPath}");
+            Debug.Log($"StreamingAssetsPath: {UnityEngine.Application.streamingAssetsPath}");
+
+            // 复制路径到剪贴板
+            GUIUtility.systemCopyBuffer = savePath;
+            Debug.Log("存档路径已复制到剪贴板！");
+        }
+
+        [Button("清空所有存档数据", ButtonSizes.Medium, Stretch = false)]
+        [HorizontalGroup("Steam/SaveGroup", PaddingLeft = 0)]
+        [GUIColor(1f, 0.3f, 0.3f, 1f)]
+        public void ClearAllSaveData()
+        {
+            if (EditorUtility.DisplayDialog("警告", "确定要清空所有存档数据吗？此操作不可撤销！", "确定", "取消"))
+            {
+                string savePath = UnityEngine.Application.persistentDataPath;
+                string saveFile = System.IO.Path.Combine(savePath, "SaveData.json");
+                string backupFile = System.IO.Path.Combine(savePath, "SaveData.backup.json");
+
+                try
+                {
+                    if (System.IO.File.Exists(saveFile))
+                    {
+                        System.IO.File.Delete(saveFile);
+                        Debug.Log($"已删除存档文件: {saveFile}");
+                    }
+
+                    if (System.IO.File.Exists(backupFile))
+                    {
+                        System.IO.File.Delete(backupFile);
+                        Debug.Log($"已删除备份文件: {backupFile}");
+                    }
+
+                    Debug.Log("存档数据已清空！");
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError($"清空存档失败: {e.Message}");
+                }
+            }
+        }
     }
 
     public class DataConvertWindow : OdinMenuEditorWindow

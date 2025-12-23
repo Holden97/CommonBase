@@ -31,8 +31,6 @@ namespace CommonBase
         private UnityEngine.Object targetObject;
         private string _searchKey = "";
 
-        // 用于记录已使用的变量名及其出现次数
-        private static readonly Dictionary<string, int> UsedFieldNames = new();
 
         private SerializedProperty generationTypeProperty;
 
@@ -109,6 +107,16 @@ namespace CommonBase
 
             EditorGUILayout.EndHorizontal();
 
+            // 第二行：重命名按钮
+            GUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Fix All Key Names"))
+            {
+                FixAllKeyNames();
+            }
+
+            EditorGUILayout.EndHorizontal();
+
             // 搜索和删除行
             EditorGUILayout.BeginHorizontal();
 
@@ -155,7 +163,7 @@ namespace CommonBase
                 // 显示动态组件类型下拉菜单
                 if (currentObj != null)
                 {
-                    DrawComponentTypeDropdown(objProperty, currentObj, i);
+                    DrawComponentTypeDropdown(objProperty, property, currentObj, i);
                 }
                 else
                 {
@@ -288,6 +296,9 @@ namespace CommonBase
                 key = obj.name;
             }
 
+            // 处理重名，确保名称唯一
+            key = GetUniqueName(key);
+
             AddReference(dataProperty, key, targetComponent);
         }
 
@@ -304,28 +315,148 @@ namespace CommonBase
         }
 
         /// <summary>
-        /// 获取规范化的字段名
+        /// 获取规范化的字段名（不处理重名）
         /// </summary>
         private static string GetFieldName(string objectName)
         {
-            // 使用正则表达式替换不符合命名规则的字符为下划线，并修剪空格
-            var baseName = Regex.Replace(objectName.Trim(), @"[^\w]", "_");
+            // 1. 修剪前后空格
+            var result = objectName.Trim();
 
-            if (UsedFieldNames.ContainsKey(baseName))
+            // 2. 替换非单词字符为下划线
+            result = Regex.Replace(result, @"[^\w]", "_");
+
+            // 3. 将连续的下划线合并为一个
+            result = Regex.Replace(result, @"_+", "_");
+
+            // 4. 去掉开头和结尾的下划线
+            result = result.Trim('_');
+
+            // 5. 转换成驼峰命名（去掉所有下划线，下划线后的字母大写）
+            result = ConvertToPascalCase(result);
+
+            return result;
+        }
+
+        /// <summary>
+        /// 将带下划线的字符串转换为驼峰命名（PascalCase）
+        /// </summary>
+        private static string ConvertToPascalCase(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            // 按下划线分割
+            var parts = input.Split('_');
+            var result = new System.Text.StringBuilder();
+
+            foreach (var part in parts)
             {
-                var count = UsedFieldNames[baseName] + 1;
-                UsedFieldNames[baseName] = count;
-                return $"{baseName}_{count}";
+                if (string.IsNullOrEmpty(part))
+                    continue;
+
+                // 首字母大写，其余保持原样
+                result.Append(char.ToUpper(part[0]));
+                if (part.Length > 1)
+                    result.Append(part.Substring(1));
             }
 
-            UsedFieldNames[baseName] = 1;
-            return baseName;
+            return result.ToString();
+        }
+
+        /// <summary>
+        /// 获取唯一的名称（处理重名情况）
+        /// </summary>
+        /// <param name="baseName">基础名称</param>
+        /// <param name="excludeKey">要排除检查的key（通常是当前正在编辑的项）</param>
+        private string GetUniqueName(string baseName, string excludeKey = null)
+        {
+            // 检查当前 ReferenceCollector 中是否已存在（排除指定的key）
+            if (!referenceCollector.data.Exists(x => x.key == baseName && x.key != excludeKey))
+            {
+                return baseName;
+            }
+
+            // 如果存在，添加数字后缀（从2开始）
+            int suffix = 2;
+            string uniqueName;
+            do
+            {
+                uniqueName = $"{baseName}{suffix}";
+                suffix++;
+            } while (referenceCollector.data.Exists(x => x.key == uniqueName && x.key != excludeKey));
+
+            return uniqueName;
+        }
+
+        /// <summary>
+        /// 根据组件类型生成对应的key名称
+        /// </summary>
+        private string GenerateKeyForComponent(UnityEngine.Object component, string gameObjectName)
+        {
+            string baseName = GetFieldName(gameObjectName);
+
+            if (component is GameObject)
+            {
+                return baseName;
+            }
+            else if (component is Button)
+            {
+                return AddPrefixIfNeeded("Btn", baseName);
+            }
+            else if (component is TextMeshProUGUI)
+            {
+                return AddPrefixIfNeeded("TMP", baseName);
+            }
+            else if (component is Image)
+            {
+                return AddPrefixIfNeeded("Img", baseName);
+            }
+            else if (component is ScrollRect)
+            {
+                return AddPrefixIfNeeded("ScrollRect", baseName);
+            }
+            else if (component is Text)
+            {
+                return AddPrefixIfNeeded("Txt", baseName);
+            }
+            else if (component is RectTransform)
+            {
+                return AddPrefixIfNeeded("Rect", baseName);
+            }
+            else if (component is Transform)
+            {
+                return AddPrefixIfNeeded("Trans", baseName);
+            }
+            else if (component is Component)
+            {
+                // 其他组件类型，使用组件类型名作为前缀
+                string typeName = component.GetType().Name;
+                return AddPrefixIfNeeded(typeName, baseName);
+            }
+            else
+            {
+                return baseName;
+            }
+        }
+
+        /// <summary>
+        /// 如果baseName不以prefix开头，则添加前缀；否则直接返回baseName
+        /// </summary>
+        private static string AddPrefixIfNeeded(string prefix, string baseName)
+        {
+            // 如果baseName已经以prefix开头（不区分大小写），则不添加前缀
+            if (baseName.StartsWith(prefix, System.StringComparison.OrdinalIgnoreCase))
+            {
+                // 确保首字母大写匹配
+                return prefix + baseName.Substring(prefix.Length);
+            }
+            return $"{prefix}{baseName}";
         }
 
         /// <summary>
         /// 绘制动态组件类型下拉菜单
         /// </summary>
-        private void DrawComponentTypeDropdown(SerializedProperty objProperty, UnityEngine.Object currentObj, int index)
+        private void DrawComponentTypeDropdown(SerializedProperty objProperty, SerializedProperty keyProperty, UnityEngine.Object currentObj, int index)
         {
             GameObject go = null;
             Component currentComponent = null;
@@ -351,11 +482,11 @@ namespace CommonBase
             // 获取所有组件
             var components = go.GetComponents<Component>();
             var componentNames = new List<string>();
-            var componentList = new List<Component>();
+            var componentList = new List<UnityEngine.Object>();
 
             // 添加 GameObject 选项
             componentNames.Add("GameObject");
-            componentList.Add(go.transform);
+            componentList.Add(go);
 
             // 添加所有组件
             foreach (var comp in components)
@@ -367,31 +498,125 @@ namespace CommonBase
 
             // 找到当前选择的索引
             int selectedIndex = 0;
-            for (int j = 0; j < componentList.Count; j++)
+
+            // 如果当前对象是GameObject
+            if (currentObj is GameObject)
             {
-                if (componentList[j] == currentComponent)
+                selectedIndex = 0;
+            }
+            // 如果当前对象是组件
+            else
+            {
+                for (int j = 1; j < componentList.Count; j++)
                 {
-                    selectedIndex = j;
-                    break;
+                    if (componentList[j] == currentComponent)
+                    {
+                        selectedIndex = j;
+                        break;
+                    }
                 }
             }
 
             // 显示下拉菜单
             int newIndex = EditorGUILayout.Popup(selectedIndex, componentNames.ToArray(), GUILayout.Width(120));
 
-            // 如果选择改变，更新引用
+            // 如果选择改变，更新引用和key
             if (newIndex != selectedIndex && newIndex >= 0 && newIndex < componentList.Count)
             {
+                UnityEngine.Object newComponent;
                 if (newIndex == 0) // GameObject
                 {
+                    newComponent = go;
                     objProperty.objectReferenceValue = go;
                 }
                 else
                 {
+                    newComponent = componentList[newIndex];
                     objProperty.objectReferenceValue = componentList[newIndex];
                 }
+
+                // 更新key名称（排除当前项自己，避免重名检测冲突）
+                string oldKey = keyProperty.stringValue;
+                string newKey = GenerateKeyForComponent(newComponent, go.name);
+                newKey = GetUniqueName(newKey, oldKey);
+                keyProperty.stringValue = newKey;
+
                 EditorUtility.SetDirty(referenceCollector);
             }
+        }
+
+        /// <summary>
+        /// 修正所有key的命名
+        /// </summary>
+        private void FixAllKeyNames()
+        {
+            SerializedObject serializedObject = new SerializedObject(referenceCollector);
+            SerializedProperty dataProperty = serializedObject.FindProperty("data");
+
+            // 用于存储所有新的key名称，确保唯一性
+            var usedKeys = new HashSet<string>();
+            var keyUpdates = new List<(int index, string newKey)>();
+
+            // 第一遍：为每个引用生成新的key名称
+            for (int i = 0; i < referenceCollector.data.Count; i++)
+            {
+                var itemData = referenceCollector.data[i];
+                var obj = itemData.gameObject;
+
+                if (obj == null)
+                    continue;
+
+                GameObject go = null;
+                Component component = null;
+
+                // 获取GameObject和组件
+                if (obj is GameObject gameObject)
+                {
+                    go = gameObject;
+                }
+                else if (obj is Component comp)
+                {
+                    go = comp.gameObject;
+                    component = comp;
+                }
+
+                if (go == null)
+                    continue;
+
+                // 根据组件类型生成key
+                string newKey = GenerateKeyForComponent(obj, go.name);
+
+                // 处理重名
+                string uniqueKey = newKey;
+                int suffix = 2;
+                while (usedKeys.Contains(uniqueKey))
+                {
+                    uniqueKey = $"{newKey}{suffix}";
+                    suffix++;
+                }
+
+                usedKeys.Add(uniqueKey);
+                keyUpdates.Add((i, uniqueKey));
+            }
+
+            // 第二遍：更新所有key
+            for (int i = 0; i < keyUpdates.Count; i++)
+            {
+                var (index, newKey) = keyUpdates[i];
+                var element = dataProperty.GetArrayElementAtIndex(index);
+                var keyProperty = element.FindPropertyRelative("key");
+
+                if (keyProperty.stringValue != newKey)
+                {
+                    keyProperty.stringValue = newKey;
+                }
+            }
+
+            EditorUtility.SetDirty(referenceCollector);
+            serializedObject.ApplyModifiedProperties();
+            serializedObject.UpdateIfRequiredOrScript();
+
+            Debug.Log($"Fixed {keyUpdates.Count} key names.");
         }
 
         /// <summary>
