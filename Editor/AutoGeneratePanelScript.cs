@@ -144,10 +144,20 @@ namespace CommonBase
             var scriptsFolder = "Assets/Scripts/UIWidget";
             if (!Directory.Exists(scriptsFolder)) Directory.CreateDirectory(scriptsFolder);
 
-            // 生成 Widget 脚本
+            // 生成 .Designer.cs 文件（组件引用部分 - 会被覆盖）
+            var designerContent = GenerateWidgetDesignerScriptContent(scriptName, selectedObject);
+            var designerPath = Path.Combine(scriptsFolder, $"{scriptName}.Designer.cs");
+            File.WriteAllText(designerPath, designerContent);
+
+            // 生成 .cs 文件（业务逻辑部分 - 不会被覆盖）
             var scriptContent = GenerateWidgetScriptContent(scriptName, selectedObject);
             var scriptPath = Path.Combine(scriptsFolder, $"{scriptName}.cs");
-            File.WriteAllText(scriptPath, scriptContent);
+
+            // 只有当业务逻辑文件不存在时才创建
+            if (!File.Exists(scriptPath))
+            {
+                File.WriteAllText(scriptPath, scriptContent);
+            }
 
             AssetDatabase.Refresh();
 
@@ -235,9 +245,9 @@ namespace CommonBase
         }
 
         /// <summary>
-        /// 生成 Widget 脚本内容
+        /// 生成 Widget Designer 脚本内容（组件引用部分 - 可自动覆盖）
         /// </summary>
-        private static string GenerateWidgetScriptContent(string scriptName, GameObject rootObject)
+        private static string GenerateWidgetDesignerScriptContent(string scriptName, GameObject rootObject)
         {
             // 每次生成脚本前清空已使用的变量名记录
             UsedFieldNames.Clear();
@@ -250,7 +260,10 @@ namespace CommonBase
             sb.AppendLine();
             sb.AppendLine($"namespace {GetUISettingNamespace()}");
             sb.AppendLine("{");
-            sb.AppendLine($"    public class {scriptName} : MonoBehaviour, IUIWidget");
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 组件引用部分 - 由工具自动生成，请勿手动修改");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine($"    public partial class {scriptName}");
             sb.AppendLine("    {");
 
             // 检查是否有 ReferenceCollector 组件
@@ -261,6 +274,7 @@ namespace CommonBase
             if (useReferenceCollector)
             {
                 sb.AppendLine("        private ReferenceCollector referenceCollector;");
+                sb.AppendLine();
             }
 
             // 查找并添加UI控件字段
@@ -280,7 +294,35 @@ namespace CommonBase
             AssignUIFields(sb, rootObject.transform, referenceCollector);
             sb.AppendLine("        }");
 
+            sb.AppendLine("    }");
+            sb.AppendLine("}");
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// 生成 Widget 脚本内容（业务逻辑部分 - 可自由修改）
+        /// </summary>
+        private static string GenerateWidgetScriptContent(string scriptName, GameObject rootObject)
+        {
+            // 需要先调用FindAndAddUIFields来填充FieldInfo，以便生成按钮事件
+            UsedFieldNames.Clear();
+            var tempSb = new StringBuilder();
+            var referenceCollector = rootObject.GetComponent<ReferenceCollector>();
+            FindAndAddUIFields(tempSb, rootObject.transform, referenceCollector);
+
+            var sb = new StringBuilder();
+            sb.AppendLine("using UnityEngine;");
+            sb.AppendLine("using CommonBase;");
             sb.AppendLine();
+            sb.AppendLine($"namespace {GetUISettingNamespace()}");
+            sb.AppendLine("{");
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 业务逻辑部分 - 可自由修改");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine($"    public partial class {scriptName} : MonoBehaviour, IUIWidget");
+            sb.AppendLine("    {");
+
             sb.AppendLine("        public void Initialize()");
             sb.AppendLine("        {");
             sb.AppendLine("            // TODO: 初始化 Widget");
