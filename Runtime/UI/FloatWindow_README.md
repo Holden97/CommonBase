@@ -4,6 +4,46 @@
 
 浮窗系统用于创建跟随父节点的悬浮UI元素，常用于工具提示、信息面板等场景。
 
+通过 ReferenceCollector 的代码生成工具，你可以快速创建自定义浮窗，无需手动编写代码。
+
+## 快速开始（使用 ReferenceCollector）
+
+1. **创建浮窗 UI**
+   - 在 Canvas 下创建一个 GameObject 作为浮窗
+   - 添加 RectTransform 和 CanvasGroup 组件
+   - 设计浮窗的 UI 结构（添加文本、图片、按钮等）
+
+2. **添加 ReferenceCollector 组件**
+   - 在浮窗 GameObject 上添加 `ReferenceCollector` 组件
+   - 在 Inspector 中选择 **生成类型** 为 **FloatWindow**
+
+3. **添加 UI 组件引用**
+   - 将需要在代码中访问的 UI 组件拖拽到 ReferenceCollector 列表中
+   - 工具会自动生成合适的字段名
+
+4. **生成脚本**
+   - 点击 **生成 UI 脚本** 按钮
+   - 脚本会自动生成到 `Assets/Scripts/FloatWindow/` 目录
+   - 包含两个文件：
+     - `YourFloatWindow.Designer.cs` - 组件引用（自动生成，可覆盖）
+     - `YourFloatWindow.cs` - 业务逻辑（首次生成，可自由修改）
+
+5. **编写业务逻辑**
+   - 打开 `YourFloatWindow.cs` 文件
+   - 在 `OnShow(object data)` 中处理显示逻辑
+   - 在 `OnHide()` 中处理隐藏逻辑
+   - 配置浮窗特性（偏移、自动隐藏等）
+
+6. **使用浮窗**
+   ```csharp
+   // 绑定到目标并显示
+   floatWindow.AttachToTarget(targetTransform, new Vector3(0, 50, 0));
+   floatWindow.Show(myData);
+
+   // 或使用 FloatWindowManager
+   FloatWindowManager.Instance.ShowFloatWindow("MyFloatWindow", target, offset, data);
+   ```
+
 ## 核心组件
 
 ### 1. IFloatWindow 接口
@@ -60,21 +100,7 @@ var window = FloatWindowManager.Instance.CreateFloatWindow<MyFloatWindow>(prefab
 var window = FloatWindowManager.Instance.CreateAndRegisterFloatWindow<MyFloatWindow>("key", prefab, parent);
 ```
 
-### 4. TooltipFloatWindow 示例实现
-工具提示浮窗，支持：
-- 显示文本内容
-- 自动调整大小
-- 静态方法快速调用
-
-```csharp
-// 显示提示
-TooltipFloatWindow.ShowTooltip(target, "这是提示文本", new Vector3(0, 50, 0));
-
-// 隐藏提示
-TooltipFloatWindow.HideTooltip();
-```
-
-### 5. FloatWindowTrigger 触发器
+### 4. FloatWindowTrigger 触发器
 UI辅助组件，支持：
 - 鼠标悬停触发
 - 点击触发
@@ -158,21 +184,51 @@ void HideInfo()
 
 现在鼠标悬停在该UI元素上0.5秒后会自动显示浮窗。
 
-### 工具提示快速使用
+## 生成的脚本示例
+
+通过 ReferenceCollector 生成的浮窗脚本会自动包含浮窗特有的特性：
 
 ```csharp
-using UnityEngine.EventSystems;
+using UnityEngine;
+using CommonBase;
 
-public class MyButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+namespace YourNamespace
 {
-    public void OnPointerEnter(PointerEventData eventData)
+    public partial class MyTooltip : BaseFloatWindow
     {
-        TooltipFloatWindow.ShowTooltip(transform, "点击购买物品", new Vector3(0, 50, 0));
-    }
+        protected override void Awake()
+        {
+            base.Awake();
+            Reset();  // 初始化组件引用
 
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        TooltipFloatWindow.HideTooltip();
+            // 配置浮窗特性
+            defaultOffset = new Vector3(0, 50, 0);  // 设置默认偏移
+            autoHideWhenTargetInactive = true;      // 目标不活跃时自动隐藏
+            updatePositionEveryFrame = true;        // 每帧更新位置
+        }
+
+        protected override void OnShow(object data)
+        {
+            base.OnShow(data);
+
+            // 根据 data 更新UI内容
+            if (data is string text && TxtContent != null)
+            {
+                TxtContent.text = text;
+            }
+        }
+
+        protected override void OnHide()
+        {
+            base.OnHide();
+            // 清理逻辑
+        }
+
+        protected override void OnPositionUpdated()
+        {
+            base.OnPositionUpdated();
+            // 位置更新时的逻辑（可选）
+        }
     }
 }
 ```

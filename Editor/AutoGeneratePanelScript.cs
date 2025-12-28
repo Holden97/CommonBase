@@ -88,6 +88,10 @@ namespace CommonBase
             {
                 GenerateWidgetScript(selectedObject, referenceCollector);
             }
+            else if (generationType == UIGenerationType.FloatWindow)
+            {
+                GenerateFloatWindowScript(selectedObject, referenceCollector);
+            }
             else
             {
                 GeneratePanelScript(selectedObject, referenceCollector);
@@ -539,6 +543,173 @@ namespace CommonBase
                     sb.AppendLine($"        public void On{child.Value.name}Clicked() {{ }}");
 
             sb.AppendLine("");
+            sb.AppendLine("    }");
+            sb.AppendLine("}");
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// 生成 FloatWindow 类型的脚本
+        /// </summary>
+        private static void GenerateFloatWindowScript(GameObject selectedObject, ReferenceCollector referenceCollector)
+        {
+            var objectName = selectedObject.name;
+            var scriptName = objectName;
+
+            // 创建 FloatWindow 文件夹
+            var scriptsFolder = "Assets/Scripts/FloatWindow";
+            if (!Directory.Exists(scriptsFolder)) Directory.CreateDirectory(scriptsFolder);
+
+            // 生成 .Designer.cs 文件（组件引用部分 - 会被覆盖）
+            var designerContent = GenerateFloatWindowDesignerScriptContent(scriptName, selectedObject);
+            var designerPath = Path.Combine(scriptsFolder, $"{scriptName}.Designer.cs");
+            File.WriteAllText(designerPath, designerContent);
+
+            // 生成 .cs 文件（业务逻辑部分 - 不会被覆盖）
+            var scriptContent = GenerateFloatWindowScriptContent(scriptName, selectedObject);
+            var scriptPath = Path.Combine(scriptsFolder, $"{scriptName}.cs");
+
+            // 只有当业务逻辑文件不存在时才创建
+            if (!File.Exists(scriptPath))
+            {
+                File.WriteAllText(scriptPath, scriptContent);
+            }
+
+            AssetDatabase.Refresh();
+
+            // 直接挂载到当前对象上
+            SessionState.SetString(PendingScriptKey, scriptPath);
+            SessionState.SetInt(PendingGOInstanceIDKey, selectedObject.GetInstanceID());
+
+            Debug.Log($"✅ 已生成 FloatWindow 脚本: {scriptName}");
+        }
+
+        /// <summary>
+        /// 生成 FloatWindow Designer 脚本内容（组件引用部分 - 可自动覆盖）
+        /// </summary>
+        private static string GenerateFloatWindowDesignerScriptContent(string scriptName, GameObject rootObject)
+        {
+            // 每次生成脚本前清空已使用的变量名记录
+            UsedFieldNames.Clear();
+
+            var sb = new StringBuilder();
+            sb.AppendLine("using UnityEngine;");
+            sb.AppendLine("using UnityEngine.UI;");
+            sb.AppendLine("using TMPro;");
+            sb.AppendLine("using CommonBase;");
+            sb.AppendLine();
+            sb.AppendLine($"namespace {GetUISettingNamespace()}");
+            sb.AppendLine("{");
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 组件引用部分 - 由工具自动生成，请勿手动修改");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine($"    public partial class {scriptName}");
+            sb.AppendLine("    {");
+
+            // 检查是否有 ReferenceCollector 组件
+            var referenceCollector = rootObject.GetComponent<ReferenceCollector>();
+            var useReferenceCollector = referenceCollector != null && referenceCollector.data.Count > 0;
+
+            // 如果使用 ReferenceCollector，添加字段
+            if (useReferenceCollector)
+            {
+                sb.AppendLine("        private ReferenceCollector referenceCollector;");
+                sb.AppendLine();
+            }
+
+            // 查找并添加UI控件字段
+            FindAndAddUIFields(sb, rootObject.transform, referenceCollector);
+
+            sb.AppendLine();
+            sb.AppendLine("        private void Reset()");
+            sb.AppendLine("        {");
+            // 赋值UI控件
+            AssignUIFields(sb, rootObject.transform, referenceCollector);
+            sb.AppendLine("        }");
+
+            sb.AppendLine("    }");
+            sb.AppendLine("}");
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// 生成 FloatWindow 脚本内容（业务逻辑部分 - 可自由修改）
+        /// </summary>
+        private static string GenerateFloatWindowScriptContent(string scriptName, GameObject rootObject)
+        {
+            // 需要先调用FindAndAddUIFields来填充FieldInfo，以便生成按钮事件
+            UsedFieldNames.Clear();
+            var tempSb = new StringBuilder();
+            var referenceCollector = rootObject.GetComponent<ReferenceCollector>();
+            FindAndAddUIFields(tempSb, rootObject.transform, referenceCollector);
+
+            var sb = new StringBuilder();
+            sb.AppendLine("using UnityEngine;");
+            sb.AppendLine("using CommonBase;");
+            sb.AppendLine();
+            sb.AppendLine($"namespace {GetUISettingNamespace()}");
+            sb.AppendLine("{");
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine($"    /// {scriptName} - 浮窗");
+            sb.AppendLine("    /// 业务逻辑部分 - 可自由修改");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine($"    public partial class {scriptName} : BaseFloatWindow");
+            sb.AppendLine("    {");
+
+            // 重写 Awake（可选）
+            sb.AppendLine("        protected override void Awake()");
+            sb.AppendLine("        {");
+            sb.AppendLine("            base.Awake();");
+            sb.AppendLine();
+            sb.AppendLine("            // 初始化组件引用");
+            sb.AppendLine("            Reset();");
+            sb.AppendLine();
+            sb.AppendLine("            // TODO: 配置浮窗特性");
+            sb.AppendLine("            // defaultOffset = new Vector3(0, 50, 0);  // 设置默认偏移");
+            sb.AppendLine("            // autoHideWhenTargetInactive = true;      // 目标不活跃时自动隐藏");
+            sb.AppendLine("            // updatePositionEveryFrame = true;        // 每帧更新位置");
+            sb.AppendLine("        }");
+
+            sb.AppendLine();
+            sb.AppendLine("        protected override void OnShow(object data)");
+            sb.AppendLine("        {");
+            sb.AppendLine("            base.OnShow(data);");
+            sb.AppendLine();
+            sb.AppendLine("            // TODO: 浮窗显示时的逻辑");
+            sb.AppendLine("            // 例如：根据 data 更新UI内容");
+            sb.AppendLine("        }");
+
+            sb.AppendLine();
+            sb.AppendLine("        protected override void OnHide()");
+            sb.AppendLine("        {");
+            sb.AppendLine("            base.OnHide();");
+            sb.AppendLine();
+            sb.AppendLine("            // TODO: 浮窗隐藏时的逻辑");
+            sb.AppendLine("        }");
+
+            sb.AppendLine();
+            sb.AppendLine("        protected override void OnPositionUpdated()");
+            sb.AppendLine("        {");
+            sb.AppendLine("            base.OnPositionUpdated();");
+            sb.AppendLine();
+            sb.AppendLine("            // TODO: 位置更新时的逻辑（可选）");
+            sb.AppendLine("        }");
+
+            // 为按钮生成事件方法
+            foreach (var child in FieldInfo)
+            {
+                if (child.Value.component is Button)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine($"        private void On{child.Value.name}Clicked()");
+                    sb.AppendLine("        {");
+                    sb.AppendLine("            // TODO: 处理按钮点击");
+                    sb.AppendLine("        }");
+                }
+            }
+
             sb.AppendLine("    }");
             sb.AppendLine("}");
 
