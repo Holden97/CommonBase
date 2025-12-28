@@ -115,13 +115,17 @@ namespace CommonBase
                     {
                         curGo.SetActive(true);
                         var curItem = curGo.GetComponent<IListItem>();
+                        if (curItem == null)
+                        {
+                            Debug.LogError($"{curGo.name}不包含带有IListItem接口的组件，请检查");
+                        }
                         curItem.InUse = true;
-                        curItem.BindData(data[i]);
                         if (!curItem.Initialized)
                         {
                             curItem.Initialized = true;
                             curItem.Initialize(data[i]);
                         }
+                        curItem.BindData(data[i]);
                         existedList.Add(curItem);
                     }
                 }

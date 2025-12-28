@@ -9,7 +9,7 @@ namespace CommonBase
     public interface IListItem
     {
         /// <summary>
-        /// 只初始化一次
+        /// 只初始化一次，调用次序在BindData之前
         /// </summary>
         /// <param name="data"></param>
         void Initialize(object data);
