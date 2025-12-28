@@ -66,7 +66,7 @@ namespace CommonBase
             var dataProperty = serializedObject.FindProperty("data");
 
             // 生成类型选择
-            EditorGUILayout.PropertyField(generationTypeProperty, new GUIContent("生成类型", "Panel: 完整的UI面板（继承BaseUI）\nWidget: UI小部件（实现IUIWidget接口）"));
+            EditorGUILayout.PropertyField(generationTypeProperty, new GUIContent("生成类型", "Panel: 完整的UI面板（继承BaseUI）\nWidget: UI小部件（实现IUIWidget接口）\nFloatWindow: 浮窗（继承BaseFloatWindow并实现IFloatWindow接口）"));
             serializedObject.ApplyModifiedProperties();
 
             EditorGUILayout.Space();

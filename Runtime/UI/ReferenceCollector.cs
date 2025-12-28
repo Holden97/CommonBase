@@ -19,7 +19,11 @@ namespace CommonBase
         /// <summary>
         /// UI 小部件，继承 MonoBehaviour 并实现 IUIWidget
         /// </summary>
-        Widget
+        Widget,
+        /// <summary>
+        /// 浮窗，继承 BaseFloatWindow 并实现 IFloatWindow
+        /// </summary>
+        FloatWindow
     }
 
     /// <summary>
