@@ -1532,6 +1532,47 @@ namespace CommonBase.Editor
             Debug.Log($"在末尾添加新列，当前共{columnCount}列");
         }
 
+        [BoxGroup("Editor")]
+        [HorizontalGroup("Editor/Col")]
+        [Button("新建AssetReference列", ButtonSizes.Medium)]
+        [GUIColor(0.5f, 1f, 1f, 1f)]
+        private void AddAssetReferenceColumn()
+        {
+            if (tableData.Count < 4)
+            {
+                Debug.LogError("表格数据不完整！需要至少4行表头数据");
+                return;
+            }
+
+            columnCount++;
+
+            // 为每一行添加新列
+            for (int row = 0; row < tableData.Count; row++)
+            {
+                if (row == 1)
+                {
+                    // 第2行：中文标签
+                    tableData[row].Add("资源引用");
+                }
+                else if (row == 2)
+                {
+                    // 第3行：字段名
+                    tableData[row].Add("assetRef");
+                }
+                else if (row == 3)
+                {
+                    // 第4行：字段类型
+                    tableData[row].Add("AssetReference");
+                }
+                else
+                {
+                    tableData[row].Add("");
+                }
+            }
+
+            Debug.Log($"已添加AssetReference类型列（第{columnCount}列）");
+        }
+
         // 辅助方法：在指定索引处插入行
         private void InsertRowAt(int index)
         {
@@ -1896,9 +1937,20 @@ namespace CommonBase.Editor
                         GUI.backgroundColor = new Color(0.8f, 0.9f, 1f, 1f);
                     }
 
-                    // 绘制TextField并获取Rect
+                    // 绘制单元格（根据类型选择不同的编辑器）
                     Rect cellRect = GUILayoutUtility.GetRect(columnWidth, 18, GUILayout.Width(columnWidth));
-                    tableData[row][col] = EditorGUI.TextField(cellRect, tableData[row][col]);
+
+                    // 检查是否为AssetReference类型的列
+                    if (row >= 4 && IsAssetReferenceColumn(col))
+                    {
+                        // AssetReference列：使用ObjectField
+                        DrawAssetReferenceCell(cellRect, row, col);
+                    }
+                    else
+                    {
+                        // 普通列：使用TextField
+                        tableData[row][col] = EditorGUI.TextField(cellRect, tableData[row][col]);
+                    }
 
                     // 处理鼠标事件进行选择
                     HandleCellSelection(cellRect, row, col);
@@ -1934,6 +1986,56 @@ namespace CommonBase.Editor
             }
 
             menu.ShowAsContext();
+        }
+
+        // 检查指定列是否为AssetReference类型
+        private bool IsAssetReferenceColumn(int colIndex)
+        {
+            if (tableData.Count < 4 || colIndex >= tableData[3].Count)
+                return false;
+
+            // 检查第4行（类型定义行）的内容
+            string columnType = tableData[3][colIndex].Trim();
+            return columnType.Equals("AssetReference", StringComparison.OrdinalIgnoreCase) ||
+                   columnType.Equals("PathGUID", StringComparison.OrdinalIgnoreCase);
+        }
+
+        // 绘制AssetReference类型的单元格
+        private void DrawAssetReferenceCell(Rect cellRect, int row, int col)
+        {
+            string currentGuid = tableData[row][col];
+            UnityEngine.Object currentAsset = null;
+
+            // 如果当前单元格有GUID，加载对应的资源
+            if (!string.IsNullOrEmpty(currentGuid))
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(currentGuid);
+                if (!string.IsNullOrEmpty(assetPath))
+                {
+                    currentAsset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
+                }
+            }
+
+            // 使用ObjectField绘制，支持拖拽和选择
+            EditorGUI.BeginChangeCheck();
+            UnityEngine.Object newAsset = EditorGUI.ObjectField(cellRect, currentAsset, typeof(UnityEngine.Object), false);
+
+            // 如果资源发生变化，更新GUID
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (newAsset != null)
+                {
+                    string newAssetPath = AssetDatabase.GetAssetPath(newAsset);
+                    string newGuid = AssetDatabase.AssetPathToGUID(newAssetPath);
+                    tableData[row][col] = newGuid;
+                    Debug.Log($"已设置资源: {newAsset.name} (GUID: {newGuid})");
+                }
+                else
+                {
+                    // 清空资源
+                    tableData[row][col] = "";
+                }
+            }
         }
 
         // 显示列右键菜单
